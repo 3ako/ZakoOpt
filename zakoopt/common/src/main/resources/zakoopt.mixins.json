@@ -1,0 +1,23 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"TitleScreenUpdateMixin",
+		"block.BaseSpawnerMixin",
+		"block.BlockEntityMixin",
+		"entity.EntityAnimHolderMixin",
+		"entity.EntityNameMixin",
+		"entity.EntityRenderStateEntityMixin",
+		"entity.EntityRendererNameMixin",
+		"entity.EntityRendererStateMixin",
+		"entity.SodiumEntityRendererMixin",
+		"gl.VertexConsumerUtilsMixin",
+		"particle.BubbleColumnUpParticleMixin",
+		"particle.ParticleAccessor",
+		"text.ClientLanguageMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

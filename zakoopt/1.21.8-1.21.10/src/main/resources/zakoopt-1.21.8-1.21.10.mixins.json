@@ -1,0 +1,19 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.BatchableBufferSourceMixin",
+		"gl.BufferSourceMixin",
+		"gl.ByteBufferBuilderMixin",
+		"gl.ByteBufferBuilderPoolMixin",
+		"gl.GlBufferInvoker",
+		"gl.RenderTypeAccessor",
+		"gl.RenderTypeDrawMixin",
+		"gl.RenderTypesMixin",
+		"text.FontMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

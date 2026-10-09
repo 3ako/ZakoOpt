@@ -1,0 +1,4 @@
+// shared sources and resources; compiled by each version module against its own Minecraft
+plugins {
+	id 'java'
+}

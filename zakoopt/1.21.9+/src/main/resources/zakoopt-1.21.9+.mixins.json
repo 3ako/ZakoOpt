@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"block.BlockEntityRenderDispatcherMixin",
+		"block.ChestRendererMixin",
+		"entity.AvatarLodMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

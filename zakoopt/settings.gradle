@@ -1,0 +1,8 @@
+pluginManagement {
+	repositories {
+		maven { url = 'https://maven.fabricmc.net/' }
+		gradlePluginPortal()
+	}
+}
+rootProject.name = 'zakoopt'
+include 'common', 'sodium-0.8', '1.21.8+', '1.21.9+', '1.21.x', '1.21.8-1.21.10', '1.21.9-1.21.11', '1.21.11+', '26.x', '1.21.4', '1.21.8', '1.21.10', '1.21.11', '26.1.2', '26.2'

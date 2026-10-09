@@ -1,0 +1,4 @@
+// code for the Minecraft API of 1.21.11 and newer; compiled by each of those version modules
+plugins {
+	id 'java'
+}

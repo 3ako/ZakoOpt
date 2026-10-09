@@ -1,0 +1,4 @@
+// code for the blaze3d GPU API and GUI render states (1.21.8 and newer); every module except 1.21.4
+plugins {
+	id 'java'
+}

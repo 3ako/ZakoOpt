@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"DebugScreenEntriesMixin",
+		"DebugScreenEntryListMixin",
+		"text.FontMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

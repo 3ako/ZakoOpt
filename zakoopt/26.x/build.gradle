@@ -1,0 +1,4 @@
+// version code shared by the 26.x modules; compiled by each of them against its own Minecraft
+plugins {
+	id 'java'
+}

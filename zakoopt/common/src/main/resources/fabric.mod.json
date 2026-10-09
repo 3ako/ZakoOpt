@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "zakoopt",
+	"version": "${version}",
+	"name": "ZakoOpt",
+	"description": "Оптимизация клиента поверх Sodium. Подпишись на канал автора: https://t.me/StarikZako",
+	"authors": [
+		"Zako"
+	],
+	"contact": {
+		"homepage": "https://t.me/StarikZako"
+	},
+	"license": "LGPL-3.0-only",
+	"icon": "assets/zakoopt/icon.png",
+	"environment": "client",
+	"mixins": ${mixins},
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "${minecraft_range}",
+		"fabric-renderer-api-v1": "*",
+		"sodium": ">=${sodium_min}",
+		"immediatelyfast": "*"
+	},
+	"entrypoints": {
+		"sodium:config_api_user": [
+			"zako.opt.SodiumOptions"
+		],
+		"modmenu": [
+			"zako.opt.ModMenuEntry"
+		]
+	},
+	"suggests": {
+		"modmenu": "*"
+	},
+	"recommends": {
+		"sodium": ">=${sodium_recommended}"
+	}
+}

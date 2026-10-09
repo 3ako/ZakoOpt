@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"DebugScreenEntriesMixin",
+		"DebugScreenEntryListMixin",
+		"block.AbstractSignRendererMixin",
+		"entity.LivingEntityRendererSkinMixin",
+		"entity.ModelFeatureRendererMixin",
+		"gl.RenderSystemMixin",
+		"hud.GameRendererHudMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

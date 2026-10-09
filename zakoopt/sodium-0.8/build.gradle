@@ -1,0 +1,4 @@
+// code for Sodium 0.8+ (its config API); compiled by each of them against its own Minecraft
+plugins {
+	id 'java'
+}

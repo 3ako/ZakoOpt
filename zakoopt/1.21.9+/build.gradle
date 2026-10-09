@@ -1,0 +1,4 @@
+// code for the submit-node render API of 1.21.9 and newer; compiled by each of those version modules
+plugins {
+	id 'java'
+}

@@ -1,0 +1,22 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"client": [
+		"entity.ItemRendererMixin",
+		"gl.GlBufferCloseMixin",
+		"gl.GlCommandEncoderClearMixin",
+		"gl.GlCommandEncoderDepthClearMixin",
+		"gl.GlCommandEncoderMixin",
+		"gl.GlCommandEncoderTexBufferMixin",
+		"gl.GlTextureFboMixin",
+		"hud.GuiHudMixin",
+		"hud.GuiInvoker",
+		"hud.GuiRendererMixin",
+		"hud.GuiRendererPipMixin",
+		"particle.ParticleMixin"
+	]
+}

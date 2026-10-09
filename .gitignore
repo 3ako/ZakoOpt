@@ -1,0 +1,28 @@
+# сырые замеры и записи — большие, сводка лежит в bench/results.csv
+reports/**/raw/
+*.jfr
+bench/ctl/
+bench/logs/
+__pycache__/
+
+# скачиваемое / генерируемое
+tools/PresentMon.exe
+tools/sparktree/cache/
+tools/sparktree/yarn-*.tiny
+Сборка 1.21.4 Fabric ( Из видео )/*.jar
+
+# gradle
+.gradle/
+build/
+
+# служебное: замеры, отчёты, бенч и его мод, заметки, IDE
+bench/
+reports/
+charts/
+tools/
+release/
+zakobench/
+plan.md
+.idea/
+Сборка*/
+reviews/

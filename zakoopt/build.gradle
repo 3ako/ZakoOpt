@@ -1,0 +1,68 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
+	id 'net.fabricmc.fabric-loom' version "${loom_version}" apply false
+}
+
+subprojects {
+	repositories {
+		maven { url = 'https://api.modrinth.com/maven' }
+		mavenCentral()
+	}
+	plugins.withId('java') {
+		dependencies {
+			compileOnly "org.projectlombok:lombok:${lombok_version}"
+			annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+		}
+	}
+}
+
+// layers: shared source folders (common, 26.x, sodium-0.8...) compiled by every version module that lists them, against its own Minecraft
+// (1.21.x runs on intermediary names, so a layer's classes cannot be shared as built)
+def layerNames = ['common', 'sodium-0.8', '1.21.8+', '1.21.9+', '1.21.x', '1.21.8-1.21.10', '1.21.9-1.21.11', '1.21.11+', '26.x']
+configure(subprojects.findAll { !(it.name in layerNames) }) {
+	plugins.withId('java') {
+		base.archivesName = 'zakoopt'
+		version = "${rootProject.version}+${minecraft_version}"
+
+		def layers = layers.split(',')*.trim()
+		sourceSets.main {
+			layers.each {
+				java.srcDir project(":${it}").file('src/main/java')
+				resources.srcDir project(":${it}").file('src/main/resources')
+			}
+		}
+		// every layer and the version module itself may bring a mixin config named zakoopt[-<name>].mixins.json
+		def mixinConfigs = (layers + [minecraft_version]).collect { it == 'common' ? 'zakoopt.mixins.json' : "zakoopt-${it}.mixins.json" }
+			.findAll { name -> ([project.file('src/main/resources')] + layers.collect { project(":${it}").file('src/main/resources') }).any { new File(it, name).exists() } }
+
+		processResources {
+			def props = [version: rootProject.version, minecraft: minecraft_version, minecraft_range: project.findProperty('minecraft_range') ?: "~${minecraft_version}", sodium_min: sodium_min, sodium_recommended: sodium_recommended,
+				mixins: groovy.json.JsonOutput.toJson(mixinConfigs)]
+			inputs.properties props
+			filesMatching("fabric.mod.json") { expand props }
+		}
+
+		tasks.withType(JavaCompile).configureEach { it.options.release = java_release as int }
+
+		// dev runs: -Pworld=<save> joins a singleplayer world, -Pbench=<dir> enables zakobench's command loop, -Pjvm="..." adds JVM flags
+		afterEvaluate {
+			loom.runs.client {
+				if (project.hasProperty('world')) {
+					programArgs "--quickPlaySingleplayer", project.world
+				}
+				if (project.hasProperty('jvm')) {
+					vmArgs project.jvm.split(' ')
+				}
+				if (project.hasProperty('bench')) {
+					vmArgs "-Dzakobench.dir=${project.bench}", "-Dzakobench.hidechat=true"
+				}
+			}
+		}
+
+		jar {
+			from(rootProject.file("../COPYING"))
+			from(rootProject.file("../COPYING.LESSER"))
+			from(rootProject.file("../NOTICE"))
+		}
+	}
+}

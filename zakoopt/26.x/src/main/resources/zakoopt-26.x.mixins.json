@@ -1,0 +1,28 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"client": [
+		"block.PistonHeadRendererMixin",
+		"block.SpawnerRendererMixin",
+		"entity.ItemLayerAccessor",
+		"entity.ItemStackRenderStateMixin",
+		"entity.LivingEntityLodMixin",
+		"entity.LivingEntityRendererSkinMixin",
+		"gl.GlCommandEncoderClearMixin",
+		"gl.GlCommandEncoderMixin",
+		"gl.MinecraftFrameMixin",
+		"gl.RenderTypesMixin",
+		"hud.GuiItemAtlasAccessor",
+		"hud.GuiItemAtlasMixin",
+		"hud.GuiRendererAnimatedMixin",
+		"hud.ImmediatelyFastAnimatedAtlasMixin",
+		"particle.ParticleMixin",
+		"particle.QuadParticleGroupMixin",
+		"particle.QuadParticleRenderStateAccessor",
+		"particle.QuadParticleStorageInvoker"
+	]
+}

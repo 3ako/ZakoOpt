@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.GlStateManagerMixin",
+		"hud.RenderTargetHudMixin",
+		"text.FontManagerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

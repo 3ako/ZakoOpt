@@ -1,0 +1,28 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"block.AbstractSignRendererMixin",
+		"block.BlockEntityRenderStateMixin",
+		"block.SignModelCacheMixin",
+		"entity.ItemFeatureRendererMixin",
+		"entity.LevelRendererOutlineMixin",
+		"entity.ModelFeatureRendererMixin",
+		"gl.BufferSourceMixin",
+		"gl.GlBufferCloseMixin",
+		"gl.GlCommandEncoderDepthClearMixin",
+		"gl.GlCommandEncoderTexBufferMixin",
+		"gl.GlTextureFboMixin",
+		"gl.GlTextureViewMixin",
+		"gl.RenderTypeAccessor",
+		"hud.GameRendererHudMixin",
+		"hud.GuiHudMixin",
+		"hud.GuiInvoker",
+		"hud.GuiRendererPipMixin",
+		"hud.GuiRendererTargetMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

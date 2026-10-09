@@ -1,0 +1,24 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"DebugScreenOverlayMixin",
+		"block.AbstractSignRendererMixin",
+		"block.BlockEntityRenderDispatcherMixin",
+		"block.ChestRendererMixin",
+		"block.SpawnerRendererMixin",
+		"entity.LevelRendererOutlineMixin",
+		"entity.LivingEntityAnimFreezeMixin",
+		"entity.LivingEntityLodMixin",
+		"entity.LivingEntityRendererSkinMixin",
+		"entity.PlayerLodMixin",
+		"gl.RenderSystemMixin",
+		"hud.GameRendererHudMixin",
+		"particle.ParticleEngineLodMixin",
+		"particle.ParticleEngineParallelMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
