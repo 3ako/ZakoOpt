@@ -152,17 +152,16 @@ public class ZakoOptConfig {
 		return p == null ? value : (int) Double.parseDouble(p);
 	}
 
-	// "auto" (and the config switch) only parallelize with 6+ logical CPUs: on 4 the render thread, integrated server and
-	// Sodium's chunk builders already fill them, helpers get preempted and the render thread spins waiting; "true" forces it
+	// "auto" (and the config switch) only parallelize with 4+ logical CPUs; "true" forces it
 	private boolean resolveParallelParticles() {
 		if ("false".equals(System.getProperty("zakoopt.all"))) {
 			return false;
 		}
 		String p = System.getProperty("zakoopt.parallelparticles");
 		if (p == null) {
-			return values.parallelParticles && CORES >= 6;
+			return values.parallelParticles && CORES >= 4;
 		}
-		return p.equals("true") || (p.equals("auto") && CORES >= 6);
+		return p.equals("true") || (p.equals("auto") && CORES >= 4);
 	}
 
 	// System.getProperty hashes the key on every call, too slow for hot paths; resolved once per frame instead
