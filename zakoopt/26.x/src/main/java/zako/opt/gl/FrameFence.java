@@ -1,5 +1,6 @@
 package zako.opt.gl;
 
+import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.buffers.GpuFence;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,8 @@ public final class FrameFence implements GpuFence {
 		// waited on before the frame ended: fence now, like vanilla would have
 		if (shared.real == null) {
 			shared.real = RealFence.create();
+			// a fence waited on right after it is made must reach the driver, or the wait may never end (Intel)
+			GL11C.glFlush();
 			if (pending == shared) {
 				pending = null;
 			}

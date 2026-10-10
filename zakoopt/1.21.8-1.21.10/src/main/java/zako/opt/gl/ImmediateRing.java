@@ -1,5 +1,6 @@
 package zako.opt.gl;
 
+import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.opengl.DirectStateAccess;
@@ -201,6 +202,8 @@ public class ImmediateRing {
 	}
 
 	private void waitAll() {
+		// this frame's fence was created moments ago; without a flush the driver may never signal it (Intel does not)
+		GL11C.glFlush();
 		for (int i = 0; i < SEGMENTS; i++) {
 			if (FENCES[i] != null) {
 				FENCES[i].awaitCompletion(Long.MAX_VALUE);
