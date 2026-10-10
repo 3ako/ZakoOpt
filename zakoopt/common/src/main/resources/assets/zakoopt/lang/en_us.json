@@ -48,6 +48,8 @@
   "zakoopt.group.blocks": "Blocks",
   "zakoopt.option.immediate_ring": "Vertex ring buffer",
   "zakoopt.option.immediate_ring.tooltip": "Entity, item and block vertex batches go into a persistently mapped ring buffer instead of re-uploading one buffer through the driver. It is slower on some systems (PCIe 3.0, no Resizable BAR), so 20 seconds into a world the mod compares FPS with and without it and keeps it only if it is faster.",
+  "zakoopt.option.immediate_ring_force": "Always use the ring buffer",
+  "zakoopt.option.immediate_ring_force.tooltip": "Skips the FPS comparison and keeps the vertex ring buffer on (while the option above is on). For when the automatic test turned it off but it is faster in your heavy scenes: compare FPS there with this on and off.",
   "zakoopt.option.block_entity_cache": "Block entity cache",
   "zakoopt.option.block_entity_cache.tooltip": "Double chest neighbour lookup runs once per tick instead of every frame.",
   "zakoopt.option.moving_block_cache": "Moving block cache",

@@ -71,6 +71,7 @@ public class ZakoOptions {
 								new Toggle("fbo_share", Impact.LOW, b -> v.fboShare = b, () -> v.fboShare, "gl.GlCommandEncoderDepthClearMixin", "gl.GlTextureViewMixin"),
 								new Toggle("outline_skip", Impact.LOW, b -> v.outlineSkip = b, () -> v.outlineSkip, "entity.LevelRendererOutlineMixin"),
 								new Toggle("immediate_ring", Impact.MEDIUM, b -> v.immediateRing = b, () -> v.immediateRing, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
+								new Toggle("immediate_ring_force", Impact.MEDIUM, b -> v.immediateRingForce = b, () -> v.immediateRingForce, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
 								new Toggle("ring_zero_copy", Impact.MEDIUM, b -> v.ringZeroCopy = b, () -> v.ringZeroCopy, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"))),
 						new Group("items", List.of(
 								new Toggle("item_lod", Impact.HIGH, b -> v.itemLod = b, () -> v.itemLod, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),

@@ -107,6 +107,7 @@ public class ZakoOptConfig {
 		public boolean outlineSkip = true;
 		public boolean ringZeroCopy = true;
 		public boolean immediateRing = true;
+		public boolean immediateRingForce = false;
 		public boolean blockEntityCache = true;
 		public boolean updateCheck = true;
 	}
@@ -191,7 +192,7 @@ public class ZakoOptConfig {
 		spawnerCull = on("spawner", values.spawnerCull);
 		spawnerDistance = num("spawner.distance", values.spawnerDistance);
 		blockEntityCache = on("becache", values.blockEntityCache);
-		boolean ringForced = System.getProperty("zakoopt.ring") != null;
+		boolean ringForced = System.getProperty("zakoopt.ring") != null || values.immediateRingForce;
 		if (values.immediateRing && !ringForced && RING_PRESENT) {
 			RingAutoTune.frame();
 		}
