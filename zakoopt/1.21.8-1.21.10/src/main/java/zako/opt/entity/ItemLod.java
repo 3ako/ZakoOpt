@@ -12,7 +12,7 @@ import zako.opt.ZakoOptConfig;
 @UtilityClass
 public class ItemLod {
 	private final float EDGE = 1f / 16f + 1e-4f;
-	// keyed by the model's first quad: the quad list passed to renderItem is a reused per-render-state buffer
+	// keyed by the model's last quad: the quad list passed to renderItem is a reused per-render-state buffer
 	private final Map<BakedQuad, Flat> FLAT = new MapMaker().weakKeys().makeMap();
 
 	public boolean enabled() {
@@ -29,10 +29,10 @@ public class ItemLod {
 		if (quads.isEmpty()) {
 			return quads;
 		}
-		Flat cached = FLAT.get(quads.getFirst());
+		Flat cached = FLAT.get(quads.getLast());
 		if (cached == null || cached.sourceSize != quads.size()) {
 			cached = new Flat(quads.size(), compute(quads));
-			FLAT.put(quads.getFirst(), cached);
+			FLAT.put(quads.getLast(), cached);
 		}
 		return cached.quads == null ? quads : cached.quads;
 	}
