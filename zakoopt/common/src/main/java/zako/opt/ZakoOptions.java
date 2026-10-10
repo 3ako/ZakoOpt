@@ -87,7 +87,7 @@ public class ZakoOptions {
 								new Toggle("spawner_replay", Impact.MEDIUM, b -> v.spawnerReplay = b, () -> v.spawnerReplay, "block.SpawnerRendererMixin"))),
 						new Group("blocks", List.of(
 								new Toggle("moving_block_flat_light", Impact.HIGH, b -> v.movingBlockFlatLight = b, () -> v.movingBlockFlatLight, "block.NonTerrainBlockRenderContextMixin"),
-								new Toggle("moving_block_cache", Impact.HIGH, b -> v.movingBlockCache = b, () -> v.movingBlockCache, "block.BlockFeatureRendererMixin"),
+								new Toggle("moving_block_cache", Impact.HIGH, b -> v.movingBlockCache = b, () -> v.movingBlockCache, "block.BlockFeatureRendererMixin", "block.PistonHeadRendererCacheMixin"),
 								new Toggle("block_entity_cache", Impact.LOW, b -> v.blockEntityCache = b, () -> v.blockEntityCache, "block.ChestRendererMixin"),
 								new Toggle("sign_cache", Impact.LOW, b -> v.signCache = b, () -> v.signCache, "block.AbstractSignRendererMixin"),
 								new Toggle("lookup_caches", Impact.LOW, b -> v.lookupCaches = b, () -> v.lookupCaches, "gl.RenderTypesMixin", "block.PistonHeadRendererMixin"),

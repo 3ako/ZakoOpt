@@ -8,7 +8,6 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import org.joml.Quaternionf;
 import org.lwjgl.system.MemoryUtil;
-import zako.opt.MixinPlugin;
 import zako.opt.ZakoOptConfig;
 import zako.opt.gl.ReserveBuffer;
 import zako.opt.mixin.entity.ModelPartAccessor;
@@ -24,8 +23,8 @@ import java.util.WeakHashMap;
 // 1.21.4 renders every model straight into its buffer. During the entity pass the render thread only snapshots the posed
 // parts (setupAnim writes them into a model instance shared by every entity of that kind) and reserves the model's
 // vertices in the buffer, so vanilla's order holds; workers write the vertices into staging memory, which is copied into
-// the reserved range before that buffer is built and at the end of the pass. Without Sodium only: its cube writer and
-// pose maths differ from vanilla's, which FastCubes reproduces byte for byte
+// the reserved range before that buffer is built and at the end of the pass. FastCubes and the pose maths here are
+// vanilla's byte for byte, so with Sodium the models come out as vanilla draws them, not as Sodium's own writer would
 @UtilityClass
 public class ParallelModels {
 	private final int FIELDS = 9;
@@ -98,7 +97,7 @@ public class ParallelModels {
 	}
 
 	public boolean enabled() {
-		return ZakoOptConfig.parallelModels() && ZakoOptConfig.fastCubes() && !MixinPlugin.SODIUM;
+		return ZakoOptConfig.parallelModels() && ZakoOptConfig.fastCubes();
 	}
 
 	public void begin() {

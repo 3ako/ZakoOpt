@@ -8,6 +8,8 @@
 		"block.AbstractSignRendererMixin",
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.ChestRendererMixin",
+		"block.PistonHeadRendererCacheMixin",
+		"block.PistonMovingBlockEntityShapeMixin",
 		"block.SpawnerRendererMixin",
 		"entity.ItemRendererMixin",
 		"entity.LevelRendererOutlineMixin",

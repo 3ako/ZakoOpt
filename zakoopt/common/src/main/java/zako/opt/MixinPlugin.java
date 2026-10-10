@@ -13,8 +13,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	public static final boolean SODIUM = FabricLoader.getInstance().isModLoaded("sodium");
 	public static final boolean VULKAN = FabricLoader.getInstance().isModLoaded("vulkanmod");
 	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin");
-	// Sodium writes model cubes its own fast way; ours stand in where it is missing
-	private static final List<String> NO_SODIUM_MIXINS = List.of("entity.ModelPartFastMixin", "entity.ModelPartCubeMixin");
+	// Sodium writes model cubes its own fast way; ours stands in where it is missing
+	private static final List<String> NO_SODIUM_MIXINS = List.of("entity.ModelPartFastMixin");
 	// the immediate ring lives in OpenGL buffers; VulkanMod draws without them and rewrites RenderType.draw
 	private static final List<String> RING_MIXINS = List.of("gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin", "gl.ByteBufferBuilderMixin", "gl.ByteBufferBuilderPoolMixin", "gl.RenderTypeDrawMixin");
 
