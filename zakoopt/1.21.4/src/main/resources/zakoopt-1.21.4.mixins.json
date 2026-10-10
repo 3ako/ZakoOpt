@@ -31,6 +31,7 @@
 		"gl.BufferUploaderMixin",
 		"gl.ByteBufferBuilderAccessor",
 		"gl.ByteBufferBuilderMixin",
+		"gl.ByteBufferBuilderMoveMixin",
 		"gl.ByteBufferBuilderPoolMixin",
 		"gl.GlStateManagerStatsMixin",
 		"gl.RenderSystemMixin",

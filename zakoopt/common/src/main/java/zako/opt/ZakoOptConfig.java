@@ -57,6 +57,7 @@ public class ZakoOptConfig {
 	private boolean microOpts2;
 	private boolean microOpts3;
 	private boolean fastCubes;
+	private boolean spawnerMesh;
 	private boolean tboCache;
 	private boolean itemBounds;
 	private boolean hudCache;
@@ -204,6 +205,7 @@ public class ZakoOptConfig {
 		microOpts2 = on("micro2", values.microOpts);
 		microOpts3 = on("micro3", values.microOpts);
 		fastCubes = on("fastcubes", true);
+		spawnerMesh = on("spawnermesh", true);
 		tboCache = on("tbo", values.microOpts);
 		itemBounds = on("itembounds", values.microOpts);
 		hudCache = on("hud", values.hudCache) && !FOREIGN_HUD && !MixinPlugin.VULKAN;
@@ -336,6 +338,10 @@ public class ZakoOptConfig {
 
 	public boolean fastCubes() {
 		return fastCubes;
+	}
+
+	public boolean spawnerMesh() {
+		return spawnerMesh;
 	}
 
 	public boolean tboCache() {

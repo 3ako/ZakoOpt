@@ -13,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import zako.opt.ZakoOptConfig;
+import zako.opt.block.SpawnerMeshCache;
 
 @Mixin(SpawnerRenderer.class)
 public class SpawnerRendererMixin {
@@ -28,5 +29,15 @@ public class SpawnerRendererMixin {
 			}
 		}
 		original.call(partialTick, pose, buffers, light, entity, dispatcher, oSpin, spin);
+	}
+
+	// the mob never moves inside the spawner: drawn once, then replayed through the spinning pose
+	@WrapOperation(method = "renderEntityInSpawner", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"))
+	private static void zakoopt$cachedMob(EntityRenderDispatcher dispatcher, Entity entity, double x, double y, double z, float partialTick, PoseStack pose,
+										  MultiBufferSource buffers, int light, Operation<Void> original) {
+		if (!ZakoOptConfig.spawnerMesh() || !SpawnerMeshCache.render(entity, dispatcher, pose, buffers, light,
+				(recorder, mark) -> original.call(dispatcher, entity, x, y, z, partialTick, new PoseStack(), recorder, mark))) {
+			original.call(dispatcher, entity, x, y, z, partialTick, pose, buffers, light);
+		}
 	}
 }
