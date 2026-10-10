@@ -12,12 +12,16 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import zako.opt.ZakoOptConfig;
 
+import java.lang.ref.WeakReference;
+
 @Mixin(BubbleColumnUpParticle.class)
 public class BubbleColumnUpParticleMixin {
 	@Unique
 	private static final Long2ObjectOpenHashMap<FluidState> zakoopt$fluids = new Long2ObjectOpenHashMap<>();
 	@Unique
 	private static long zakoopt$tick = Long.MIN_VALUE;
+	@Unique
+	private static WeakReference<ClientLevel> zakoopt$level = new WeakReference<>(null);
 
 	// thousands of bubbles share a few columns; each checked its block's fluid every tick
 	@WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getFluidState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/material/FluidState;"))
@@ -26,9 +30,10 @@ public class BubbleColumnUpParticleMixin {
 			return original.call(level, pos);
 		}
 		long tick = level.getGameTime();
-		if (tick != zakoopt$tick) {
+		if (tick != zakoopt$tick || level != zakoopt$level.get()) {
 			zakoopt$fluids.clear();
 			zakoopt$tick = tick;
+			zakoopt$level = new WeakReference<>(level);
 		}
 		long key = pos.asLong();
 		FluidState fluid = zakoopt$fluids.get(key);
