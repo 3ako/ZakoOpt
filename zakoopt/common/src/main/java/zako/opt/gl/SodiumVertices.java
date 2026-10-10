@@ -9,11 +9,22 @@ import org.lwjgl.system.MemoryStack;
 // the only class touching Sodium's writer: loaded only when Sodium is installed
 @UtilityClass
 class SodiumVertices {
+	// tryOf is an interface instanceof plus an interface call, which thrashes HotSpot's per-class type check cache when a
+	// handful of consumer classes alternate; most calls ask about the same buffer as the last one
+	private Object lastWriter;
+
 	boolean accepts(VertexConsumer consumer) {
-		return VertexBufferWriter.tryOf(consumer) != null;
+		if (consumer == lastWriter) {
+			return true;
+		}
+		if (VertexBufferWriter.tryOf(consumer) == null) {
+			return false;
+		}
+		lastWriter = consumer;
+		return true;
 	}
 
 	void push(VertexConsumer consumer, MemoryStack stack, long src, int count, VertexFormat format) {
-		VertexBufferWriter.of(consumer).push(stack, src, count, format);
+		(consumer == lastWriter ? (VertexBufferWriter) consumer : VertexBufferWriter.of(consumer)).push(stack, src, count, format);
 	}
 }
