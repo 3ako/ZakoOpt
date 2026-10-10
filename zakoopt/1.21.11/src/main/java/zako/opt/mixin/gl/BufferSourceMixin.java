@@ -12,7 +12,10 @@ public class BufferSourceMixin {
 	@ModifyExpressionValue(method = "endBatch(Lnet/minecraft/client/renderer/rendertype/RenderType;Lcom/mojang/blaze3d/vertex/BufferBuilder;)V",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/rendertype/RenderType;sortOnUpload()Z"))
 	private boolean zakoopt$skipEntitySort(boolean sort, RenderType renderType) {
-		return sort && !(ZakoOptConfig.noEntitySort()
-				&& "entity_translucent".equals(((RenderTypeAccessor) renderType).zakoopt$name()));
+		if (!sort) {
+			return false;
+		}
+		String name = ((RenderTypeAccessor) renderType).zakoopt$name();
+		return !(ZakoOptConfig.noEntitySort() && "entity_translucent".equals(name) || ZakoOptConfig.noItemSort() && "item_entity_translucent_cull".equals(name));
 	}
 }

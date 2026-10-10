@@ -1,0 +1,30 @@
+package zako.opt.mixin.entity;
+
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.phys.AABB;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import zako.opt.ZakoOptConfig;
+import zako.opt.entity.ItemBounds;
+
+@Mixin(ItemStackRenderState.class)
+public class ItemStackRenderStateMixin {
+	@Shadow
+	private int activeLayerCount;
+	@Shadow
+	private ItemStackRenderState.LayerRenderState[] layers;
+	@Shadow
+	ItemDisplayContext displayContext;
+
+	@WrapMethod(method = "getModelBoundingBox")
+	private AABB zakoopt$sharedBounds(Operation<AABB> original) {
+		if (!ZakoOptConfig.itemBounds() || activeLayerCount != 1) {
+			return original.call();
+		}
+		ItemLayerAccessor layer = (ItemLayerAccessor) layers[0];
+		return ItemBounds.get(layer.zakoopt$extents(), layer.zakoopt$transform(), displayContext.leftHand(), original::call);
+	}
+}

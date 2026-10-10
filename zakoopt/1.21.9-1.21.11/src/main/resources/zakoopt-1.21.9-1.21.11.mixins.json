@@ -8,6 +8,8 @@
 		"block.BlockFeatureRendererMixin",
 		"block.PistonHeadRendererMixin",
 		"block.SpawnerRendererMixin",
+		"entity.ItemLayerAccessor",
+		"entity.ItemStackRenderStateMixin",
 		"entity.LevelRendererOutlineMixin",
 		"entity.LivingEntityLodMixin",
 		"entity.SubmitNodeStorageMixin",

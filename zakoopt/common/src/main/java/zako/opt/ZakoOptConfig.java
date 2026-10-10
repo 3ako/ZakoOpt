@@ -33,6 +33,8 @@ public class ZakoOptConfig {
 	private boolean frameFence;
 	private boolean lazyClear;
 	private boolean noEntitySort;
+	private boolean noItemSort;
+	private boolean itemSingleCopy;
 	private boolean bidiCache;
 	private boolean preparedTextCache;
 	private boolean itemLod;
@@ -81,6 +83,8 @@ public class ZakoOptConfig {
 		public boolean frameFence = true;
 		public boolean lazyClear = true;
 		public boolean noEntitySort = true;
+		public boolean noItemSort = true;
+		public boolean itemSingleCopy = false;
 		public boolean bidiCache = true;
 		public boolean preparedTextCache = true;
 		public boolean itemLod = true;
@@ -176,6 +180,8 @@ public class ZakoOptConfig {
 		frameFence = on("framefence", values.frameFence);
 		lazyClear = on("lazyclear", values.lazyClear);
 		noEntitySort = on("nosort", values.noEntitySort);
+		noItemSort = on("noitemsort", values.noItemSort);
+		itemSingleCopy = on("itemsingle", values.itemSingleCopy);
 		bidiCache = on("textcache", values.bidiCache);
 		preparedTextCache = on("preparedtext", values.preparedTextCache);
 		itemLod = on("itemlod", values.itemLod);
@@ -236,6 +242,14 @@ public class ZakoOptConfig {
 
 	public boolean noEntitySort() {
 		return noEntitySort;
+	}
+
+	public boolean noItemSort() {
+		return noItemSort;
+	}
+
+	public boolean itemSingleCopy() {
+		return itemSingleCopy;
 	}
 
 	public boolean bidiCache() {

@@ -12,6 +12,7 @@
 		"entity.EntityRenderStateEntityMixin",
 		"entity.EntityRendererNameMixin",
 		"entity.EntityRendererStateMixin",
+		"entity.ItemClusterRenderStateMixin",
 		"gl.BufferBuilderRawMixin",
 		"particle.BubbleColumnUpParticleMixin",
 		"particle.ParticleAccessor",

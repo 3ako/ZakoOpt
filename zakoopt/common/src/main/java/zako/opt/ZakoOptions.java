@@ -66,6 +66,7 @@ public class ZakoOptions {
 								new Toggle("frame_fence", Impact.HIGH, b -> v.frameFence = b, () -> v.frameFence, "gl.GlCommandEncoderMixin"),
 								new Toggle("lazy_clear", Impact.LOW, b -> v.lazyClear = b, () -> v.lazyClear, "gl.GlCommandEncoderClearMixin"),
 								new Toggle("no_entity_sort", Impact.LOW, b -> v.noEntitySort = b, () -> v.noEntitySort, "gl.BufferSourceMixin"),
+								new Toggle("no_item_sort", Impact.MEDIUM, b -> v.noItemSort = b, () -> v.noItemSort, "gl.BufferSourceMixin"),
 								new Toggle("skin_atlas", Impact.MEDIUM, b -> v.skinAtlas = b, () -> v.skinAtlas, "entity.LivingEntityRendererSkinMixin"),
 								new Toggle("writer_cache", Impact.LOW, b -> v.writerCache = b, () -> v.writerCache, "gl.VertexConsumerUtilsMixin"),
 								new Toggle("fbo_share", Impact.LOW, b -> v.fboShare = b, () -> v.fboShare, "gl.GlCommandEncoderDepthClearMixin", "gl.GlTextureViewMixin"),
@@ -75,6 +76,7 @@ public class ZakoOptions {
 								new Toggle("ring_zero_copy", Impact.MEDIUM, b -> v.ringZeroCopy = b, () -> v.ringZeroCopy, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"))),
 						new Group("items", List.of(
 								new Toggle("item_lod", Impact.HIGH, b -> v.itemLod = b, () -> v.itemLod, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
+								new Toggle("item_single_copy", Impact.MEDIUM, b -> v.itemSingleCopy = b, () -> v.itemSingleCopy, "entity.ItemClusterRenderStateMixin"),
 								new Distance("item_lod_distance", 4, 48, i -> v.itemLodDistance = i, () -> v.itemLodDistance, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
 								new Toggle("entity_lod", Impact.HIGH, b -> v.entityLod = b, () -> v.entityLod, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Distance("entity_lod_distance", 8, 96, i -> v.entityLodDistance = i, () -> v.entityLodDistance, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
