@@ -13,6 +13,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	public static final boolean SODIUM = FabricLoader.getInstance().isModLoaded("sodium");
 	public static final boolean VULKAN = FabricLoader.getInstance().isModLoaded("vulkanmod");
 	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin");
+	// Sodium writes model cubes its own fast way; ours stand in where it is missing
+	private static final List<String> NO_SODIUM_MIXINS = List.of("entity.ModelPartFastMixin", "entity.ModelPartCubeMixin");
 	// the immediate ring lives in OpenGL buffers; VulkanMod draws without them and rewrites RenderType.draw
 	private static final List<String> RING_MIXINS = List.of("gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin", "gl.ByteBufferBuilderMixin", "gl.ByteBufferBuilderPoolMixin", "gl.RenderTypeDrawMixin");
 
@@ -33,16 +35,18 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	}
 
 	public static boolean applies(String mixin) {
-		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin));
+		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin));
 	}
 
+	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics
 	private static boolean openGl(String mixin) {
-		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin);
+		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin");
 	}
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		return !(VULKAN && openGl(mixinClassName.substring("zako.opt.mixin.".length())));
+		String mixin = mixinClassName.substring("zako.opt.mixin.".length());
+		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin));
 	}
 
 	@Override

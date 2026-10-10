@@ -68,6 +68,28 @@ public class Workers {
 			return error.get();
 		}
 
+		// the caller helps until items 0..count-1 are done; the stream stays open for more
+		public Throwable await(int count) {
+			ready = Math.max(ready, count);
+			while (completed.get() < count) {
+				int n = next.get();
+				if (n < count && next.compareAndSet(n, n + 1)) {
+					try {
+						if (error.get() == null) {
+							task.accept(n);
+						}
+					} catch (Throwable t) {
+						error.compareAndSet(null, t);
+					} finally {
+						completed.incrementAndGet();
+					}
+				} else {
+					Thread.onSpinWait();
+				}
+			}
+			return error.get();
+		}
+
 		void work() {
 			while (true) {
 				int n = next.get();

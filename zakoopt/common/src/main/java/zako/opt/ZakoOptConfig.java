@@ -56,6 +56,7 @@ public class ZakoOptConfig {
 	private boolean microOpts;
 	private boolean microOpts2;
 	private boolean microOpts3;
+	private boolean fastCubes;
 	private boolean tboCache;
 	private boolean itemBounds;
 	private boolean hudCache;
@@ -201,9 +202,10 @@ public class ZakoOptConfig {
 		microOpts = on("micro", values.microOpts);
 		microOpts2 = on("micro2", values.microOpts);
 		microOpts3 = on("micro3", values.microOpts);
+		fastCubes = on("fastcubes", true);
 		tboCache = on("tbo", values.microOpts);
 		itemBounds = on("itembounds", values.microOpts);
-		hudCache = on("hud", values.hudCache) && !FOREIGN_HUD;
+		hudCache = on("hud", values.hudCache) && !FOREIGN_HUD && !MixinPlugin.VULKAN;
 		skinAtlas = on("skinatlas", values.skinAtlas);
 		writerCache = on("writercache", values.writerCache);
 		signCache = on("signcache", values.signCache);
@@ -329,6 +331,10 @@ public class ZakoOptConfig {
 
 	public boolean microOpts3() {
 		return microOpts3;
+	}
+
+	public boolean fastCubes() {
+		return fastCubes;
 	}
 
 	public boolean tboCache() {
