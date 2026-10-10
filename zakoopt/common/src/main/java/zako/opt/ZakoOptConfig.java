@@ -20,7 +20,9 @@ public class ZakoOptConfig {
 	private final boolean IRIS = FabricLoader.getInstance().isModLoaded("iris");
 	// AxolotlClient draws its HUD straight to the screen, Exordium caches the HUD itself by swapping the main render target:
 	// with our HUD cache either one flickers
-	public final boolean FOREIGN_HUD = FabricLoader.getInstance().isModLoaded("axolotlclient") || FabricLoader.getInstance().isModLoaded("exordium");
+	// mods that cache or spread the HUD over frames themselves: two such layers wash the HUD out
+	public final boolean FOREIGN_HUD = FabricLoader.getInstance().isModLoaded("axolotlclient") || FabricLoader.getInstance().isModLoaded("exordium")
+			|| FabricLoader.getInstance().isModLoaded("gnetum");
 	private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public final boolean RING_PRESENT = ZakoOptConfig.class.getClassLoader().getResource("zako/opt/gl/ImmediateRing.class") != null && !MixinPlugin.VULKAN;
 	private final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("zakoopt.json");
