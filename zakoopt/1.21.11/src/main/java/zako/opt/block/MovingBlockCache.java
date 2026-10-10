@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import lombok.experimental.UtilityClass;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderLayerHelper;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -32,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import zako.opt.ZakoOptConfig;
+import zako.opt.gl.RawVertices;
 
 // piston-moved blocks: tesselate each BlockState once, then per frame only translate positions and set one light value
 @UtilityClass
@@ -112,7 +112,7 @@ public class MovingBlockCache {
 					MemoryUtil.memPutInt(v + uv2, light);
 				}
 			}
-			VertexBufferWriter.of(target).push(stack, dst, layer.count, format);
+			RawVertices.push(target, stack, dst, layer.count, format);
 		}
 	}
 }

@@ -22,7 +22,7 @@ public class ZakoOptConfig {
 	// with our HUD cache either one flickers
 	public final boolean FOREIGN_HUD = FabricLoader.getInstance().isModLoaded("axolotlclient") || FabricLoader.getInstance().isModLoaded("exordium");
 	private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	public final boolean RING_PRESENT = ZakoOptConfig.class.getClassLoader().getResource("zako/opt/gl/ImmediateRing.class") != null;
+	public final boolean RING_PRESENT = ZakoOptConfig.class.getClassLoader().getResource("zako/opt/gl/ImmediateRing.class") != null && !MixinPlugin.VULKAN;
 	private final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("zakoopt.json");
 	private final int CORES = Runtime.getRuntime().availableProcessors();
 
@@ -45,6 +45,7 @@ public class ZakoOptConfig {
 	private boolean particleLod;
 	private boolean parallelParticles;
 	private boolean parallelParticleVertices;
+	private boolean parallelModels;
 	private boolean spawnerCull;
 	private int spawnerDistance;
 	private boolean blockEntityCache;
@@ -184,6 +185,8 @@ public class ZakoOptConfig {
 		particleLod = on("particlelod", values.particleLod);
 		parallelParticles = resolveParallelParticles();
 		parallelParticleVertices = parallelParticles() && on("parallelvertices", true);
+		// Iris builds its extended entity attributes from the vertices it is handed one by one
+		parallelModels = parallelParticles() && on("parallelmodels", true) && !(IRIS && IrisApi.getInstance().isShaderPackInUse());
 		spawnerCull = on("spawner", values.spawnerCull);
 		spawnerDistance = num("spawner.distance", values.spawnerDistance);
 		blockEntityCache = on("becache", values.blockEntityCache);
@@ -282,6 +285,10 @@ public class ZakoOptConfig {
 
 	public boolean parallelParticleVertices() {
 		return parallelParticleVertices;
+	}
+
+	public boolean parallelModels() {
+		return parallelModels;
 	}
 
 	public boolean spawnerCull() {

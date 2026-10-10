@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.UtilityClass;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +15,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import zako.opt.ZakoOptConfig;
+import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class AnimFreeze {
 								 VertexConsumer target, Consumer<VertexConsumer> draw) {
 		float x = pose.m30(), y = pose.m31(), z = pose.m32();
 		float d = ZakoOptConfig.entityAnimDistance();
-		if (x * x + y * y + z * z <= d * d) {
+		if (x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
 			return false;
 		}
 		AnimHolder owner = (AnimHolder) entity;
@@ -128,7 +128,7 @@ public class AnimFreeze {
 			MemoryUtil.memPutFloat(v + 8, MemoryUtil.memGetFloat(v + 8) + dz);
 		}
 		try (MemoryStack stack = MemoryStack.stackPush()) {
-			VertexBufferWriter.of(target).push(stack, dst, capture.count, format);
+			RawVertices.push(target, stack, dst, capture.count, format);
 		}
 	}
 }

@@ -18,7 +18,7 @@ public class Workers {
 	});
 
 	// runs task(0..blocks-1) on helpers and the calling thread; returns the first failure, null if none
-	Throwable run(int blocks, IntConsumer task) {
+	public Throwable run(int blocks, IntConsumer task) {
 		Job job = new Job(blocks, task);
 		for (int h = Math.min(COUNT, blocks - 1); h > 0; h--) {
 			POOL.execute(job::run);
@@ -29,6 +29,69 @@ public class Workers {
 			Thread.onSpinWait();
 		}
 		return job.error.get();
+	}
+
+	// helpers start right away and take items as the caller publishes them, so work overlaps with preparing the rest
+	public Stream stream(IntConsumer task) {
+		Stream stream = new Stream(task);
+		for (int h = COUNT; h > 0; h--) {
+			POOL.execute(stream::work);
+		}
+		return stream;
+	}
+
+	public final class Stream {
+		final IntConsumer task;
+		final AtomicInteger next = new AtomicInteger();
+		final AtomicInteger completed = new AtomicInteger();
+		final AtomicReference<Throwable> error = new AtomicReference<>();
+		volatile int ready;
+		volatile int total = -1;
+
+		Stream(IntConsumer task) {
+			this.task = task;
+		}
+
+		// items 0..count-1 are fully set up and may be taken
+		public void publish(int count) {
+			ready = count;
+		}
+
+		// the caller helps with what is left and waits for the rest; returns the first failure, null if none
+		public Throwable finish(int count) {
+			ready = count;
+			total = count;
+			work();
+			while (completed.get() < count) {
+				Thread.onSpinWait();
+			}
+			return error.get();
+		}
+
+		void work() {
+			while (true) {
+				int n = next.get();
+				if (n < ready) {
+					if (next.compareAndSet(n, n + 1)) {
+						try {
+							if (error.get() == null) {
+								task.accept(n);
+							}
+						} catch (Throwable t) {
+							error.compareAndSet(null, t);
+						} finally {
+							completed.incrementAndGet();
+						}
+					}
+					continue;
+				}
+				int t = total;
+				if (t >= 0 && n >= t) {
+					return;
+				}
+				Thread.onSpinWait();
+			}
+		}
 	}
 
 	private final class Job {

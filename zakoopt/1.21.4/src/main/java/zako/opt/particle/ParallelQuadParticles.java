@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.experimental.UtilityClass;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
@@ -16,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import zako.opt.ZakoOptConfig;
+import zako.opt.gl.RawVertices;
 import zako.opt.mixin.particle.ParticleAccessor;
 
 import java.util.ArrayList;
@@ -39,8 +39,7 @@ public class ParallelQuadParticles {
 		if (n < MIN_PARTICLES || !ZakoOptConfig.parallelParticles()) {
 			return false;
 		}
-		VertexBufferWriter writer = VertexBufferWriter.tryOf(target);
-		if (writer == null) {
+		if (!RawVertices.accepts(target, format)) {
 			return false;
 		}
 		Particle[] arr = particles.toArray(scratch);
@@ -67,7 +66,7 @@ public class ParallelQuadParticles {
 					// build() also has to run after a failure: it releases the block's memory for the next frame
 					try (MeshData mesh = builder.build()) {
 						if (mesh != null && error == null) {
-							writer.push(stack, MemoryUtil.memAddress(mesh.vertexBuffer()), mesh.drawState().vertexCount(), format);
+							RawVertices.push(target, stack, MemoryUtil.memAddress(mesh.vertexBuffer()), mesh.drawState().vertexCount(), format);
 						}
 					}
 				}

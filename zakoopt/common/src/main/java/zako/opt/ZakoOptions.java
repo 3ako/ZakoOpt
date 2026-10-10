@@ -21,10 +21,10 @@ public class ZakoOptions {
 
 		String[] requires();
 
-		// an option is shown only if one of the mixins behind it is built for this Minecraft version
+		// an option is shown only if one of the mixins behind it is built for this Minecraft version and applied
 		default boolean available() {
 			return requires().length == 0 || Arrays.stream(requires())
-					.anyMatch(m -> ZakoOptions.class.getClassLoader().getResource("zako/opt/mixin/" + m.replace('.', '/') + ".class") != null);
+					.anyMatch(MixinPlugin::applies);
 		}
 	}
 

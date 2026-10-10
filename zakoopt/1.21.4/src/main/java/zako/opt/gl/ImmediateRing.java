@@ -82,6 +82,7 @@ public class ImmediateRing {
 			shader.setDefaultUniforms(state.mode(), RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
 			shader.apply();
 		}
+		DrawStats.draw();
 		GL32C.glDrawElementsBaseVertex(state.mode().asGLMode, state.indexCount(), indices.type().asGLType, 0, offset / stride);
 		if (shader != null) {
 			shader.clear();

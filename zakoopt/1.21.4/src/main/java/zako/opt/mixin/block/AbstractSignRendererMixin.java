@@ -3,19 +3,24 @@ package zako.opt.mixin.block;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import zako.opt.ZakoOptConfig;
+import zako.opt.text.StableText;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -59,5 +64,31 @@ public abstract class AbstractSignRendererMixin {
 		}
 		RenderType type = zakoopt$renderTypes.computeIfAbsent(material, m -> m.renderType(factory));
 		return zakoopt$sprites.computeIfAbsent(material, Material::sprite).wrap(buffers.getBuffer(type));
+	}
+
+	@Unique
+	private final Map<FormattedCharSequence, Integer> zakoopt$widths = new IdentityHashMap<>();
+
+	// a sign keeps its split lines until its text changes, so the text mesh cache may hold on to them
+	@ModifyArg(method = "renderSignText", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/SignText;getRenderMessages(ZLjava/util/function/Function;)[Lnet/minecraft/util/FormattedCharSequence;"), index = 1)
+	private Function<Component, FormattedCharSequence> zakoopt$stableLines(Function<Component, FormattedCharSequence> split) {
+		return ZakoOptConfig.preparedTextCache() ? component -> StableText.mark(split.apply(component)) : split;
+	}
+
+	@WrapOperation(method = "renderSignText", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Lnet/minecraft/util/FormattedCharSequence;)I"))
+	private int zakoopt$cachedWidth(Font font, FormattedCharSequence line, Operation<Integer> original) {
+		if (!ZakoOptConfig.preparedTextCache()) {
+			return original.call(font, line);
+		}
+		Integer width = zakoopt$widths.get(line);
+		if (width == null) {
+			// ponytail: wholesale clear instead of LRU, the visible signs refill it within a frame
+			if (zakoopt$widths.size() >= 4096) {
+				zakoopt$widths.clear();
+			}
+			width = original.call(font, line);
+			zakoopt$widths.put(line, width);
+		}
+		return width;
 	}
 }

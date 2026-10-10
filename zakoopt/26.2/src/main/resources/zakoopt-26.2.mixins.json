@@ -1,12 +1,15 @@
 {
 	"required": true,
 	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"block.BlockEntityRenderStateMixin",
 		"entity.ItemFeatureRendererMixin",
 		"entity.LevelRendererOutlineMixin",
+		"entity.ModelFeatureRendererInvoker",
 		"entity.ModelFeatureRendererMixin",
+		"entity.RenderTypeFeatureRendererInvoker",
 		"gl.FrameBufferCacheMixin",
 		"gl.GlBufferCloseMixin",
 		"gl.GlCommandEncoderDepthClearMixin",

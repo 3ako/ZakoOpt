@@ -1,8 +1,10 @@
 package zako.opt.mixin.gl;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.jtracy.MemoryPool;
 import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.system.MemoryUtil;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,6 +16,9 @@ import zako.opt.gl.RingBuilders;
 
 @Mixin(ByteBufferBuilder.class)
 public class ByteBufferBuilderMixin implements RingBuilders.Backed {
+	@Shadow
+	@Final
+	private static MemoryPool MEMORY_POOL;
 	@Shadow
 	long pointer;
 	@Shadow
@@ -30,6 +35,8 @@ public class ByteBufferBuilderMixin implements RingBuilders.Backed {
 
 	@Override
 	public void zakoopt$attach(RenderType type, long address, int size) {
+		// untrack before freeing: with --tracy the allocator may hand this address out again, and a still-tracked address aborts the capture
+		MEMORY_POOL.free(pointer);
 		MemoryUtil.getAllocator(false).free(pointer);
 		pointer = address;
 		capacity = size;

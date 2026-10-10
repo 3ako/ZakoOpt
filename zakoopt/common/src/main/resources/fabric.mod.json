@@ -18,8 +18,10 @@
 		"fabricloader": ">=0.16.0",
 		"minecraft": "${minecraft_range}",
 		"fabric-renderer-api-v1": "*",
-		"sodium": ">=${sodium_min}",
 		"immediatelyfast": "*"
+	},
+	"breaks": {
+		"sodium": "<${sodium_min}"
 	},
 	"entrypoints": {
 		"sodium:config_api_user": [

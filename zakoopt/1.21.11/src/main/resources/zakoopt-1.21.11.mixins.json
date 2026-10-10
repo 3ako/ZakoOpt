@@ -1,11 +1,14 @@
 {
 	"required": true,
 	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"block.AbstractSignRendererMixin",
 		"entity.LivingEntityRendererSkinMixin",
+		"entity.ModelFeatureRendererInvoker",
 		"entity.ModelFeatureRendererMixin",
+		"entity.ModelStorageAccessor",
 		"gl.BatchableBufferSourceMixin",
 		"gl.BufferSourceMixin",
 		"gl.ByteBufferBuilderMixin",

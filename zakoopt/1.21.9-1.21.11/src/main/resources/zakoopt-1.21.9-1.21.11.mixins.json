@@ -1,11 +1,11 @@
 {
 	"required": true,
 	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
-		"block.NonTerrainBlockRenderContextMixin",
 		"block.PistonHeadRendererMixin",
 		"block.SpawnerRendererMixin",
 		"entity.LevelRendererOutlineMixin",

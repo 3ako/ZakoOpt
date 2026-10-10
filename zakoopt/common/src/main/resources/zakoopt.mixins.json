@@ -1,6 +1,7 @@
 {
 	"required": true,
 	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"TitleScreenUpdateMixin",
@@ -11,8 +12,7 @@
 		"entity.EntityRenderStateEntityMixin",
 		"entity.EntityRendererNameMixin",
 		"entity.EntityRendererStateMixin",
-		"entity.SodiumEntityRendererMixin",
-		"gl.VertexConsumerUtilsMixin",
+		"gl.BufferBuilderRawMixin",
 		"particle.BubbleColumnUpParticleMixin",
 		"particle.ParticleAccessor",
 		"text.ClientLanguageMixin"

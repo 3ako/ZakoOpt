@@ -44,6 +44,20 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 
 		tasks.withType(JavaCompile).configureEach { it.options.release = java_release as int }
 
+		// -Piris: dev runs with Iris (no shader pack), remapped by Loom like the other mod dependencies
+		if (project.hasProperty('iris')) {
+			afterEvaluate {
+				dependencies.add(configurations.findByName('modLocalRuntime') ? 'modLocalRuntime' : 'localRuntime', "maven.modrinth:iris:${iris_version}")
+				// ImmediatelyFast's Iris compat needs its nested Reflect jar, which dev runs do not unpack
+				dependencies.add('runtimeOnly', "net.lenni0451:Reflect:1.6.2")
+			}
+		}
+
+		// -Pnosodium: dev runs without Sodium; compiling still needs it
+		if (project.hasProperty('nosodium')) {
+			configurations.matching { it.name.toLowerCase().contains('runtime') }.configureEach { exclude group: 'maven.modrinth', module: 'sodium' }
+		}
+
 		// dev runs: -Pworld=<save> joins a singleplayer world, -Pbench=<dir> enables zakobench's command loop, -Pjvm="..." adds JVM flags
 		afterEvaluate {
 			loom.runs.client {
