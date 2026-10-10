@@ -44,24 +44,27 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 
 		tasks.withType(JavaCompile).configureEach { it.options.release = java_release as int }
 
+		// the dev-run extras below go only to the module whose task was asked for: every module is configured on each run
+		def running = gradle.startParameter.taskNames.any { it.startsWith(":${project.name}:") }
+
 		// -Piris: dev runs with Iris (no shader pack), remapped by Loom like the other mod dependencies
-		if (project.hasProperty('iris')) {
+		if (project.hasProperty('iris') && running) {
 			afterEvaluate {
-				dependencies.add(configurations.findByName('modLocalRuntime') ? 'modLocalRuntime' : 'localRuntime', "maven.modrinth:iris:${iris_version}")
+				dependencies.add(plugins.hasPlugin('net.fabricmc.fabric-loom-remap') ? 'modLocalRuntime' : 'localRuntime', "maven.modrinth:iris:${iris_version}")
 				// ImmediatelyFast's Iris compat needs its nested Reflect jar, which dev runs do not unpack
 				dependencies.add('runtimeOnly', "net.lenni0451:Reflect:1.6.2")
 			}
 		}
 
 		// -Pmods=group:name:version,...: extra mods for dev runs, remapped by Loom
-		if (project.hasProperty('mods')) {
+		if (project.hasProperty('mods') && running) {
 			afterEvaluate {
-				project.mods.split(',').each { dependencies.add(configurations.findByName('modLocalRuntime') ? 'modLocalRuntime' : 'localRuntime', it.trim()) }
+				project.mods.split(',').each { dependencies.add(plugins.hasPlugin('net.fabricmc.fabric-loom-remap') ? 'modLocalRuntime' : 'localRuntime', it.trim()) }
 			}
 		}
 
 		// -Plibs=group:name:version[:classifier],...: plain libraries a dev-run mod would carry nested (dev runs do not unpack those)
-		if (project.hasProperty('libs')) {
+		if (project.hasProperty('libs') && running) {
 			project.libs.split(',').each { dependencies.add('runtimeOnly', it.trim()) }
 		}
 
