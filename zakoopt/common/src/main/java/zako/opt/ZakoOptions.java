@@ -64,6 +64,7 @@ public class ZakoOptions {
 				new Page("render", List.of(
 						new Group("render", List.of(
 								new Toggle("frame_fence", Impact.HIGH, b -> v.frameFence = b, () -> v.frameFence, "gl.GlCommandEncoderMixin"),
+								new Toggle("lunar_multidraw", Impact.HIGH, b -> v.lunarMultiDraw = b, () -> v.lunarMultiDraw, "gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin"),
 								new Toggle("lazy_clear", Impact.LOW, b -> v.lazyClear = b, () -> v.lazyClear, "gl.GlCommandEncoderClearMixin"),
 								new Toggle("no_entity_sort", Impact.LOW, b -> v.noEntitySort = b, () -> v.noEntitySort, "gl.BufferSourceMixin"),
 								new Toggle("no_item_sort", Impact.MEDIUM, b -> v.noItemSort = b, () -> v.noItemSort, "gl.BufferSourceMixin"),
@@ -78,6 +79,7 @@ public class ZakoOptions {
 								new Toggle("item_lod", Impact.HIGH, b -> v.itemLod = b, () -> v.itemLod, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
 								new Toggle("item_single_copy", Impact.MEDIUM, b -> v.itemSingleCopy = b, () -> v.itemSingleCopy, "entity.ItemClusterRenderStateMixin"),
 								new Distance("item_lod_distance", 4, 48, i -> v.itemLodDistance = i, () -> v.itemLodDistance, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
+								new Toggle("parallel_models", Impact.HIGH, b -> v.parallelModels = b, () -> v.parallelModels, "entity.ModelParallelMixin", "entity.ModelFeatureRendererMixin"),
 								new Toggle("entity_lod", Impact.HIGH, b -> v.entityLod = b, () -> v.entityLod, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Distance("entity_lod_distance", 8, 96, i -> v.entityLodDistance = i, () -> v.entityLodDistance, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Toggle("player_lod", Impact.MEDIUM, b -> v.playerLod = b, () -> v.playerLod, "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
@@ -92,6 +94,7 @@ public class ZakoOptions {
 								new Toggle("moving_block_flat_light", Impact.HIGH, b -> v.movingBlockFlatLight = b, () -> v.movingBlockFlatLight, "block.NonTerrainBlockRenderContextMixin"),
 								new Toggle("moving_block_cache", Impact.HIGH, b -> v.movingBlockCache = b, () -> v.movingBlockCache, "block.BlockFeatureRendererMixin", "block.PistonHeadRendererCacheMixin"),
 								new Toggle("block_entity_cache", Impact.LOW, b -> v.blockEntityCache = b, () -> v.blockEntityCache, "block.ChestRendererMixin"),
+								new Toggle("block_entity_early_cull", Impact.LOW, b -> v.blockEntityEarlyCull = b, () -> v.blockEntityEarlyCull, "block.BlockEntityRenderDispatcherCullMixin"),
 								new Toggle("sign_cache", Impact.LOW, b -> v.signCache = b, () -> v.signCache, "block.AbstractSignRendererMixin"),
 								new Toggle("lookup_caches", Impact.LOW, b -> v.lookupCaches = b, () -> v.lookupCaches, "gl.RenderTypesMixin", "block.PistonHeadRendererMixin"),
 								new Toggle("micro_opts", Impact.LOW, b -> v.microOpts = b, () -> v.microOpts))))),

@@ -14,7 +14,7 @@
 		"entity.LivingEntityLodMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"gl.GlCommandEncoderClearMixin",
-		"gl.GlCommandEncoderMixin",
+		"gl.LunarMultiDrawMixin",
 		"gl.MinecraftFrameMixin",
 		"gl.RenderTypesMixin",
 		"hud.GuiItemAtlasAccessor",

@@ -1,5 +1,6 @@
 package zako.opt.entity;
 
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -46,6 +47,15 @@ public class AnimFreeze {
 		ByteBuffer data;
 		int count;
 		float x, y, z;
+	}
+
+	// a far entity's parts all replay their once-per-tick capture here; any part built every frame elsewhere drifts off the frozen rest
+	public boolean freezes(Object state, Matrix4f pose) {
+		if (!ZakoOptConfig.entityAnimFreeze() || !(state instanceof EntityRenderState s) || ((StateEntity) s).zakoopt$entity() == null) {
+			return false;
+		}
+		float d = ZakoOptConfig.entityAnimDistance();
+		return pose.m30() * pose.m30() + pose.m31() * pose.m31() + pose.m32() * pose.m32() > d * d;
 	}
 
 	// false: not frozen, the caller renders as usual

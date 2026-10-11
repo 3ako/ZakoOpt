@@ -9,6 +9,7 @@ import zako.opt.gl.FrameFence;
 import zako.opt.gl.RealFence;
 
 @Mixin(targets = "com.mojang.blaze3d.opengl.GlCommandEncoder")
+// 26.1 still makes a GL sync per fence; from 26.2 vanilla shares one per submit and waits on it by submit index
 public class GlCommandEncoderMixin {
 	@Inject(method = "createFence", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$frameFence(CallbackInfoReturnable<GpuFence> cir) {

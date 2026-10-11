@@ -168,7 +168,10 @@ public class ParallelModels {
 		poses.pushPose();
 		poses.translate(p[o] / 16.0F, p[o + 1] / 16.0F, p[o + 2] / 16.0F);
 		if (p[o + 3] != 0.0F || p[o + 4] != 0.0F || p[o + 5] != 0.0F) {
-			poses.mulPose(new Quaternionf().rotationZYX(p[o + 5], p[o + 4], p[o + 3]));
+			// what PoseStack.mulPose (rotate on 26.3) does; spelled out because that method's name differs between versions
+			Quaternionf rotation = new Quaternionf().rotationZYX(p[o + 5], p[o + 4], p[o + 3]);
+			poses.last().pose().rotate(rotation);
+			poses.last().normal().rotate(rotation);
 		}
 		if (p[o + 6] != 1.0F || p[o + 7] != 1.0F || p[o + 8] != 1.0F) {
 			poses.scale(p[o + 6], p[o + 7], p[o + 8]);

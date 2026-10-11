@@ -25,11 +25,34 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 		version = "${rootProject.version}+${minecraft_version}"
 
 		def layers = layers.split(',')*.trim()
+		// renames.txt (old.Class=new.Class): the layers' Java is compiled from a copy with those classes renamed, and a file the
+		// module has itself at the same path replaces the layer's one
+		def renames = project.file('renames.txt')
 		sourceSets.main {
 			layers.each {
-				java.srcDir project(":${it}").file('src/main/java')
+				if (!renames.exists()) {
+					java.srcDir project(":${it}").file('src/main/java')
+				}
 				resources.srcDir project(":${it}").file('src/main/resources')
 			}
+		}
+		if (renames.exists()) {
+			def map = renames.readLines().findAll { it.contains('=') }.collectEntries { it.split('=', 2) as List }
+			def forms = map.collectMany { from, to -> [[from, to], [from.replace('.', '/'), to.replace('.', '/')]] }
+			def pattern = java.util.regex.Pattern.compile(forms.collect { java.util.regex.Pattern.quote(it[0]) }.sort { -it.length() }.join('|') + '(?![A-Za-z0-9_])')
+			def target = forms.collectEntries { it }
+			def ownRoot = project.file('src/main/java')
+			def rewrite = tasks.register('renameLayerSources', Sync) {
+				inputs.file renames
+				into layout.buildDirectory.dir('renamedLayers')
+				layers.each { layer ->
+					from(project(":${layer}").file('src/main/java')) {
+						exclude { !it.directory && new File(ownRoot, it.relativePath.pathString).exists() }
+					}
+				}
+				filter { String line -> pattern.matcher(line).replaceAll { m -> java.util.regex.Matcher.quoteReplacement(target[m.group()]) } }
+			}
+			sourceSets.main.java.srcDir(rewrite)
 		}
 		// every layer and the version module itself may bring a mixin config named zakoopt[-<name>].mixins.json
 		def mixinConfigs = (layers + [minecraft_version]).collect { it == 'common' ? 'zakoopt.mixins.json' : "zakoopt-${it}.mixins.json" }

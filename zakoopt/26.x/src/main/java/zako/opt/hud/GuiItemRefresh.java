@@ -10,7 +10,8 @@ public class GuiItemRefresh {
 
 	public void decide() {
 		long now = System.nanoTime();
-		refresh = !ZakoOptConfig.guiAnimatedItems() || now - last >= MonitorRate.intervalNs(now);
+		// the HUD cache already redraws at the monitor rate; throttling on top of it left enchanted hotbar items blank
+		refresh = !ZakoOptConfig.guiAnimatedItems() || HudCache.active() || now - last >= MonitorRate.intervalNs(now);
 		if (refresh) {
 			last = now;
 		}

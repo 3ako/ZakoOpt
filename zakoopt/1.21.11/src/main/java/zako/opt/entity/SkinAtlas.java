@@ -17,6 +17,7 @@ import net.minecraft.resources.Identifier;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.opengl.GL;
+import zako.opt.MixinPlugin;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -73,7 +74,8 @@ public class SkinAtlas {
 	// null = draw this skin the vanilla way (not loaded yet, odd size, atlas full of skins drawn this frame)
 	public TextureAtlasSprite sprite(Identifier skin) {
 		if (supported == null) {
-			supported = GL.getCapabilities().OpenGL43 || GL.getCapabilities().GL_ARB_copy_image;
+			// VulkanMod leaves no GL context on the render thread: asking GL for its capabilities throws
+			supported = !MixinPlugin.VULKAN && (GL.getCapabilities().OpenGL43 || GL.getCapabilities().GL_ARB_copy_image);
 		}
 		if (!supported) {
 			return null;

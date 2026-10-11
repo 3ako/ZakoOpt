@@ -22,9 +22,9 @@ import zako.opt.ZakoOptions;
 @Slf4j(topic = "zakoopt")
 public class UpdateCheck {
 	private final String REPO = "3ako/ZakoOpt";
+	private final URI DOWNLOAD = URI.create("https://www.curseforge.com/minecraft/mc-mods/zakoopt");
 	private boolean started;
 	private volatile String latest;
-	private volatile String url;
 	private boolean shown;
 
 	public void start() {
@@ -42,11 +42,11 @@ public class UpdateCheck {
 		shown = true;
 		UpdateUi.setScreen(new ConfirmLinkScreen(open -> {
 			if (open) {
-				UpdateUi.open(url);
+				UpdateUi.open(DOWNLOAD);
 			}
 			UpdateUi.setScreen(title);
 		}, Component.translatable("zakoopt.update.title", latest), Component.translatable("zakoopt.update.message", ZakoOptions.VERSION),
-				url, Component.translatable("zakoopt.update.later"), true));
+				DOWNLOAD, Component.translatable("zakoopt.update.later"), true));
 	}
 
 	private void fetch() {
@@ -65,7 +65,6 @@ public class UpdateCheck {
 					JsonObject release = JsonParser.parseString(response.body()).getAsJsonObject();
 					String tag = release.get("tag_name").getAsString();
 					if (Versions.newer(tag, ZakoOptions.VERSION)) {
-						url = release.get("html_url").getAsString();
 						latest = tag;
 					}
 				})

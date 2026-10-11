@@ -37,6 +37,8 @@ public class HudCache {
 	private final Vector4f CLEAR = new Vector4f(0, 0, 0, 0);
 
 	private TextureTarget target;
+	// the game's own main target, taken before the HUD: mods (Xaero's minimap) swap their own one in while they draw
+	private RenderTarget main;
 	private boolean active;
 	private boolean refresh;
 	private boolean drawing;
@@ -52,6 +54,7 @@ public class HudCache {
 		if (!active) {
 			return;
 		}
+		main = mc.gameRenderer.mainRenderTarget();
 		int w = mc.getWindow().getWidth(), h = mc.getWindow().getHeight();
 		refresh = !was || target == null || target.width != w || target.height != h || now - lastRefresh >= MonitorRate.intervalNs(now);
 		if (refresh) {
@@ -72,12 +75,12 @@ public class HudCache {
 		return active && !refresh;
 	}
 
-	public RenderTarget drawTarget() {
-		return drawing ? target : null;
+	public RenderTarget drawTarget(RenderTarget requested) {
+		return drawing && requested == main ? target : null;
 	}
 
 	public RenderTarget redirect(RenderTarget requested) {
-		return drawing && requested != target && requested == Minecraft.getInstance().gameRenderer.mainRenderTarget() ? target : null;
+		return drawing && requested != target && requested == main ? target : null;
 	}
 
 	// depth is cleared to 0: 26.x renders with reversed depth

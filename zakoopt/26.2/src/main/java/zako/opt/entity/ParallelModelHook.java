@@ -24,7 +24,7 @@ public class ParallelModelHook {
 		try {
 			for (ModelFeatureRenderer.Submit<?> s : submits) {
 				// block cracks go through a decal generator: those few go the vanilla way
-				JOBS.add(s.sheetedDecalPose() != null || s.renderType().format() != ParallelModels.FORMAT ? null
+				JOBS.add(s.sheetedDecalPose() != null || s.renderType().format() != ParallelModels.FORMAT || AnimFreeze.freezes(s.state(), s.pose().pose()) ? null
 						: ParallelModels.add(s.model(), s.state(), s.pose(), s.lightCoords(), s.overlayCoords(), s.tintedColor(), s.sprite()));
 			}
 		} finally {

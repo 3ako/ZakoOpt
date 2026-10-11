@@ -25,7 +25,8 @@ public class GuiRendererMixin {
 	@Inject(method = "prepareItemElements", at = @At("HEAD"))
 	private void zakoopt$decideRefresh(CallbackInfo ci) {
 		long now = System.nanoTime();
-		zakoopt$refreshAnimated = !ZakoOptConfig.guiAnimatedItems() || now - zakoopt$lastAnimatedRefresh >= MonitorRate.intervalNs(now);
+		// the HUD cache already redraws at the monitor rate; throttling on top of it left enchanted hotbar items blank
+		zakoopt$refreshAnimated = !ZakoOptConfig.guiAnimatedItems() || HudCache.active() || now - zakoopt$lastAnimatedRefresh >= MonitorRate.intervalNs(now);
 		if (zakoopt$refreshAnimated) {
 			zakoopt$lastAnimatedRefresh = now;
 		}
@@ -39,7 +40,8 @@ public class GuiRendererMixin {
 
 	@WrapOperation(method = "draw", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getMainRenderTarget()Lcom/mojang/blaze3d/pipeline/RenderTarget;"))
 	private RenderTarget zakoopt$hudTarget(Minecraft minecraft, Operation<RenderTarget> original) {
-		RenderTarget target = HudCache.drawTarget();
-		return target != null ? target : original.call(minecraft);
+		RenderTarget requested = original.call(minecraft);
+		RenderTarget target = HudCache.drawTarget(requested);
+		return target != null ? target : requested;
 	}
 }

@@ -1,5 +1,6 @@
 package zako.opt;
 
+import java.net.URI;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
@@ -16,7 +17,7 @@ import zako.opt.gl.RingAutoTune;
 @UtilityClass
 @Slf4j(topic = "zakoopt")
 public class ZakoOptConfig {
-	public final String CHANNEL = "https://t.me/StarikZako";
+	public final URI CHANNEL = URI.create("https://t.me/StarikZako");
 	private final boolean IRIS = FabricLoader.getInstance().isModLoaded("iris");
 	// AxolotlClient draws its HUD straight to the screen, Exordium caches the HUD itself by swapping the main render target:
 	// with our HUD cache either one flickers
@@ -53,6 +54,8 @@ public class ZakoOptConfig {
 	private boolean spawnerCull;
 	private int spawnerDistance;
 	private boolean blockEntityCache;
+	private boolean blockEntityEarlyCull;
+	private boolean lunarMultiDraw;
 	private boolean immediateRing;
 	private boolean movingBlockFlatLight;
 	private boolean movingBlockCache;
@@ -98,6 +101,7 @@ public class ZakoOptConfig {
 		public boolean particlePhysics = true;
 		public boolean particleLod = true;
 		public boolean parallelParticles = true;
+		public boolean parallelModels = true;
 		public boolean spawnerCull = true;
 		public int spawnerDistance = 16;
 		public boolean spawnerTickCache = true;
@@ -116,6 +120,8 @@ public class ZakoOptConfig {
 		public boolean immediateRing = true;
 		public boolean immediateRingForce = false;
 		public boolean blockEntityCache = true;
+		public boolean blockEntityEarlyCull = true;
+		public boolean lunarMultiDraw = true;
 		public boolean updateCheck = true;
 	}
 
@@ -197,10 +203,12 @@ public class ZakoOptConfig {
 		parallelParticles = resolveParallelParticles();
 		parallelParticleVertices = parallelParticles() && on("parallelvertices", true);
 		// Iris builds its extended entity attributes from the vertices it is handed one by one
-		parallelModels = parallelParticles() && on("parallelmodels", true) && !(IRIS && IrisApi.getInstance().isShaderPackInUse());
+		parallelModels = CORES >= 4 && on("parallelmodels", values.parallelModels) && !(IRIS && IrisApi.getInstance().isShaderPackInUse());
 		spawnerCull = on("spawner", values.spawnerCull);
 		spawnerDistance = num("spawner.distance", values.spawnerDistance);
 		blockEntityCache = on("becache", values.blockEntityCache);
+		blockEntityEarlyCull = on("becull", values.blockEntityEarlyCull);
+		lunarMultiDraw = on("lunarmultidraw", values.lunarMultiDraw);
 		boolean ringForced = System.getProperty("zakoopt.ring") != null || values.immediateRingForce;
 		if (values.immediateRing && !ringForced && RING_PRESENT) {
 			RingAutoTune.frame();
@@ -322,6 +330,14 @@ public class ZakoOptConfig {
 
 	public boolean blockEntityCache() {
 		return blockEntityCache;
+	}
+
+	public boolean blockEntityEarlyCull() {
+		return blockEntityEarlyCull;
+	}
+
+	public boolean lunarMultiDraw() {
+		return lunarMultiDraw;
 	}
 
 	public boolean immediateRing() {

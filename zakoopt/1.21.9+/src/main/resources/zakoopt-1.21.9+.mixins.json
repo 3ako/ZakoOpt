@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.BlockEntityRenderDispatcherCullMixin",
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",

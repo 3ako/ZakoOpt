@@ -13,7 +13,8 @@ import zako.opt.hud.HudCache;
 public class GuiRendererTargetMixin {
 	@WrapOperation(method = "draw", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;mainRenderTarget()Lcom/mojang/blaze3d/pipeline/RenderTarget;"))
 	private RenderTarget zakoopt$hudTarget(GameRenderer gameRenderer, Operation<RenderTarget> original) {
-		RenderTarget target = HudCache.drawTarget();
-		return target != null ? target : original.call(gameRenderer);
+		RenderTarget requested = original.call(gameRenderer);
+		RenderTarget target = HudCache.drawTarget(requested);
+		return target != null ? target : requested;
 	}
 }

@@ -34,6 +34,8 @@ public class HudCache {
 			.build();
 
 	private TextureTarget target;
+	// the game's own main target, taken before the HUD: mods (Xaero's minimap) swap their own one in while they draw
+	private RenderTarget main;
 	private boolean active;
 	private boolean refresh;
 	private boolean drawing;
@@ -49,6 +51,7 @@ public class HudCache {
 		if (!active) {
 			return;
 		}
+		main = mc.getMainRenderTarget();
 		int w = mc.getWindow().getWidth(), h = mc.getWindow().getHeight();
 		refresh = !was || target == null || target.width != w || target.height != h || now - lastRefresh >= MonitorRate.intervalNs(now);
 		if (refresh) {
@@ -69,15 +72,15 @@ public class HudCache {
 		return active && !refresh;
 	}
 
-	public RenderTarget drawTarget() {
-		return drawing ? target : null;
+	public RenderTarget drawTarget(RenderTarget requested) {
+		return drawing && requested == main ? target : null;
 	}
 
 	// picture-in-picture renderers (Xaero's minimap) render into their own texture and may read the real frame behind them
 	public boolean pipPrepare;
 
 	public RenderTarget redirect(RenderTarget requested) {
-		return drawing && !pipPrepare && requested != target && requested == Minecraft.getInstance().getMainRenderTarget() ? target : null;
+		return drawing && !pipPrepare && requested != target && requested == main ? target : null;
 	}
 
 	public void drawIntoTexture(Runnable draw) {

@@ -12,7 +12,11 @@ import java.util.Set;
 public class MixinPlugin implements IMixinConfigPlugin {
 	public static final boolean SODIUM = FabricLoader.getInstance().isModLoaded("sodium");
 	public static final boolean VULKAN = FabricLoader.getInstance().isModLoaded("vulkanmod");
-	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin");
+	// Lunar is no Fabric mod: its launcher class is the tell
+	public static final boolean LUNAR = MixinPlugin.class.getClassLoader().getResource("com/moonsworth/lunar/genesis/Genesis.class") != null;
+	private static final List<String> LUNAR_MIXINS = List.of("gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin");
+	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin",
+			"gl.LunarSodiumMultiDrawMixin");
 	// Sodium writes model cubes its own fast way; ours stands in where it is missing
 	private static final List<String> NO_SODIUM_MIXINS = List.of("entity.ModelPartFastMixin");
 	// the immediate ring lives in OpenGL buffers; VulkanMod draws without them and rewrites RenderType.draw
@@ -27,7 +31,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 			return null;
 		}
 		sodiumAdded = true;
-		return SODIUM_MIXINS.stream().filter(MixinPlugin::built).toList();
+		return SODIUM_MIXINS.stream().filter(m -> built(m) && (LUNAR || !LUNAR_MIXINS.contains(m))).toList();
 	}
 
 	public static boolean built(String mixin) {
@@ -35,7 +39,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	}
 
 	public static boolean applies(String mixin) {
-		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin));
+		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin))
+				&& (LUNAR || !LUNAR_MIXINS.contains(mixin));
 	}
 
 	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics
@@ -46,7 +51,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 		String mixin = mixinClassName.substring("zako.opt.mixin.".length());
-		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin));
+		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && (LUNAR || !LUNAR_MIXINS.contains(mixin));
 	}
 
 	@Override

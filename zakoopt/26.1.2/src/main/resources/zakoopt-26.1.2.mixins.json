@@ -15,6 +15,7 @@
 		"gl.BufferSourceMixin",
 		"gl.GlBufferCloseMixin",
 		"gl.GlCommandEncoderDepthClearMixin",
+		"gl.GlCommandEncoderMixin",
 		"gl.GlCommandEncoderTexBufferMixin",
 		"gl.GlTextureFboMixin",
 		"gl.GlTextureViewMixin",

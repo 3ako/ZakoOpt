@@ -12,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import zako.opt.ZakoOptConfig;
+import zako.opt.block.BlockEntityDistance;
 import zako.opt.block.CachedValidity;
 
 @Mixin(BlockEntityRenderDispatcher.class)
@@ -30,17 +31,8 @@ public class BlockEntityRenderDispatcherMixin {
 		return cache.zakoopt$valid();
 	}
 
-	// distance check per block entity per frame; a tick late at the edge of view distance is invisible
 	@WrapOperation(method = "tryExtractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderer;shouldRender(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/phys/Vec3;)Z"))
 	private boolean zakoopt$cachedDistance(BlockEntityRenderer<BlockEntity, ?> renderer, BlockEntity blockEntity, Vec3 camera, Operation<Boolean> original) {
-		if (!ZakoOptConfig.microOpts3() || blockEntity.getLevel() == null) {
-			return original.call(renderer, blockEntity, camera);
-		}
-		CachedValidity cache = (CachedValidity) blockEntity;
-		long tick = blockEntity.getLevel().getGameTime();
-		if (cache.zakoopt$distanceTick() != tick) {
-			cache.zakoopt$setInDistance(original.call(renderer, blockEntity, camera), tick);
-		}
-		return cache.zakoopt$inDistance();
+		return BlockEntityDistance.inDistance(blockEntity, () -> original.call(renderer, blockEntity, camera));
 	}
 }
