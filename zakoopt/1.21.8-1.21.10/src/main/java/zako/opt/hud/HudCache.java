@@ -49,7 +49,7 @@ public class HudCache {
 		Minecraft mc = Minecraft.getInstance();
 		boolean was = active;
 		long now = System.nanoTime();
-		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && ZakoOptConfig.hudCache() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
+		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && ZakoOptConfig.hudCache() && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
 		if (!active) {
 			return;
 		}
@@ -75,7 +75,17 @@ public class HudCache {
 	}
 
 	public RenderTarget drawTarget(RenderTarget requested) {
-		return drawing && requested == main ? target : null;
+		if (!drawing) {
+			return null;
+		}
+		if (requested == main) {
+			return target;
+		}
+		// Xaero's minimap draws into its own small target; a window-sized one is the main target swapped by another mod
+		if (requested != target && requested.width == main.width && requested.height == main.height) {
+			HudWorth.mainSwapped();
+		}
+		return null;
 	}
 
 	// picture-in-picture renderers (Xaero's minimap) render into their own texture and may read the real frame behind them

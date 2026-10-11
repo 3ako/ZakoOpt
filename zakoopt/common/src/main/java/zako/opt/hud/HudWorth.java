@@ -2,10 +2,12 @@ package zako.opt.hud;
 
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 // the HUD cache only saves work when several frames share one HUD refresh; near one frame per refresh it redraws the HUD
 // anyway and just adds a full-screen clear and blend, which costs real FPS on integrated GPUs and 60 Hz monitors
 @UtilityClass
+@Slf4j(topic = "zakoopt")
 public class HudWorth {
 	private final double OFF_BELOW = 1.5;
 	private final double ON_ABOVE = 2.0;
@@ -13,6 +15,8 @@ public class HudWorth {
 	private long last;
 	@Getter
 	private boolean worth = true;
+	@Getter
+	private boolean mainSwapped;
 
 	public boolean update(long now, long refreshNs) {
 		long dt = now - last;
@@ -25,5 +29,14 @@ public class HudWorth {
 			worth = !worth;
 		}
 		return worth;
+	}
+
+	// another mod draws the HUD into a window-sized target of its own instead of the game's main one: the HUD texture would stay
+	// empty and the HUD would blink at the monitor rate, so the cache stays off for the session
+	public void mainSwapped() {
+		if (!mainSwapped) {
+			mainSwapped = true;
+			log.warn("HUD cache turned off: another mod swaps the main render target while the HUD draws");
+		}
 	}
 }
