@@ -57,8 +57,16 @@ public class MovingBlockCache {
 			}
 			Entry entry = CACHE.get(state.blockState);
 			if (entry == null || entry.model != model) {
+				if (entry != null) {
+					entry.layers.forEach(layer -> MemoryUtil.memFree(layer.vertices));
+				}
 				entry = capture(state, model, dispatcher);
 				CACHE.put(state.blockState, entry);
+			}
+			for (Layer layer : entry.layers) {
+				if (!RawVertices.accepts(buffers.getBuffer(layer.type), layer.type.format())) {
+					return false;
+				}
 			}
 			int light = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, state, state.blockState, state.blockPos);
 			for (Layer layer : entry.layers) {

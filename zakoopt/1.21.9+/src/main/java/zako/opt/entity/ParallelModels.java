@@ -62,12 +62,13 @@ public class ParallelModels {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public Job add(Model model, Object state, PoseStack.Pose pose, int light, int overlay, int color, TextureAtlasSprite sprite) {
 		model.setupAnim(state);
-		Flat flat = FLATS.computeIfAbsent(model.root(), Flat::new);
+		ModelPart root = model.root();
+		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
 		int n = flat.parts.length;
 		Job job = new Job(flat, pose, light, overlay, Integer.reverseBytes(Integer.rotateLeft(color, 8)), sprite, new float[n * FIELDS], new byte[n]);
 		int vertices = 0;
 		for (int i = 0; i < n; i++) {
-			ModelPart p = flat.parts[i];
+			ModelPart p = i == 0 ? root : flat.parts[i];
 			int o = i * FIELDS;
 			job.pose[o] = p.x;
 			job.pose[o + 1] = p.y;
@@ -328,6 +329,7 @@ public class ParallelModels {
 				}
 				empty[i] = cubes[i].length == 0 && acc.zakoopt$children().isEmpty();
 			}
+			parts[0] = null;
 		}
 
 		private void add(ModelPart part, List<ModelPart> list, List<Integer> ends) {

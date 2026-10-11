@@ -57,6 +57,7 @@ public class ParallelModels {
 				cubes.add(p.zakoopt$cubes());
 				empty[i] = p.zakoopt$cubes().isEmpty() && p.zakoopt$children().isEmpty();
 			}
+			parts[0] = null;
 		}
 
 		private void collect(ModelPart part, List<ModelPart> list, List<Integer> ends) {
@@ -128,11 +129,12 @@ public class ParallelModels {
 		if (stream == null || !(consumer instanceof ReserveBuffer buffer) || !buffer.zakoopt$accepts(FastCubes.FORMAT) || !RenderSystem.isOnRenderThread()) {
 			return false;
 		}
-		Flat flat = FLATS.computeIfAbsent(model.root(), Flat::new);
+		ModelPart root = model.root();
+		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
 		Job job = new Job(flat, buffer, poseStack.last().copy(), light, overlay, FastCubes.abgr(color));
 		int vertices = 0;
 		for (int i = 0; i < flat.parts.length; i++) {
-			ModelPart p = flat.parts[i];
+			ModelPart p = i == 0 ? root : flat.parts[i];
 			int o = i * FIELDS;
 			job.parts[o] = p.x;
 			job.parts[o + 1] = p.y;
