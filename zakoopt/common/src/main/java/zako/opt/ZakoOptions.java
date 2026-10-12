@@ -2,17 +2,24 @@ package zako.opt;
 
 import lombok.experimental.UtilityClass;
 import net.fabricmc.loader.api.FabricLoader;
+import zako.opt.feature.Feature;
+import zako.opt.feature.FeatureGroup;
+import zako.opt.feature.Features;
+import zako.opt.feature.Impact;
+import zako.opt.feature.Range;
+import zako.opt.feature.Setting;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+// the options screens' view of the features: groups of switches and sliders, built from the feature registry
 @UtilityClass
 public class ZakoOptions {
 	public final String VERSION = FabricLoader.getInstance().getModContainer("zakoopt").orElseThrow().getMetadata().getVersion().getFriendlyString();
-
-	public enum Impact { LOW, MEDIUM, HIGH }
 
 	public sealed interface Option permits Toggle, Distance {
 		String key();
@@ -32,77 +39,44 @@ public class ZakoOptions {
 	public record Distance(String key, int min, int max, Consumer<Integer> set, Supplier<Integer> get, String... requires) implements Option {
 	}
 
-	public record Group(String key, List<Option> options) {
+	public record Group(FeatureGroup type, List<Option> options) {
+		public String key() {
+			return type.key();
+		}
+
 		public List<Option> available() {
 			return options.stream().filter(Option::available).toList();
 		}
 	}
 
-	public record Page(String key, List<Group> groups) {
+	public final List<Group> GROUPS = Arrays.stream(FeatureGroup.values()).map(ZakoOptions::group).toList();
+
+	// a feature's switch, then its own settings right under it
+	private Group group(FeatureGroup group) {
+		List<Option> options = new ArrayList<>();
+		for (Feature f : Features.all()) {
+			if (f.data().group() != group) {
+				continue;
+			}
+			String[] requires = f.data().mixins();
+			options.add(new Toggle(f.key(), f.data().impact(), b -> f.value = b, () -> f.value, requires));
+			for (Field s : f.settings()) {
+				options.add(setting(f, s, requires));
+			}
+		}
+		return new Group(group, options);
 	}
 
-	public final List<Page> PAGES = pages(ZakoOptConfig.values);
-	private List<Toggle> toggles(List<Page> pages) {
-		return pages.stream().flatMap(p -> p.groups().stream()).flatMap(g -> g.options().stream())
-				.filter(Toggle.class::isInstance).map(Toggle.class::cast).toList();
-	}
-
-	private List<Page> pages(ZakoOptConfig.Values v) {
-		return List.of(
-				new Page("render", List.of(
-						new Group("render", List.of(
-								new Toggle("core_pin", Impact.HIGH, b -> v.corePin = b, () -> v.corePin),
-								new Toggle("frame_fence", Impact.HIGH, b -> v.frameFence = b, () -> v.frameFence, "gl.GlCommandEncoderMixin"),
-								new Toggle("lunar_multidraw", Impact.HIGH, b -> v.lunarMultiDraw = b, () -> v.lunarMultiDraw, "gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin"),
-								new Toggle("lazy_clear", Impact.LOW, b -> v.lazyClear = b, () -> v.lazyClear, "gl.GlCommandEncoderClearMixin"),
-								new Toggle("no_entity_sort", Impact.LOW, b -> v.noEntitySort = b, () -> v.noEntitySort, "gl.BufferSourceMixin"),
-								new Toggle("no_item_sort", Impact.MEDIUM, b -> v.noItemSort = b, () -> v.noItemSort, "gl.BufferSourceMixin"),
-								new Toggle("skin_atlas", Impact.MEDIUM, b -> v.skinAtlas = b, () -> v.skinAtlas, "entity.LivingEntityRendererSkinMixin"),
-								new Toggle("writer_cache", Impact.LOW, b -> v.writerCache = b, () -> v.writerCache, "gl.VertexConsumerUtilsMixin"),
-								new Toggle("fbo_share", Impact.LOW, b -> v.fboShare = b, () -> v.fboShare, "gl.GlCommandEncoderDepthClearMixin", "gl.GlTextureViewMixin"),
-								new Toggle("outline_skip", Impact.LOW, b -> v.outlineSkip = b, () -> v.outlineSkip, "entity.LevelRendererOutlineMixin"),
-								new Toggle("display_cull", Impact.MEDIUM, b -> v.displayCull = b, () -> v.displayCull, "entity.DisplayCullMixin"),
-								new Toggle("immediate_ring", Impact.MEDIUM, b -> v.immediateRing = b, () -> v.immediateRing, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
-								new Toggle("immediate_ring_force", Impact.MEDIUM, b -> v.immediateRingForce = b, () -> v.immediateRingForce, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
-								new Toggle("ring_zero_copy", Impact.MEDIUM, b -> v.ringZeroCopy = b, () -> v.ringZeroCopy, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"))),
-						new Group("items", List.of(
-								new Toggle("item_lod", Impact.HIGH, b -> v.itemLod = b, () -> v.itemLod, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
-								new Toggle("item_single_copy", Impact.MEDIUM, b -> v.itemSingleCopy = b, () -> v.itemSingleCopy, "entity.ItemClusterRenderStateMixin"),
-								new Toggle("resting_items", Impact.MEDIUM, b -> v.restingItems = b, () -> v.restingItems, "entity.ItemEntityRestMixin"),
-								new Distance("item_lod_distance", 4, 48, i -> v.itemLodDistance = i, () -> v.itemLodDistance, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
-								new Toggle("parallel_models", Impact.HIGH, b -> v.parallelModels = b, () -> v.parallelModels, "entity.ModelParallelMixin", "entity.ModelFeatureRendererMixin"),
-								new Toggle("state_pool", Impact.MEDIUM, b -> v.statePool = b, () -> v.statePool, "entity.EntityRenderStatePoolMixin"),
-								new Toggle("entity_lod", Impact.HIGH, b -> v.entityLod = b, () -> v.entityLod, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
-								new Distance("entity_lod_distance", 8, 96, i -> v.entityLodDistance = i, () -> v.entityLodDistance, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
-								new Toggle("player_lod", Impact.MEDIUM, b -> v.playerLod = b, () -> v.playerLod, "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
-								new Distance("player_lod_distance", 8, 96, i -> v.playerLodDistance = i, () -> v.playerLodDistance, "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
-								new Toggle("entity_anim_freeze", Impact.HIGH, b -> v.entityAnimFreeze = b, () -> v.entityAnimFreeze, "entity.ModelFeatureRendererMixin", "entity.LivingEntityAnimFreezeMixin"),
-								new Distance("entity_anim_distance", 4, 96, i -> v.entityAnimDistance = i, () -> v.entityAnimDistance, "entity.ModelFeatureRendererMixin", "entity.LivingEntityAnimFreezeMixin"))),
-						new Group("spawners", List.of(
-								new Toggle("spawner_cull", Impact.HIGH, b -> v.spawnerCull = b, () -> v.spawnerCull, "block.SpawnerRendererMixin"),
-								new Distance("spawner_distance", 4, 64, i -> v.spawnerDistance = i, () -> v.spawnerDistance, "block.SpawnerRendererMixin"),
-								new Toggle("spawner_tick_cache", Impact.MEDIUM, b -> v.spawnerTickCache = b, () -> v.spawnerTickCache, "block.SpawnerRendererMixin"),
-								new Toggle("spawner_replay", Impact.MEDIUM, b -> v.spawnerReplay = b, () -> v.spawnerReplay, "block.SpawnerRendererMixin"))),
-						new Group("blocks", List.of(
-								new Toggle("moving_block_flat_light", Impact.HIGH, b -> v.movingBlockFlatLight = b, () -> v.movingBlockFlatLight, "block.NonTerrainBlockRenderContextMixin"),
-								new Toggle("moving_block_cache", Impact.HIGH, b -> v.movingBlockCache = b, () -> v.movingBlockCache, "block.BlockFeatureRendererMixin", "block.PistonHeadRendererCacheMixin"),
-								new Toggle("block_entity_cache", Impact.LOW, b -> v.blockEntityCache = b, () -> v.blockEntityCache, "block.ChestRendererMixin"),
-								new Toggle("block_entity_early_cull", Impact.LOW, b -> v.blockEntityEarlyCull = b, () -> v.blockEntityEarlyCull, "block.BlockEntityRenderDispatcherCullMixin"),
-								new Toggle("sign_cache", Impact.LOW, b -> v.signCache = b, () -> v.signCache, "block.AbstractSignRendererMixin"),
-								new Toggle("lookup_caches", Impact.LOW, b -> v.lookupCaches = b, () -> v.lookupCaches, "gl.RenderTypesMixin", "block.PistonHeadRendererMixin"),
-								new Toggle("micro_opts", Impact.LOW, b -> v.microOpts = b, () -> v.microOpts))))),
-				new Page("particles", List.of(
-						new Group("particles", List.of(
-								new Toggle("particle_light", Impact.MEDIUM, b -> v.particleLight = b, () -> v.particleLight, "particle.ParticleMixin"),
-								new Toggle("particle_physics", Impact.HIGH, b -> v.particlePhysics = b, () -> v.particlePhysics, "particle.ParticleMixin"),
-								new Toggle("particle_lod", Impact.MEDIUM, b -> v.particleLod = b, () -> v.particleLod, "particle.QuadParticleGroupMixin", "particle.ParticleEngineLodMixin"),
-								new Toggle("parallel_particles", Impact.HIGH, b -> v.parallelParticles = b, () -> v.parallelParticles, "particle.QuadParticleGroupMixin", "particle.ParticleEngineParallelMixin"))))),
-				new Page("interface", List.of(
-						new Group("interface", List.of(
-								new Toggle("hud_cache", Impact.HIGH, b -> v.hudCache = b, () -> v.hudCache, "hud.GuiRendererMixin", "hud.GuiRendererTargetMixin", "hud.GuiHudMixin"),
-								new Toggle("gui_animated_items", Impact.MEDIUM, b -> v.guiAnimatedItems = b, () -> v.guiAnimatedItems, "hud.GuiRendererMixin", "hud.GuiItemAtlasMixin"),
-								new Toggle("bidi_cache", Impact.LOW, b -> v.bidiCache = b, () -> v.bidiCache, "text.ClientLanguageMixin"),
-								new Toggle("prepared_text_cache", Impact.MEDIUM, b -> v.preparedTextCache = b, () -> v.preparedTextCache, "text.FontMixin"),
-								new Toggle("update_check", Impact.LOW, b -> v.updateCheck = b, () -> v.updateCheck))))));
+	// a new setting type gets its screen element here and its JSON form in Features.read / write
+	private Option setting(Feature f, Field s, String[] requires) {
+		String key = s.getAnnotation(Setting.class).key();
+		if (s.getType() == boolean.class) {
+			return new Toggle(key, f.data().impact(), b -> f.set(s, b), () -> (Boolean) f.get(s), requires);
+		}
+		Range range = s.getAnnotation(Range.class);
+		if (s.getType() == int.class && range != null) {
+			return new Distance(key, range.min(), range.max(), i -> f.set(s, i), () -> (Integer) f.get(s), requires);
+		}
+		throw new IllegalStateException("Setting " + key + ": a " + s.getType().getSimpleName() + " field" + (s.getType() == int.class ? " needs @Range" : " is not supported"));
 	}
 }

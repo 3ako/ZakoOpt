@@ -1,9 +1,10 @@
 package zako.opt.particle;
 
+import zako.opt.feature.Features;
+
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.world.phys.Vec3;
-import zako.opt.ZakoOptConfig;
 
 @UtilityClass
 public class ParticleLod {
@@ -11,7 +12,7 @@ public class ParticleLod {
 	public long tick = -1;
 
 	public boolean keep(SingleQuadParticle particle, double x, double y, double z, Vec3 cam) {
-		if (!ZakoOptConfig.particleLod()) {
+		if (!Features.PARTICLE_LOD.on) {
 			return true;
 		}
 		double dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;

@@ -1,11 +1,12 @@
 package zako.opt.text;
 
+import zako.opt.feature.Features;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
-import zako.opt.ZakoOptConfig;
 
 import java.util.Collections;
 import java.util.Set;
@@ -26,7 +27,7 @@ public final class StableText implements FormattedCharSequence {
 	}
 
 	public static boolean isStable(FormattedCharSequence text) {
-		if (ZakoOptConfig.microOpts2()) {
+		if (Features.MICRO_OPTS.stableResults) {
 			return text instanceof StableText;
 		}
 		synchronized (STABLE) {

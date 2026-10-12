@@ -1,5 +1,7 @@
 package zako.opt.entity;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -18,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 import zako.opt.mixin.entity.ModelPartAccessor;
 import zako.opt.particle.Workers;
@@ -47,7 +48,7 @@ public class ParallelModels {
 	private Workers.Stream stream;
 
 	public boolean enabled() {
-		return ZakoOptConfig.parallelModels() && !ZakoOptConfig.entityAnimFreeze();
+		return Features.PARALLEL_MODELS.on && !Features.ENTITY_ANIM_FREEZE.on;
 	}
 
 	public void begin() {

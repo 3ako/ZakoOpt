@@ -3,32 +3,22 @@ package zako.opt.bench;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.network.chat.Component;
+import zako.opt.Canvas;
+import zako.opt.Panel;
 import zako.opt.ZakoOptions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 // a look-versus-speed setting the player picks by eye over the scene, with the live frame rate above the controls
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class PickScreen extends BenchScreen {
+public class PickScreen extends Panel {
 	List<ZakoOptions.Option> options;
 	String hint;
 	CompletableFuture<Void> done;
 	@NonFinal
 	boolean touched;
-	@NonFinal
-	MultiLineTextWidget text;
-	@NonFinal
-	StringWidget fps;
-	@NonFinal
-	int ticks;
 
 	public PickScreen(List<ZakoOptions.Option> options, String hint, CompletableFuture<Void> done) {
 		super(Component.translatable(hint));
@@ -38,64 +28,36 @@ public class PickScreen extends BenchScreen {
 	}
 
 	@Override
-	protected void init() {
-		text = addRenderableWidget(new MultiLineTextWidget(Component.translatable(hint + ".hint"), font).setMaxWidth(Math.min(300, width - 40)).setCentered(true));
-		text.setPosition(width / 2 - text.getWidth() / 2, height / 2 - text.getHeight() / 2 - 20);
-		text.visible = !touched;
-		int y = height - 56 - options.size() * 24;
-		fps = addRenderableWidget(new StringWidget(Component.empty(), font));
-		fps.setY(y - 16);
-		for (ZakoOptions.Option option : options) {
-			addRenderableWidget(widget(option).createButton(minecraft.options, width / 2 - 100, y, 200));
-			y += 24;
-		}
-		addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose()).bounds(width / 2 - 50, y, 100, 20).build());
-		updateFps();
+	protected boolean overScene() {
+		return true;
 	}
 
-	private OptionInstance<?> widget(ZakoOptions.Option option) {
-		String key = "zakoopt.option." + option.key();
-		return switch (option) {
-			case ZakoOptions.Toggle t -> OptionInstance.createBoolean(key, t.get().get(), b -> {
-				t.set().accept(b);
-				touch();
-			});
-			case ZakoOptions.Distance d -> new OptionInstance<>(key, OptionInstance.noTooltip(),
-					(caption, i) -> Options.genericValueLabel(caption, Component.translatable("zakoopt.blocks", i)),
-					new OptionInstance.IntRange(d.min(), d.max()), d.get().get(), i -> {
-				d.set().accept(i);
-				touch();
-			});
-		};
-	}
-
-	private void touch() {
+	@Override
+	protected void changed() {
 		touched = true;
-		text.visible = false;
 	}
 
 	@Override
-	public void tick() {
-		if (++ticks % 10 == 0) {
-			updateFps();
+	protected void paint(Canvas c) {
+		if (!touched) {
+			Component text = Component.translatable(hint + ".hint");
+			int tw = Math.min(300, width - 40), th = lineCount(text, tw) * 10;
+			int tx = width / 2 - tw / 2, ty = height / 2 - th / 2 - 20;
+			frame(c, tx - 8, ty - 6, tx + tw + 8, ty + th + 4);
+			lines(c, text, tx, ty, tw, TEXT);
 		}
-	}
-
-	private void updateFps() {
-		Component message = Component.literal(Math.round(Bench.recentFps()) + " FPS");
-		fps.setMessage(message);
-		fps.setWidth(font.width(message));
-		fps.setX(width / 2 - fps.getWidth() / 2);
-	}
-
-	@Override
-	protected List<int[]> rects() {
-		List<int[]> rects = new ArrayList<>();
-		if (text.visible) {
-			rects.add(new int[]{text.getX() - 8, text.getY() - 6, text.getX() + text.getWidth() + 8, text.getY() + text.getHeight() + 6, 0xB0000000});
+		int w = Math.min(300, width - 16), x0 = width / 2 - w / 2, x1 = x0 + w;
+		int h = 8 + 12 + 12 + options.size() * 16 + 4 + BUTTON_HEIGHT + 8, y0 = height - 8 - h;
+		frame(c, x0, y0, x1, y0 + h);
+		c.text(firstLine(title, w - 16), x0 + 8, y0 + 8, STRONG);
+		c.text(Component.literal(Math.round(Bench.recentFps()) + " FPS"), x0 + 8, y0 + 20, MUTED);
+		int y = y0 + 34;
+		for (ZakoOptions.Option option : options) {
+			setting(c, option, x0 + 8, x1 - 8, y);
+			y += 16;
 		}
-		rects.add(new int[]{fps.getX() - 4, fps.getY() - 3, fps.getX() + fps.getWidth() + 4, fps.getY() + 11, 0xB0000000});
-		return rects;
+		Component close = Component.translatable("gui.done");
+		button(c, x0 + w / 2 - 40, y + 2, 80, close, BUTTON, BUTTON_FRAME, true, this::onClose);
 	}
 
 	@Override

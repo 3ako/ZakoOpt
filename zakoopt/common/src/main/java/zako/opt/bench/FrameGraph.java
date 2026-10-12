@@ -1,6 +1,7 @@
 package zako.opt.bench;
 
 import lombok.experimental.UtilityClass;
+import zako.opt.Panel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import java.util.List;
 public class FrameGraph {
 	public List<int[]> rects(int x, int bottom, int width, int height) {
 		List<int[]> rects = new ArrayList<>();
-		rects.add(new int[]{x, bottom - height, x + width, bottom, 0x40FFFFFF});
+		rects.add(new int[]{x, bottom - height, x + width, bottom, Panel.LINE});
 		long[] frames = Bench.lastFrames(width);
 		if (frames.length == 0) {
 			return rects;
@@ -23,7 +24,7 @@ public class FrameGraph {
 			double ratio = frames[i] / median;
 			int h = (int) Math.max(1, Math.min(height, ratio / 3 * height));
 			int column = x + width - frames.length + i;
-			rects.add(new int[]{column, bottom - h, column + 1, bottom, ratio >= 2.5 ? 0xFFFF5555 : ratio >= 1.5 ? 0xFFFFFF55 : 0xFF55FF55});
+			rects.add(new int[]{column, bottom - h, column + 1, bottom, ratio >= 2.5 ? Panel.BLOCKED : ratio >= 1.5 ? Panel.PIP : Panel.ACCENT});
 		}
 		return rects;
 	}

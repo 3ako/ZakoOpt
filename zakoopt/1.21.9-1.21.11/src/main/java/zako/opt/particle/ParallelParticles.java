@@ -1,5 +1,7 @@
 package zako.opt.particle;
 
+import zako.opt.feature.Features;
+
 import lombok.experimental.UtilityClass;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -14,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import zako.opt.ZakoOptConfig;
 import zako.opt.mixin.particle.ParticleAccessor;
 import zako.opt.mixin.particle.QuadParticleRenderStateAccessor;
 import zako.opt.mixin.particle.QuadParticleStorageInvoker;
@@ -27,7 +28,7 @@ public class ParallelParticles {
 	private SingleQuadParticle[] scratch = new SingleQuadParticle[0];
 
 	private boolean enabled() {
-		return ZakoOptConfig.parallelParticles();
+		return Features.PARALLEL_PARTICLES.on;
 	}
 
 	// false = let the vanilla single-threaded loop run

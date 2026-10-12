@@ -1,12 +1,13 @@
 package zako.opt.gl;
 
+import zako.opt.feature.Features;
+
 import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.buffers.GpuFence;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import zako.opt.ZakoOptConfig;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,7 +19,7 @@ public final class FrameFence implements GpuFence {
 	boolean closed;
 
 	public static boolean enabled() {
-		return ZakoOptConfig.frameFence();
+		return Features.FRAME_FENCE.on;
 	}
 
 	public static GpuFence create() {

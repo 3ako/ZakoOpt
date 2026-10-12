@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
@@ -8,7 +10,6 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public abstract class AbstractSignRendererMixin {
 
 	@WrapOperation(method = "submitSign", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/AbstractSignRenderer;getSignSprite(Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/client/resources/model/sprite/SpriteId;"))
 	private SpriteId zakoopt$sprite(AbstractSignRenderer<?> renderer, WoodType wood, Operation<SpriteId> original) {
-		if (!ZakoOptConfig.signCache()) {
+		if (!Features.SIGN_CACHE.on) {
 			return original.call(renderer, wood);
 		}
 		return zakoopt$sprites.computeIfAbsent(wood, w -> original.call(renderer, w));

@@ -1,5 +1,7 @@
 package zako.opt.mixin.hud;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.hud.HudCache;
 import zako.opt.hud.MonitorRate;
 
@@ -26,7 +27,7 @@ public class GuiRendererMixin {
 	private void zakoopt$decideRefresh(CallbackInfo ci) {
 		long now = System.nanoTime();
 		// the HUD cache already redraws at the monitor rate; throttling on top of it left enchanted hotbar items blank
-		zakoopt$refreshAnimated = !ZakoOptConfig.guiAnimatedItems() || HudCache.active() || now - zakoopt$lastAnimatedRefresh >= MonitorRate.intervalNs(now);
+		zakoopt$refreshAnimated = !Features.GUI_ANIMATED_ITEMS.on || HudCache.active() || now - zakoopt$lastAnimatedRefresh >= MonitorRate.intervalNs(now);
 		if (zakoopt$refreshAnimated) {
 			zakoopt$lastAnimatedRefresh = now;
 		}

@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.world.entity.Entity;
@@ -9,7 +11,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import zako.opt.ZakoOptConfig;
 import zako.opt.entity.CachedRenderer;
 
 import java.util.Map;
@@ -25,14 +26,14 @@ public abstract class EntityRendererLookupMixin {
 	@Inject(method = "getRenderer(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/client/renderer/entity/EntityRenderer;", at = @At("HEAD"), cancellable = true)
 	@SuppressWarnings("unchecked")
 	private void zakoopt$cached(Entity entity, CallbackInfoReturnable<EntityRenderer<?, ?>> cir) {
-		if (ZakoOptConfig.lookupCaches() && ((CachedRenderer) entity).zakoopt$rendererMap() == renderers) {
+		if (Features.LOOKUP_CACHES.on && ((CachedRenderer) entity).zakoopt$rendererMap() == renderers) {
 			cir.setReturnValue((EntityRenderer<?, ?>) ((CachedRenderer) entity).zakoopt$renderer());
 		}
 	}
 
 	@Inject(method = "getRenderer(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/client/renderer/entity/EntityRenderer;", at = @At("RETURN"))
 	private void zakoopt$keep(Entity entity, CallbackInfoReturnable<EntityRenderer<?, ?>> cir) {
-		if (ZakoOptConfig.lookupCaches() && renderers.get(entity.getType()) == cir.getReturnValue()) {
+		if (Features.LOOKUP_CACHES.on && renderers.get(entity.getType()) == cir.getReturnValue()) {
 			((CachedRenderer) entity).zakoopt$setRenderer(cir.getReturnValue(), renderers);
 		}
 	}

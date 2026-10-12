@@ -1,5 +1,7 @@
 package zako.opt.mixin.gl;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.opengl.DirectStateAccess;
 import com.mojang.blaze3d.opengl.GlTextureView;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -7,7 +9,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(GlTextureView.class)
 public class GlTextureViewMixin {
@@ -16,7 +17,7 @@ public class GlTextureViewMixin {
 	@Inject(method = "getFbo", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$shareTextureFbo(DirectStateAccess dsa, GpuTexture depth, CallbackInfoReturnable<Integer> cir) {
 		GlTextureView view = (GlTextureView) (Object) this;
-		if (view.baseMipLevel() == 0 && ZakoOptConfig.fboShare()) {
+		if (view.baseMipLevel() == 0 && Features.FBO_SHARE.on) {
 			cir.setReturnValue(view.texture().getFbo(dsa, depth));
 		}
 	}

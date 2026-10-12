@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -10,7 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererOutlineMixin {
@@ -29,7 +30,7 @@ public class LevelRendererOutlineMixin {
 	// vanilla clears the outline target every frame; without glowing entities it is already clear from the last frame
 	@WrapOperation(method = "method_62214", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;clear()V"))
 	private void zakoopt$clearOutline(RenderTarget target, Operation<Void> original) {
-		if (zakoopt$glowing || zakoopt$outlineDirty || !ZakoOptConfig.outlineSkip()) {
+		if (zakoopt$glowing || zakoopt$outlineDirty || !Features.OUTLINE_SKIP.on) {
 			original.call(target);
 		}
 		zakoopt$outlineDirty = zakoopt$glowing;
@@ -38,7 +39,7 @@ public class LevelRendererOutlineMixin {
 	// ...and blends that empty target over the frame
 	@Inject(method = "doEntityOutline", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$skipEmptyOutline(CallbackInfo ci) {
-		if (!zakoopt$glowing && ZakoOptConfig.outlineSkip()) {
+		if (!zakoopt$glowing && Features.OUTLINE_SKIP.on) {
 			ci.cancel();
 		}
 	}

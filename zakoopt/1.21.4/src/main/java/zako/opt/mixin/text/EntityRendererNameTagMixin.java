@@ -1,5 +1,7 @@
 package zako.opt.mixin.text;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.Font;
@@ -9,7 +11,6 @@ import net.minecraft.network.chat.FormattedText;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class EntityRendererNameTagMixin {
 
 	@WrapOperation(method = "renderNameTag", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Lnet/minecraft/network/chat/FormattedText;)I"))
 	private int zakoopt$cachedWidth(Font font, FormattedText text, Operation<Integer> original) {
-		if (!(text instanceof Component component) || !ZakoOptConfig.preparedTextCache()) {
+		if (!(text instanceof Component component) || !Features.PREPARED_TEXT_CACHE.on) {
 			return original.call(font, text);
 		}
 		Integer width = zakoopt$widths.get(component);
@@ -41,7 +42,7 @@ public class EntityRendererNameTagMixin {
 
 	@WrapOperation(method = "renderNameTag", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;"))
 	private String zakoopt$cachedString(Component component, Operation<String> original) {
-		if (!ZakoOptConfig.preparedTextCache()) {
+		if (!Features.PREPARED_TEXT_CACHE.on) {
 			return original.call(component);
 		}
 		String string = zakoopt$strings.get(component);

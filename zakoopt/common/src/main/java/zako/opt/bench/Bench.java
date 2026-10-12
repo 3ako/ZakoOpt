@@ -4,19 +4,21 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import zako.opt.Blocked;
+import zako.opt.ConfirmPanel;
 import zako.opt.ZakoOptConfig;
 import zako.opt.ZakoOptions;
+import zako.opt.feature.Features;
 import zako.opt.update.UpdateUi;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +36,6 @@ public class Bench {
 	private final int SEGMENT_MS = 1500;
 	private final double MIN_GAIN = 0.03;
 	// switches whose worth depends on the device and that leave the picture as it is; LODs and the like stay the player's call
-	private final List<Test> TESTS = List.of(new Test("lunar_multidraw", "terrain"), new Test("immediate_ring", "overview"), new Test("ring_zero_copy", "overview"), new Test("frame_fence", "overview"),
-			new Test("lazy_clear", "overview"), new Test("fbo_share", "overview"), new Test("hud_cache", "overview"),
-			new Test("micro_opts", "overview"), new Test("lookup_caches", "overview"), new Test("parallel_models", "crowd"), new Test("no_entity_sort", "crowd"),
-			new Test("writer_cache", "crowd"), new Test("outline_skip", "crowd"), new Test("display_cull", "crowd"), new Test("state_pool", "crowd"), new Test("core_pin", "crowd"), new Test("no_item_sort", "items"), new Test("resting_items", "items"), new Test("block_entity_cache", "blocks"),
-			new Test("block_entity_early_cull", "blocks"), new Test("sign_cache", "blocks"), new Test("spawner_tick_cache", "blocks"), new Test("spawner_replay", "blocks"), new Test("moving_block_cache", "pistons"),
-			new Test("prepared_text_cache", "holograms"), new Test("bidi_cache", "holograms"), new Test("parallel_particles", "holograms"));
 	private final long[] FRAME_NS = new long[1 << 16];
 	private volatile int frames;
 	private long lastFrame;
@@ -73,6 +69,10 @@ public class Bench {
 	}
 
 	public void frame(long now) {
+		if (running) {
+			// the player keeps off the input for the whole test, and after a minute of that the game caps itself at 30 FPS
+			Minecraft.getInstance().getFramerateLimitTracker().onInputReceived();
+		}
 		if (running && lastFrame != 0) {
 			FRAME_NS[frames & FRAME_NS.length - 1] = now - lastFrame;
 			frames++;
@@ -81,7 +81,7 @@ public class Bench {
 	}
 
 	public void confirm(Screen parent) {
-		UpdateUi.setScreen(new ConfirmScreen(yes -> {
+		UpdateUi.setScreen(new ConfirmPanel(yes -> {
 			if (yes) {
 				start(parent);
 			} else {
@@ -89,6 +89,17 @@ public class Bench {
 			}
 		}, Component.translatable("zakoopt.bench.title"), Component.translatable("zakoopt.bench.intro"),
 				Component.translatable("zakoopt.bench.start"), Component.translatable("gui.cancel")));
+	}
+
+	public void welcome(Screen parent) {
+		UpdateUi.setScreen(new ConfirmPanel(yes -> {
+			if (yes) {
+				start(parent);
+			} else {
+				UpdateUi.setScreen(parent);
+			}
+		}, Component.translatable("zakoopt.welcome.title"), Component.translatable("zakoopt.welcome"),
+				Component.translatable("zakoopt.welcome.start"), Component.translatable("zakoopt.welcome.later")));
 	}
 
 	private void start(Screen parent) {
@@ -99,7 +110,8 @@ public class Bench {
 		Minecraft mc = Minecraft.getInstance();
 		boolean pause = mc.options.pauseOnLostFocus;
 		mc.options.pauseOnLostFocus = false;
-		ZakoOptConfig.Values saved = copy(ZakoOptConfig.values, new ZakoOptConfig.Values());
+		Map<String, Object> saved = Features.snapshot();
+		boolean wasEnabled = ZakoOptConfig.enabled;
 		Thread thread = new Thread(() -> {
 			Result result = null;
 			try {
@@ -116,7 +128,8 @@ public class Bench {
 					}
 					delete(mc);
 					mc.options.pauseOnLostFocus = pause;
-					copy(saved, ZakoOptConfig.values);
+					Features.restore(saved);
+					ZakoOptConfig.enabled = wasEnabled;
 					UpdateUi.setScreen(shown == null ? parent : report(shown, parent));
 					log.info("Benchmark finished");
 					return null;
@@ -128,7 +141,7 @@ public class Bench {
 		thread.start();
 	}
 
-	private Result run(Minecraft mc, Screen parent, ZakoOptConfig.Values saved) {
+	private Result run(Minecraft mc, Screen parent, Map<String, Object> saved) {
 		main(mc, () -> {
 			delete(mc);
 			mc.createWorldOpenFlows().createFreshLevel(WORLD, BenchWorld.settings(WORLD), new WorldOptions(7L, false, false),
@@ -148,12 +161,14 @@ public class Bench {
 			UpdateUi.setScreen(new ProgressScreen());
 			return null;
 		});
-		List<Test> tests = TESTS.stream().filter(t -> toggle(t.key()) != null).toList();
+		// views in the order the camera visits them; within a view, the registry's order (the ring before its zero-copy)
+		List<Test> tests = Features.all().stream().filter(f -> f.data().bench() != BenchView.NONE && toggle(f.key()) != null)
+				.sorted(Comparator.comparing(f -> f.data().bench())).map(f -> new Test(f.key(), f.data().bench().key())).toList();
 		// measured from the defaults; the ring is held where it is set so its own auto-tune does not flip it mid-measurement
-		ZakoOptConfig.Values defaults = new ZakoOptConfig.Values();
 		main(mc, () -> {
-			copy(defaults, ZakoOptConfig.values);
-			ZakoOptConfig.values.immediateRingForce = true;
+			Features.restore(Features.defaults());
+			ZakoOptConfig.enabled = true;
+			Features.IMMEDIATE_RING.force = true;
 			return null;
 		});
 
@@ -170,7 +185,7 @@ public class Bench {
 		double base = fps(mc, 3000);
 		double target = Math.max(Math.min(base / 2, 144), 30);
 		log.info("Benchmark: empty scene {} fps, target {}", Math.round(base), Math.round(target));
-		// frame time grows a bit faster than linearly with load: probe, extrapolate to 80% of the target, jump at most x3 at a time
+		// frame time grows a bit faster than linearly with load: probe, extrapolate to 80% of the target, jump at most x2 at a time
 		double t0 = 1000 / base, targetMs = 1000 / target;
 		int level = 0, next = 2, step = 0;
 		double fps = base;
@@ -191,7 +206,7 @@ public class Bench {
 				break;
 			}
 			double k = Math.max((t - t0) / level, 1e-6);
-			next = Math.min(Scene.LEVELS, Math.min(3 * level, Math.max(level + 1, (int) Math.round(0.8 * (targetMs - t0) / k))));
+			next = Math.min(Scene.LEVELS, Math.min(2 * level, Math.max(level + 1, (int) Math.round(0.8 * (targetMs - t0) / k))));
 		}
 
 		// one switch at a time on the view it shows on, on-off-off-on so a drifting frame rate cancels out; a switch goes off only
@@ -202,7 +217,7 @@ public class Bench {
 		for (int i = 0; i < tests.size(); i++) {
 			Test test = tests.get(i);
 			ZakoOptions.Toggle toggle = toggle(test.key());
-			if (test.key().equals("ring_zero_copy") && !ZakoOptConfig.values.immediateRing) {
+			if (test.key().equals("ring_zero_copy") && !Features.IMMEDIATE_RING.value) {
 				continue;
 			}
 			if (!test.view().equals(view)) {
@@ -251,6 +266,16 @@ public class Bench {
 			});
 		}
 
+		// the far leaves pick has no switch measured with it, so it gets its own stop, with the forest planted there first
+		if (option("far_leaves") != null) {
+			Scene.View forest = Scene.FOREST;
+			server(mc, tp(forest));
+			sleep(2000);
+			server(mc, Scene.forest());
+			sleep(3000);
+			pick(mc, saved, List.of("far_leaves", "far_leaves_distance"), forest, "zakoopt.bench.forest", picks);
+		}
+
 		server(mc, tp(o));
 		sleep(2000);
 		server(mc, tp(o));
@@ -272,7 +297,7 @@ public class Bench {
 	}
 
 	// starts from the player's own values; false when none of the settings exists on this version
-	private boolean pick(Minecraft mc, ZakoOptConfig.Values saved, List<String> keys, Scene.View at, String hint, Map<String, Object> picks) {
+	private boolean pick(Minecraft mc, Map<String, Object> saved, List<String> keys, Scene.View at, String hint, Map<String, Object> picks) {
 		List<ZakoOptions.Option> options = keys.stream().map(Bench::option).filter(o -> o != null && Blocked.reason(o.key()) == null).toList();
 		if (options.isEmpty()) {
 			return false;
@@ -295,12 +320,7 @@ public class Bench {
 		}
 		CompletableFuture<Void> done = new CompletableFuture<>();
 		main(mc, () -> {
-			ZakoOptConfig.Values now = copy(ZakoOptConfig.values, new ZakoOptConfig.Values());
-			copy(saved, ZakoOptConfig.values);
-			Map<String, Object> start = new LinkedHashMap<>();
-			options.forEach(o -> start.put(o.key(), value(o)));
-			copy(now, ZakoOptConfig.values);
-			options.forEach(o -> set(o, start.get(o.key())));
+			options.forEach(o -> set(o, saved.get(o.key())));
 			UpdateUi.setScreen(new PickScreen(options, hint, done));
 			return null;
 		});
@@ -395,7 +415,7 @@ public class Bench {
 
 	private double master(Minecraft mc, boolean on) {
 		main(mc, () -> {
-			ZakoOptConfig.values.enabled = on;
+			ZakoOptConfig.enabled = on;
 			return null;
 		});
 		sleep(SETTLE_MS);
@@ -422,24 +442,14 @@ public class Bench {
 	}
 
 	private ZakoOptions.Option option(String key) {
-		for (ZakoOptions.Page page : ZakoOptions.PAGES) {
-			for (ZakoOptions.Group group : page.groups()) {
-				for (ZakoOptions.Option option : group.available()) {
-					if (option.key().equals(key)) {
-						return option;
-					}
+		for (ZakoOptions.Group group : ZakoOptions.GROUPS) {
+			for (ZakoOptions.Option option : group.available()) {
+				if (option.key().equals(key)) {
+					return option;
 				}
 			}
 		}
 		return null;
-	}
-
-	@SneakyThrows(IllegalAccessException.class)
-	private ZakoOptConfig.Values copy(ZakoOptConfig.Values from, ZakoOptConfig.Values to) {
-		for (Field f : ZakoOptConfig.Values.class.getFields()) {
-			f.set(to, f.get(from));
-		}
-		return to;
 	}
 
 	// the perch is set again on every move: one placed with the scene could be gone by the time the camera gets there
@@ -492,13 +502,21 @@ public class Bench {
 
 	// from the median frame time: a GC pause or a chunk upload is one long frame and barely moves it
 	private double fps(Minecraft mc, int ms) {
+		return fps(mc, ms, 5);
+	}
+
+	// a window with no frame at all is the server freezing the game while it builds the scene, not a frame rate
+	private double fps(Minecraft mc, int ms, int tries) {
 		waitWhile(mc::isPaused);
 		int start = frames;
 		sleep(ms);
 		if (mc.isPaused()) {
-			return fps(mc, ms);
+			return fps(mc, ms, tries);
 		}
 		int n = Math.min(frames - start, FRAME_NS.length);
+		if (n < 3 && tries > 1) {
+			return fps(mc, ms, tries - 1);
+		}
 		long[] times = new long[n];
 		for (int i = 0; i < n; i++) {
 			times[i] = FRAME_NS[frames - n + i & FRAME_NS.length - 1];

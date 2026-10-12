@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -13,7 +15,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.MovingBlockCache;
 
 @Mixin(PistonHeadRenderer.class)
@@ -25,7 +26,7 @@ public class PistonHeadRendererCacheMixin {
 	@Inject(method = "renderBlock", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$cached(BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource buffers, Level level, boolean checkSides, int overlay,
 								CallbackInfo ci) {
-		if (ZakoOptConfig.movingBlockCache() && MovingBlockCache.render(blockRenderer, pos, state, poseStack, buffers, level, checkSides, overlay)) {
+		if (Features.MOVING_BLOCK_CACHE.on && MovingBlockCache.render(blockRenderer, pos, state, poseStack, buffers, level, checkSides, overlay)) {
 			ci.cancel();
 		}
 	}

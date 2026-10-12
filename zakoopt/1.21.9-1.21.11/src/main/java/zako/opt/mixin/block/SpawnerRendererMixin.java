@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,7 +19,6 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.SpawnerCache;
 import zako.opt.block.SpawnerReplay;
 
@@ -29,8 +30,8 @@ public class SpawnerRendererMixin {
 											  Operation<Void> original, SpawnerBlockEntity spawner, SpawnerRenderState state2, float f, Vec3 camera,
 											  ModelFeatureRenderer.CrumblingOverlay crumbling) {
 		double distSq = Vec3.atCenterOf(spawner.getBlockPos()).distanceToSqr(camera);
-		if (ZakoOptConfig.spawnerCull()) {
-			double d = ZakoOptConfig.spawnerDistance();
+		if (Features.SPAWNER_CULL.on) {
+			double d = Features.SPAWNER_CULL.distance;
 			if (distSq > d * d) {
 				state.displayEntity = null;
 				return;
@@ -56,7 +57,7 @@ public class SpawnerRendererMixin {
 				}
 			}
 		}
-		if (ZakoOptConfig.spawnerReplay() && distSq > SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
+		if (Features.SPAWNER_REPLAY.on && distSq > SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
 			// far spawners turn once per tick so SpawnerReplay can reuse the whole tick's submits
 			state.spin = (float) spin * 10.0F;
 		}
@@ -67,7 +68,7 @@ public class SpawnerRendererMixin {
 	private void zakoopt$replayFar(PoseStack pose, SubmitNodeCollector collector, EntityRenderState entity, EntityRenderDispatcher dispatcher, float spin, float scale,
 								   CameraRenderState camera, Operation<Void> original, SpawnerRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
-		if (!ZakoOptConfig.spawnerReplay() || !SpawnerCache.enabled() || mc.level == null
+		if (!Features.SPAWNER_REPLAY.on || !SpawnerCache.enabled() || mc.level == null
 				|| Vec3.atCenterOf(state.blockPos).distanceToSqr(camera.pos) <= SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
 			original.call(pose, collector, entity, dispatcher, spin, scale, camera);
 			return;

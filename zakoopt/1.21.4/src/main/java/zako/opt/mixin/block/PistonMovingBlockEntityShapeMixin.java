@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.core.BlockPos;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.PistonShape;
 
 @Mixin(PistonMovingBlockEntity.class)
@@ -29,7 +30,7 @@ public class PistonMovingBlockEntityShapeMixin {
 	// changes with the progress, which moves once a tick
 	@WrapMethod(method = "getCollisionShape")
 	private VoxelShape zakoopt$cachedShape(BlockGetter level, BlockPos pos, Operation<VoxelShape> original) {
-		if (!ZakoOptConfig.microOpts3()) {
+		if (!Features.MICRO_OPTS.fewerChecks) {
 			return original.call(level, pos);
 		}
 		Direction noclip = NOCLIP.get();

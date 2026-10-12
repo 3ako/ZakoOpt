@@ -1,28 +1,14 @@
 package zako.opt.bench;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.network.chat.Component;
-
-import java.util.ArrayList;
-import java.util.List;
+import zako.opt.Canvas;
+import zako.opt.DebugToggle;
+import zako.opt.Panel;
 
 // what the benchmark is doing, how far along and how the frames go, in a panel at the left over the scene; Esc cancels
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProgressScreen extends BenchScreen {
+public class ProgressScreen extends Panel {
 	static final int WIDTH = 300;
 	static final int GRAPH = 32;
-	@NonFinal
-	StringWidget stage;
-	@NonFinal
-	StringWidget fps;
-	@NonFinal
-	int x;
-	@NonFinal
-	int y;
 
 	public ProgressScreen() {
 		super(Component.translatable("zakoopt.bench.title"));
@@ -42,44 +28,28 @@ public class ProgressScreen extends BenchScreen {
 	}
 
 	@Override
-	protected void init() {
-		x = 8;
-		y = height / 2 - 49;
-		stage = line(y + 8, Component.empty());
-		fps = line(y + 36 + GRAPH, Component.empty());
-		line(y + 50 + GRAPH, hint().copy().withStyle(ChatFormatting.GRAY));
-		tick();
-	}
-
-	// sized to its text, so it reads from the left edge in every version
-	private StringWidget line(int lineY, Component text) {
-		StringWidget widget = addRenderableWidget(new StringWidget(text, font));
-		widget.setPosition(x + 8, lineY);
-		return widget;
-	}
-
-	private void set(StringWidget widget, Component text) {
-		widget.setMessage(text);
-		widget.setWidth(Math.min(font.width(text), WIDTH - 16));
+	protected boolean overScene() {
+		return true;
 	}
 
 	@Override
-	public void tick() {
-		set(stage, stage());
-		set(fps, Component.literal(FrameGraph.fps()));
-	}
-
-	@Override
-	protected List<int[]> rects() {
-		int barX = x + 8, barY = y + 22, barW = WIDTH - 16;
-		List<int[]> rects = new ArrayList<>();
-		rects.add(new int[]{x, y, x + WIDTH, y + 66 + GRAPH, 0xB0000000});
-		if (percent() >= 0) {
-			rects.add(new int[]{barX, barY, barX + barW, barY + 5, 0xFF404040});
-			rects.add(new int[]{barX, barY, barX + barW * Math.min(percent(), 100) / 100, barY + 5, 0xFF55FF55});
+	protected void paint(Canvas c) {
+		// F3 sits where the panel is and shows the frame rate itself
+		if (DebugToggle.visible()) {
+			return;
 		}
-		rects.addAll(FrameGraph.rects(barX, y + 30 + GRAPH, barW, GRAPH));
-		return rects;
+		int w = Math.min(WIDTH, width - 16), x = 8, y = height / 2 - 49, inner = w - 16;
+		frame(c, x, y, x + w, y + 66 + GRAPH);
+		c.text(firstLine(stage(), inner), x + 8, y + 8, STRONG);
+		if (percent() >= 0) {
+			c.fill(x + 8, y + 22, x + 8 + inner, y + 27, OFF);
+			c.fill(x + 8, y + 22, x + 8 + inner * Math.min(percent(), 100) / 100, y + 27, ACCENT);
+		}
+		for (int[] r : FrameGraph.rects(x + 8, y + 30 + GRAPH, inner, GRAPH)) {
+			c.fill(r[0], r[1], r[2], r[3], r[4]);
+		}
+		c.text(Component.literal(FrameGraph.fps()), x + 8, y + 36 + GRAPH, TEXT);
+		c.text(firstLine(hint(), inner), x + 8, y + 50 + GRAPH, MUTED);
 	}
 
 	protected void closed() {

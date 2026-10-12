@@ -1,5 +1,7 @@
 package zako.opt.mixin.particle;
 
+import zako.opt.feature.Features;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.BaseAshSmokeParticle;
@@ -15,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(Particle.class)
 public class ParticleMixin {
@@ -42,7 +43,7 @@ public class ParticleMixin {
 	// vanilla reads the non-interpolated x/y/z, which only change in tick(), so the value is constant within a tick
 	@Inject(method = "getLightColor", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$cachedLight(float partialTick, CallbackInfoReturnable<Integer> cir) {
-		if (zakoopt$lightTick == level.getGameTime() && ZakoOptConfig.particleLight()) {
+		if (zakoopt$lightTick == level.getGameTime() && Features.PARTICLE_LIGHT.on) {
 			cir.setReturnValue(zakoopt$light);
 		}
 	}
@@ -56,7 +57,7 @@ public class ParticleMixin {
 	@Inject(method = "move", at = @At("HEAD"))
 	private void zakoopt$cheapPhysics(double dx, double dy, double dz, CallbackInfo ci) {
 		zakoopt$physicsBefore = hasPhysics;
-		if (hasPhysics && ZakoOptConfig.particlePhysics() && zakoopt$skipCollision()) {
+		if (hasPhysics && Features.PARTICLE_PHYSICS.on && zakoopt$skipCollision()) {
 			hasPhysics = false;
 		}
 	}

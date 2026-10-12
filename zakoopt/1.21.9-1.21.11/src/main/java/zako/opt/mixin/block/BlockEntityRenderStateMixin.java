@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -10,7 +12,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.CachedLight;
 
 @Mixin(BlockEntityRenderState.class)
@@ -19,7 +20,7 @@ public class BlockEntityRenderStateMixin {
 	@WrapOperation(method = "extractBase", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;getLightColor(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;)I"))
 	private static int zakoopt$cachedLight(BlockAndTintGetter level, BlockPos pos, Operation<Integer> original,
 										   BlockEntity blockEntity, BlockEntityRenderState state, ModelFeatureRenderer.CrumblingOverlay crumbling) {
-		if (!ZakoOptConfig.lookupCaches() || !(level instanceof Level world)) {
+		if (!Features.LOOKUP_CACHES.on || !(level instanceof Level world)) {
 			return original.call(level, pos);
 		}
 		CachedLight cache = (CachedLight) blockEntity;

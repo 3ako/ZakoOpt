@@ -1,5 +1,7 @@
 package zako.opt.entity;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -15,7 +17,6 @@ import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
@@ -52,7 +53,7 @@ public class AnimFreeze {
 	public boolean render(Entity entity, Object model, RenderType type, TextureAtlasSprite sprite, Matrix4f pose,
 								 VertexConsumer target, Consumer<VertexConsumer> draw) {
 		float x = pose.m30(), y = pose.m31(), z = pose.m32();
-		float d = ZakoOptConfig.entityAnimDistance();
+		float d = Features.ENTITY_ANIM_FREEZE.distance;
 		if (x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
 			return false;
 		}

@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,7 +13,6 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(SpawnerRenderer.class)
 public class SpawnerRendererMixin {
@@ -20,8 +21,8 @@ public class SpawnerRendererMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/SpawnerRenderer;renderEntityInSpawner(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;DD)V"))
 	private void zakoopt$cull(float partialTick, PoseStack pose, MultiBufferSource buffers, int light, Entity entity, EntityRenderDispatcher dispatcher, double oSpin, double spin,
 							  Operation<Void> original, SpawnerBlockEntity spawner, float partialTick2, PoseStack pose2, MultiBufferSource buffers2, int light2, int overlay, Vec3 camera) {
-		if (ZakoOptConfig.spawnerCull()) {
-			double d = ZakoOptConfig.spawnerDistance();
+		if (Features.SPAWNER_CULL.on) {
+			double d = Features.SPAWNER_CULL.distance;
 			if (Vec3.atCenterOf(spawner.getBlockPos()).distanceToSqr(camera) > d * d) {
 				return;
 			}

@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -11,7 +13,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.BlockEntityDistance;
 import zako.opt.block.CachedValidity;
 
@@ -21,7 +22,7 @@ public class BlockEntityRenderDispatcherMixin {
 	@WrapOperation(method = "tryExtractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/BlockEntityType;isValid(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
 	private boolean zakoopt$cachedValid(BlockEntityType<?> type, BlockState state, Operation<Boolean> original,
 										BlockEntity blockEntity, float partialTick, ModelFeatureRenderer.CrumblingOverlay crumbling) {
-		if (!ZakoOptConfig.signCache()) {
+		if (!Features.SIGN_CACHE.on) {
 			return original.call(type, state);
 		}
 		CachedValidity cache = (CachedValidity) blockEntity;

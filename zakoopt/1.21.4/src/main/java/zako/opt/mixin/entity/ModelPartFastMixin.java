@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
@@ -9,7 +11,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.entity.FastCubes;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class ModelPartFastMixin {
 
 	@Inject(method = "compile", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$fastCubes(PoseStack.Pose pose, VertexConsumer consumer, int light, int overlay, int color, CallbackInfo ci) {
-		if (ZakoOptConfig.fastCubes() && FastCubes.render(cubes, pose, consumer, light, overlay, color)) {
+		if (Features.MICRO_OPTS.fastCubes && FastCubes.render(cubes, pose, consumer, light, overlay, color)) {
 			ci.cancel();
 		}
 	}

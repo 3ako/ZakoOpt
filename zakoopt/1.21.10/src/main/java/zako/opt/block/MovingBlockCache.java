@@ -1,5 +1,7 @@
 package zako.opt.block;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -30,7 +32,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 
 // piston-moved blocks: tesselate each BlockState once, then per frame only translate positions and set one light value
@@ -46,7 +47,7 @@ public class MovingBlockCache {
 
 	// renders what it can and removes it from the list; the rest goes the usual Fabric/vanilla way
 	public void render(List<SubmitNodeStorage.MovingBlockSubmit> submits, MultiBufferSource.BufferSource buffers, BlockRenderDispatcher dispatcher) {
-		if (!ZakoOptConfig.movingBlockCache() || submits.isEmpty()) {
+		if (!Features.MOVING_BLOCK_CACHE.on || submits.isEmpty()) {
 			return;
 		}
 		submits.removeIf(submit -> {

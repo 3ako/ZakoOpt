@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.entity.ParallelModelHook;
 import zako.opt.entity.StateEntity;
@@ -32,7 +33,7 @@ public class ModelFeatureRendererMixin {
 	@WrapOperation(method = "prepareModel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/Model;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
 	private void zakoopt$frozenAnimation(Model<?> model, PoseStack poseStack, VertexConsumer consumer, int light, int overlay, int color, Operation<Void> original,
 										 ModelFeatureRenderer.Submit<?> submit) {
-		if (ZakoOptConfig.entityAnimFreeze() && submit.sheetedDecalPose() == null && submit.state() instanceof EntityRenderState state) {
+		if (Features.ENTITY_ANIM_FREEZE.on && submit.sheetedDecalPose() == null && submit.state() instanceof EntityRenderState state) {
 			Entity entity = ((StateEntity) state).zakoopt$entity();
 			if (entity != null && AnimFreeze.render(entity, model, submit.renderType(), null, poseStack.last().pose(), consumer,
 					target -> original.call(model, poseStack, target, light, overlay, color))) {

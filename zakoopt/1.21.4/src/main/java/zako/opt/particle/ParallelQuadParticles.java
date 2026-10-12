@@ -1,5 +1,7 @@
 package zako.opt.particle;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -14,7 +16,6 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 import zako.opt.mixin.particle.ParticleAccessor;
 
@@ -36,7 +37,7 @@ public class ParallelQuadParticles {
 	// false = let the vanilla single-threaded loop run
 	public boolean render(Queue<Particle> particles, VertexConsumer target, VertexFormat format, Camera camera, float partialTick) {
 		int n = particles.size();
-		if (n < MIN_PARTICLES || !ZakoOptConfig.parallelParticles()) {
+		if (n < MIN_PARTICLES || !Features.PARALLEL_PARTICLES.on) {
 			return false;
 		}
 		if (!RawVertices.accepts(target, format)) {

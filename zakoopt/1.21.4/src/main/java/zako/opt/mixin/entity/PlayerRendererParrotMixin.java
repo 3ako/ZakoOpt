@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -9,7 +11,6 @@ import net.minecraft.world.entity.animal.Parrot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class PlayerRendererParrotMixin {
 	@WrapOperation(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;getParrotOnShoulder(Lnet/minecraft/client/player/AbstractClientPlayer;Z)Lnet/minecraft/world/entity/animal/Parrot$Variant;"))
 	private Parrot.Variant zakoopt$cachedParrot(AbstractClientPlayer player, boolean left, Operation<Parrot.Variant> original) {
-		if (!ZakoOptConfig.microOpts3()) {
+		if (!Features.MICRO_OPTS.fewerChecks) {
 			return original.call(player, left);
 		}
 		CompoundTag tag = left ? player.getShoulderEntityLeft() : player.getShoulderEntityRight();

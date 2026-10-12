@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
@@ -15,7 +17,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.CachedLight;
 import zako.opt.block.TickCached;
 
@@ -27,7 +28,7 @@ public class ChestRendererMixin {
 																			Operation<DoubleBlockCombiner.NeighborCombineResult<?>> original,
 																			BlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 camera,
 																			ModelFeatureRenderer.CrumblingOverlay crumbling) {
-		if (!ZakoOptConfig.blockEntityCache()) {
+		if (!Features.BLOCK_ENTITY_CACHE.on) {
 			return original.call(block, state, level, pos, ignoreBlocked);
 		}
 		// neighbour lookup for double chests; the result only changes when blocks change, so once per tick is enough
@@ -46,7 +47,7 @@ public class ChestRendererMixin {
 										BlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 camera,
 										ModelFeatureRenderer.CrumblingOverlay crumbling) {
 		Level level = blockEntity.getLevel();
-		if (!ZakoOptConfig.microOpts2() || level == null) {
+		if (!Features.MICRO_OPTS.stableResults || level == null) {
 			return original.call(combiner, light);
 		}
 		CachedLight cache = (CachedLight) blockEntity;

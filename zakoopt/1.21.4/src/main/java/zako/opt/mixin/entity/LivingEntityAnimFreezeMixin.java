@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -12,7 +14,6 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.entity.StateEntity;
 
@@ -23,7 +24,7 @@ public class LivingEntityAnimFreezeMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"))
 	private void zakoopt$frozenAnimation(EntityModel<?> model, PoseStack poseStack, VertexConsumer consumer, int light, int overlay, int color, Operation<Void> original,
 										 LivingEntityRenderState state, @Local RenderType type) {
-		if (ZakoOptConfig.entityAnimFreeze()) {
+		if (Features.ENTITY_ANIM_FREEZE.on) {
 			Entity entity = ((StateEntity) state).zakoopt$entity();
 			if (entity != null && AnimFreeze.render(entity, model, type, null, poseStack.last().pose(), consumer,
 					target -> original.call(model, poseStack, target, light, overlay, color))) {

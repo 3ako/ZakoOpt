@@ -1,12 +1,13 @@
 package zako.opt.mixin.gl;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(targets = "net.caffeinemc.mods.sodium.client.render.vertex.VertexConsumerUtils", remap = false)
 public class VertexConsumerUtilsMixin {
@@ -18,7 +19,7 @@ public class VertexConsumerUtilsMixin {
 	// which keeps evicting HotSpot's per-class type check cache; an identity compare skips both
 	@WrapMethod(method = "convertOrLog")
 	private static VertexBufferWriter zakoopt$cachedConvert(VertexConsumer consumer, Operation<VertexBufferWriter> original) {
-		if (consumer == zakoopt$lastWriter && ZakoOptConfig.writerCache()) {
+		if (consumer == zakoopt$lastWriter && Features.WRITER_CACHE.on) {
 			return (VertexBufferWriter) consumer;
 		}
 		VertexBufferWriter writer = original.call(consumer);

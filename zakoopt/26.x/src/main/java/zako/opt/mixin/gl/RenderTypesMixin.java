@@ -1,5 +1,7 @@
 package zako.opt.mixin.gl;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -12,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import zako.opt.ZakoOptConfig;
 
 @Mixin(RenderTypes.class)
 public class RenderTypesMixin {
@@ -29,7 +30,7 @@ public class RenderTypesMixin {
 
 	@Unique
 	private static Object zakoopt$lookup(Map<Identifier, RenderType> cache, BiFunction<Object, Object, Object> memo, Object id, Object flag, Operation<Object> original) {
-		if (!(Boolean) flag || !ZakoOptConfig.lookupCaches()) {
+		if (!(Boolean) flag || !Features.LOOKUP_CACHES.on) {
 			return original.call(memo, id, flag);
 		}
 		RenderType type = cache.get(id);

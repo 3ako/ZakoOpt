@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
@@ -12,7 +14,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.CachedLight;
 import zako.opt.block.TickCached;
 
@@ -23,7 +24,7 @@ public class ChestRendererMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/AbstractChestBlock;combine(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Z)Lnet/minecraft/world/level/block/DoubleBlockCombiner$NeighborCombineResult;"))
 	private DoubleBlockCombiner.NeighborCombineResult<?> zakoopt$cachedCombine(AbstractChestBlock<?> block, BlockState state, Level level, BlockPos pos, boolean ignoreBlocked,
 																			Operation<DoubleBlockCombiner.NeighborCombineResult<?>> original, BlockEntity blockEntity) {
-		if (!ZakoOptConfig.blockEntityCache()) {
+		if (!Features.BLOCK_ENTITY_CACHE.on) {
 			return original.call(block, state, level, pos, ignoreBlocked);
 		}
 		TickCached cache = (TickCached) blockEntity;
@@ -39,7 +40,7 @@ public class ChestRendererMixin {
 			at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2IntFunction;applyAsInt(I)I"))
 	private int zakoopt$cachedPairLight(Int2IntFunction combiner, int light, Operation<Integer> original, BlockEntity blockEntity) {
 		Level level = blockEntity.getLevel();
-		if (!ZakoOptConfig.microOpts2() || level == null) {
+		if (!Features.MICRO_OPTS.stableResults || level == null) {
 			return original.call(combiner, light);
 		}
 		CachedLight cache = (CachedLight) blockEntity;

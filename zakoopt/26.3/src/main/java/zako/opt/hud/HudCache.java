@@ -1,5 +1,7 @@
 package zako.opt.hud;
 
+import zako.opt.feature.Features;
+
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
@@ -15,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.resources.Identifier;
 import org.joml.Vector4f;
-import zako.opt.ZakoOptConfig;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -50,7 +51,7 @@ public class HudCache {
 		Minecraft mc = Minecraft.getInstance();
 		boolean was = active;
 		long now = System.nanoTime();
-		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && ZakoOptConfig.hudCache() && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.gui.screen() == null && mc.gui.overlay() == null;
+		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && Features.HUD_CACHE.on && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.gui.screen() == null && mc.gui.overlay() == null;
 		if (!active) {
 			return;
 		}

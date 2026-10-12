@@ -1,12 +1,13 @@
 package zako.opt.hud;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
-import zako.opt.ZakoOptConfig;
 
 // HUD drawn into its own texture at the monitor refresh rate; frames in between only blend that texture in.
 // Crosshair and camera overlays (vignette, pumpkin...) blend with the world, so they stay live every frame.
@@ -23,7 +24,7 @@ public class HudCache {
 		Minecraft mc = Minecraft.getInstance();
 		boolean was = active;
 		long now = System.nanoTime();
-		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && ZakoOptConfig.hudCache() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
+		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && Features.HUD_CACHE.on && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
 		if (!active) {
 			return;
 		}
@@ -65,6 +66,7 @@ public class HudCache {
 			drawing = false;
 			RenderSystem.defaultBlendFunc();
 			Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+			HudTiles.mark(target);
 		}
 	}
 
@@ -73,7 +75,9 @@ public class HudCache {
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 		RenderSystem.enableBlend();
 		GlStateManager._blendFunc(GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value);
-		target.blitAndBlendToScreen(main.width, main.height);
+		if (!HudTiles.blend(target, main)) {
+			target.blitAndBlendToScreen(main.width, main.height);
+		}
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.disableBlend();
 		RenderSystem.enableDepthTest();

@@ -1,5 +1,7 @@
 package zako.opt.text;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -16,7 +18,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
@@ -69,7 +70,7 @@ public class TextMeshCache {
 	}
 
 	public boolean applies(FormattedCharSequence text) {
-		return !recording && ZakoOptConfig.preparedTextCache() && StableText.isStable(text) && RenderSystem.isOnRenderThread();
+		return !recording && Features.PREPARED_TEXT_CACHE.on && StableText.isStable(text) && RenderSystem.isOnRenderThread();
 	}
 
 	public Matrix4f identity() {

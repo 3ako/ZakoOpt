@@ -1,5 +1,7 @@
 package zako.opt.text;
 
+import zako.opt.feature.Features;
+
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.gui.Font;
 import net.minecraft.util.FormattedCharSequence;
@@ -9,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import zako.opt.ZakoOptConfig;
 
 @UtilityClass
 public class PreparedTextCache {
@@ -36,7 +37,7 @@ public class PreparedTextCache {
 	}
 
 	public boolean enabled() {
-		return ZakoOptConfig.preparedTextCache();
+		return Features.PREPARED_TEXT_CACHE.on;
 	}
 
 	public Key key(FormattedCharSequence text, float x, float y, int color, boolean shadow, boolean includeEmpty, int background) {

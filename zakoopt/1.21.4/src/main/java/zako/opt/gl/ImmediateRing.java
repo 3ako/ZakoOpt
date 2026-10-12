@@ -1,5 +1,7 @@
 package zako.opt.gl;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -20,7 +22,6 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import zako.opt.ZakoOptConfig;
 
 // immediate draws from one persistently mapped buffer per vertex format instead of a glBufferData per draw;
 // three per-frame segments, each reused only after the GPU signalled the frame that last used it
@@ -48,7 +49,7 @@ public class ImmediateRing {
 
 	// false = draw it the vanilla way
 	public boolean draw(MeshData mesh, boolean withShader) {
-		if (!ZakoOptConfig.immediateRing() || !supported() || mesh.indexBuffer() != null) {
+		if (!Features.IMMEDIATE_RING.on || !supported() || mesh.indexBuffer() != null) {
 			return false;
 		}
 		CompiledShaderProgram shader = withShader ? RenderSystem.getShader() : null;
@@ -93,7 +94,7 @@ public class ImmediateRing {
 
 	// memory for a vertex builder inside this frame's segment, so its draw needs no copy; 0 = use normal memory
 	public long reserveBuilder(VertexFormat format, int bytes) {
-		if (!ZakoOptConfig.immediateRing() || !ZakoOptConfig.ringZeroCopy() || !supported()) {
+		if (!Features.IMMEDIATE_RING.on || !Features.RING_ZERO_COPY.on || !supported()) {
 			return 0;
 		}
 		Ring ring = ring(format);

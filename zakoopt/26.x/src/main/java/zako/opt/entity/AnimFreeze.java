@@ -1,5 +1,7 @@
 package zako.opt.entity;
 
+import zako.opt.feature.Features;
+
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -15,7 +17,6 @@ import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
@@ -50,10 +51,10 @@ public class AnimFreeze {
 
 	// a far entity's parts all replay their once-per-tick capture here; any part built every frame elsewhere drifts off the frozen rest
 	public boolean freezes(Object state, Matrix4f pose) {
-		if (!ZakoOptConfig.entityAnimFreeze() || !(state instanceof EntityRenderState s) || ((StateEntity) s).zakoopt$entity() == null) {
+		if (!Features.ENTITY_ANIM_FREEZE.on || !(state instanceof EntityRenderState s) || ((StateEntity) s).zakoopt$entity() == null) {
 			return false;
 		}
-		float d = ZakoOptConfig.entityAnimDistance();
+		float d = Features.ENTITY_ANIM_FREEZE.distance;
 		return pose.m30() * pose.m30() + pose.m31() * pose.m31() + pose.m32() * pose.m32() > d * d;
 	}
 
@@ -61,7 +62,7 @@ public class AnimFreeze {
 	public boolean render(Entity entity, Object model, RenderType type, TextureAtlasSprite sprite, Matrix4f pose,
 								 VertexConsumer target, Consumer<VertexConsumer> draw) {
 		float x = pose.m30(), y = pose.m31(), z = pose.m32();
-		float d = ZakoOptConfig.entityAnimDistance();
+		float d = Features.ENTITY_ANIM_FREEZE.distance;
 		if (x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
 			return false;
 		}

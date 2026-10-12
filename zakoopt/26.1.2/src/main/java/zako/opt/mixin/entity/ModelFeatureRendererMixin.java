@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,7 +19,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.entity.ParallelModelHook;
 import zako.opt.entity.StateEntity;
@@ -44,7 +45,7 @@ public class ModelFeatureRendererMixin {
 	private void zakoopt$frozenAnimation(Model<?> model, PoseStack poseStack, VertexConsumer consumer, int light, int overlay, int color, Operation<Void> original,
 										 SubmitNodeStorage.ModelSubmit<?> submit, RenderType renderType, VertexConsumer rawConsumer,
 										 OutlineBufferSource outline, MultiBufferSource.BufferSource buffers) {
-		if (ZakoOptConfig.entityAnimFreeze() && submit.state() instanceof EntityRenderState state) {
+		if (Features.ENTITY_ANIM_FREEZE.on && submit.state() instanceof EntityRenderState state) {
 			Entity entity = ((StateEntity) state).zakoopt$entity();
 			if (entity != null && AnimFreeze.render(entity, model, renderType, submit.sprite(), poseStack.last().pose(), rawConsumer,
 					target -> original.call(model, poseStack, target, light, overlay, color))) {

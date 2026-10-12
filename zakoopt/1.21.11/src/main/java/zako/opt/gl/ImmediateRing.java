@@ -1,5 +1,7 @@
 package zako.opt.gl;
 
+import zako.opt.feature.Features;
+
 import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuFence;
@@ -23,7 +25,6 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import zako.opt.ZakoOptConfig;
 import zako.opt.mixin.gl.GlBufferInvoker;
 
 @UtilityClass
@@ -50,7 +51,7 @@ public class ImmediateRing {
 
 	// returns the base vertex inside buffer(format), or -1 to fall back to the vanilla upload
 	public int upload(VertexFormat format, ByteBuffer data) {
-		if (!ZakoOptConfig.immediateRing()) {
+		if (!Features.IMMEDIATE_RING.on) {
 			return -1;
 		}
 		Ring ring = ring(format);
@@ -84,7 +85,7 @@ public class ImmediateRing {
 
 	// memory for a vertex builder inside this frame's segment, so its draw needs no copy; 0 = use normal memory
 	public long reserveBuilder(VertexFormat format, int bytes) {
-		if (!ZakoOptConfig.immediateRing() || !ZakoOptConfig.ringZeroCopy()) {
+		if (!Features.IMMEDIATE_RING.on || !Features.RING_ZERO_COPY.on) {
 			return 0;
 		}
 		Ring ring = ring(format);

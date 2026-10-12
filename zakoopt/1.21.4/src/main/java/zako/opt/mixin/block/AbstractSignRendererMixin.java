@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -19,7 +21,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import zako.opt.ZakoOptConfig;
 import zako.opt.text.StableText;
 
 import java.util.IdentityHashMap;
@@ -42,7 +43,7 @@ public abstract class AbstractSignRendererMixin {
 	@WrapOperation(method = "render(Lnet/minecraft/world/level/block/entity/SignBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/AbstractSignRenderer;getSignModel(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/client/model/Model;"))
 	private Model zakoopt$model(AbstractSignRenderer renderer, BlockState state, WoodType wood, Operation<Model> original) {
-		if (!ZakoOptConfig.signCache()) {
+		if (!Features.SIGN_CACHE.on) {
 			return original.call(renderer, state, wood);
 		}
 		return zakoopt$models.computeIfAbsent(state, s -> original.call(renderer, s, wood));
@@ -50,7 +51,7 @@ public abstract class AbstractSignRendererMixin {
 
 	@WrapOperation(method = "renderSign", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/AbstractSignRenderer;getSignMaterial(Lnet/minecraft/world/level/block/state/properties/WoodType;)Lnet/minecraft/client/resources/model/Material;"))
 	private Material zakoopt$material(AbstractSignRenderer renderer, WoodType wood, Operation<Material> original) {
-		if (!ZakoOptConfig.signCache()) {
+		if (!Features.SIGN_CACHE.on) {
 			return original.call(renderer, wood);
 		}
 		return zakoopt$materials.computeIfAbsent(wood, w -> original.call(renderer, w));
@@ -59,7 +60,7 @@ public abstract class AbstractSignRendererMixin {
 	// Material.buffer is sprite().wrap(buffers.getBuffer(renderType(factory))); sprite and render type are fixed per material
 	@WrapOperation(method = "renderSign", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/Material;buffer(Lnet/minecraft/client/renderer/MultiBufferSource;Ljava/util/function/Function;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
 	private VertexConsumer zakoopt$buffer(Material material, MultiBufferSource buffers, Function<ResourceLocation, RenderType> factory, Operation<VertexConsumer> original) {
-		if (!ZakoOptConfig.signCache()) {
+		if (!Features.SIGN_CACHE.on) {
 			return original.call(material, buffers, factory);
 		}
 		RenderType type = zakoopt$renderTypes.computeIfAbsent(material, m -> m.renderType(factory));
@@ -72,12 +73,12 @@ public abstract class AbstractSignRendererMixin {
 	// a sign keeps its split lines until its text changes, so the text mesh cache may hold on to them
 	@ModifyArg(method = "renderSignText", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/entity/SignText;getRenderMessages(ZLjava/util/function/Function;)[Lnet/minecraft/util/FormattedCharSequence;"), index = 1)
 	private Function<Component, FormattedCharSequence> zakoopt$stableLines(Function<Component, FormattedCharSequence> split) {
-		return ZakoOptConfig.preparedTextCache() ? component -> StableText.mark(split.apply(component)) : split;
+		return Features.PREPARED_TEXT_CACHE.on ? component -> StableText.mark(split.apply(component)) : split;
 	}
 
 	@WrapOperation(method = "renderSignText", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;width(Lnet/minecraft/util/FormattedCharSequence;)I"))
 	private int zakoopt$cachedWidth(Font font, FormattedCharSequence line, Operation<Integer> original) {
-		if (!ZakoOptConfig.preparedTextCache()) {
+		if (!Features.PREPARED_TEXT_CACHE.on) {
 			return original.call(font, line);
 		}
 		Integer width = zakoopt$widths.get(line);

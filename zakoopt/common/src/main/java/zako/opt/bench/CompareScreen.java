@@ -3,11 +3,11 @@ package zako.opt.bench;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
+import zako.opt.Canvas;
 import zako.opt.ZakoOptConfig;
 import zako.opt.cpu.CorePin;
+import zako.opt.feature.Features;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -24,8 +24,7 @@ public class CompareScreen extends ProgressScreen {
 
 	@Override
 	protected Component stage() {
-		boolean on = ZakoOptConfig.values.enabled;
-		return Component.translatable(on ? "zakoopt.bench.compare.on" : "zakoopt.bench.compare.off").withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED);
+		return Component.translatable(ZakoOptConfig.enabled ? "zakoopt.bench.compare.on" : "zakoopt.bench.compare.off");
 	}
 
 	@Override
@@ -39,52 +38,36 @@ public class CompareScreen extends ProgressScreen {
 	}
 
 	@Override
-	protected void init() {
-		super.init();
-		int y = height - 104;
-		addRenderableWidget(Button.builder(toggleLabel(), b -> {
-			ZakoOptConfig.values.enabled = !ZakoOptConfig.values.enabled;
-			b.setMessage(toggleLabel());
-		}).bounds(width / 2 - 120, y, 240, 20).build());
-		Button name = addRenderableWidget(Button.builder(viewLabel(), b -> {
-		}).bounds(width / 2 - 80, y + 28, 160, 20).build());
-		name.active = false;
-		addRenderableWidget(Button.builder(Component.literal("◀"), b -> {
-			view = (view + Scene.views().size() - 1) % Scene.views().size();
-			moved(name);
-		}).bounds(width / 2 - 104, y + 28, 20, 20).build());
-		addRenderableWidget(Button.builder(Component.literal("▶"), b -> {
-			view = (view + 1) % Scene.views().size();
-			moved(name);
-		}).bounds(width / 2 + 84, y + 28, 20, 20).build());
+	protected void paint(Canvas c) {
+		super.paint(c);
+		int w = 240, x0 = width / 2 - w / 2, x1 = x0 + w, y0 = height - 8 - 66, inner = w - 16;
+		frame(c, x0, y0, x1, y0 + 66);
+		boolean on = ZakoOptConfig.enabled;
+		Component toggle = Component.translatable(on ? "zakoopt.bench.compare.toggle.on" : "zakoopt.bench.compare.toggle.off");
+		button(c, x0 + 8, y0 + 8, inner, toggle, on ? ON : MASTER_OFF, on ? ACCENT : MASTER_OFF_FRAME, true, () -> ZakoOptConfig.enabled = !ZakoOptConfig.enabled);
+
+		int ry = y0 + 26;
+		button(c, x0 + 8, ry, 20, Component.literal("◀"), BUTTON, BUTTON_FRAME, true, () -> move(Scene.views().size() - 1));
+		button(c, x1 - 28, ry, 20, Component.literal("▶"), BUTTON, BUTTON_FRAME, true, () -> move(1));
+		Component name = Component.translatable("zakoopt.bench.view." + Scene.views().get(view).key());
+		c.text(name, x0 + w / 2 - font.width(name) / 2, ry + 3, STRONG);
+
+		ry += 18;
+		Component close = Component.translatable("gui.done");
 		if (CorePin.available()) {
-			addRenderableWidget(Button.builder(coresLabel(), b -> {
-				ZakoOptConfig.values.corePin = !ZakoOptConfig.values.corePin;
-				b.setMessage(coresLabel());
-			}).bounds(width / 2 - 154, y + 60, 150, 20).build());
-			addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose()).bounds(width / 2 + 4, y + 60, 150, 20).build());
+			int half = (inner - 6) / 2;
+			Component cores = Component.translatable("zakoopt.bench.compare.cores",
+					Component.translatable(Features.CORE_PIN.value ? "zakoopt.bench.compare.cores.best" : "zakoopt.bench.compare.cores.all"));
+			button(c, x0 + 8, ry, half, cores, BUTTON, BUTTON_FRAME, true, () -> Features.CORE_PIN.value = !Features.CORE_PIN.value);
+			button(c, x1 - 8 - half, ry, half, close, BUTTON, BUTTON_FRAME, true, this::onClose);
 		} else {
-			addRenderableWidget(Button.builder(Component.translatable("gui.done"), b -> onClose()).bounds(width / 2 - 50, y + 60, 100, 20).build());
+			button(c, x0 + 8, ry, inner, close, BUTTON, BUTTON_FRAME, true, this::onClose);
 		}
 	}
 
-	private Component coresLabel() {
-		return Component.translatable("zakoopt.bench.compare.cores", Component.translatable(ZakoOptConfig.values.corePin ? "zakoopt.bench.compare.cores.best" : "zakoopt.bench.compare.cores.all"));
-	}
-
-	private void moved(Button name) {
+	private void move(int step) {
+		view = (view + step) % Scene.views().size();
 		Bench.teleport(Scene.views().get(view));
-		name.setMessage(viewLabel());
-	}
-
-	private Component toggleLabel() {
-		boolean on = ZakoOptConfig.values.enabled;
-		return Component.translatable(on ? "zakoopt.bench.compare.toggle.on" : "zakoopt.bench.compare.toggle.off")
-				.withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED).withStyle(ChatFormatting.BOLD);
-	}
-
-	private Component viewLabel() {
-		return Component.translatable("zakoopt.bench.view." + Scene.views().get(view).key());
 	}
 
 	@Override

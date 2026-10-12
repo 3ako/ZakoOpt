@@ -33,6 +33,8 @@ public class Scene {
 	public final View ITEMS_CLOSE = new View("items_close", 48, Y + 2, 1, 0, 45);
 	// over the near edge of the spawner field, far enough right of the scene that it stays out of the picture
 	public final View SPAWNERS = new View("spawners", 232, Y + 3, -6, 0, 15);
+	// over the edge of a planted forest, high enough to see its canopy from right below out to its far side
+	public final View FOREST = new View("forest", 32, Y + 16, -40, 180, 25);
 	// over the land out to the render distance; set over the world spawn, which the game always puts on land, once the world is in
 	public View terrain = new View("terrain", 60, Y - 60, -40, 180, 10);
 
@@ -41,7 +43,7 @@ public class Scene {
 	}
 
 	public List<View> views() {
-		return List.of(terrain, new View("crowd", 14, Y + 16, -10, 0, 35), new View("items", 48, Y + 16, -10, 0, 35),
+		return List.of(terrain, FOREST, new View("crowd", 14, Y + 16, -10, 0, 35), new View("items", 48, Y + 16, -10, 0, 35),
 				new View("blocks", 76, Y + 16, -10, 0, 35), new View("pistons", 123, Y + 16, -10, 0, 35), new View("holograms", 104, Y + 16, -10, 0, 30), OVERVIEW);
 	}
 
@@ -91,7 +93,7 @@ public class Scene {
 			c.add(f("summon minecraft:zombie -7 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", Y, z, RULER, armour));
 			c.add(f("summon minecraft:%s -9 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", MANNEQUIN ? "mannequin" : "skeleton", Y, z, RULER, armour));
 			if (d % 8 == 0) {
-				c.add(f("summon minecraft:text_display -8 %d.6 %d {billboard:\"center\",Tags:[\"%s\"],text:%s}", Y + 2, z, RULER, nbtText(blocksLabel.formatted(d))));
+				c.add(f("summon minecraft:text_display -8 %d.6 %d {billboard:\"center\",alignment:\"center\",Tags:[\"%s\"],text:%s}", Y + 2, z, RULER, nbtText(blocksLabel.formatted(d))));
 			}
 		}
 		return c;
@@ -105,7 +107,7 @@ public class Scene {
 		List<String> c = new ArrayList<>();
 		c.add(f("fill 216 %d -8 248 %d 64 minecraft:smooth_stone", Y - 1, Y - 1));
 		for (int d = 8; d <= 64; d += 8) {
-			c.add(f("summon minecraft:text_display 218 %d.6 %d {billboard:\"center\",Tags:[\"%s\"],text:%s}", Y + 1, SPAWNERS.z() + d, RULER, nbtText(blocksLabel.formatted(d))));
+			c.add(f("summon minecraft:text_display 218 %d.6 %d {billboard:\"center\",alignment:\"center\",Tags:[\"%s\"],text:%s}", Y + 1, SPAWNERS.z() + d, RULER, nbtText(blocksLabel.formatted(d))));
 		}
 		return c;
 	}
@@ -126,6 +128,19 @@ public class Scene {
 		boolean all = view == OVERVIEW;
 		return List.of(f("scoreboard players set #pistons zakoopt_t %d", all || view.key().equals("pistons") ? 1 : 0),
 				f("scoreboard players set #particles zakoopt_t %d", all || view.key().equals("holograms") ? 1 : 0));
+	}
+
+	// for the far leaves pick only: dark oaks with some oaks on grass behind the scene, out of every other camera's sight
+	public List<String> forest() {
+		Random random = new Random(42);
+		List<String> c = new ArrayList<>();
+		c.add(f("fill -10 %d -130 74 %d -46 minecraft:grass_block", Y - 1, Y - 1));
+		for (int x = -8; x <= 72; x += 5) {
+			for (int z = -128; z <= -50; z += 5) {
+				c.add(f("place feature minecraft:%s %d %d %d", random.nextInt(4) == 0 ? "oak" : "dark_oak", x + random.nextInt(3), Y, z + random.nextInt(3)));
+			}
+		}
+		return c;
 	}
 
 	public final String RULER = "zakoopt_ruler";
@@ -187,7 +202,7 @@ public class Scene {
 				Y - 2 - st, z + 1, y - 1, z + 1, y - 1, z + 1));
 		// D: holograms, a particle emitter every other row
 		for (int i = 0; i < 6; i++) {
-			c.add(f("summon minecraft:text_display %d %.1f %d {billboard:\"center\",text:%s}", 94 + i * 4, y + 2.5, z + 1,
+			c.add(f("summon minecraft:text_display %d %.1f %d {billboard:\"center\",alignment:\"center\",text:%s}", 94 + i * 4, y + 2.5, z + 1,
 					nbtText("Hologram " + lv + "." + i + "\nZakoOpt benchmark\nline three")));
 		}
 		if (lv % 2 == 0) {

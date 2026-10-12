@@ -1,5 +1,7 @@
 package zako.opt.mixin.text;
 
+import zako.opt.feature.Features;
+
 import net.minecraft.client.resources.language.ClientLanguage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -12,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-import zako.opt.ZakoOptConfig;
 import zako.opt.text.LruMap;
 import zako.opt.text.StableText;
 
@@ -26,10 +27,10 @@ public class ClientLanguageMixin {
 
 	@Inject(method = "getVisualOrder", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$cached(FormattedText text, CallbackInfoReturnable<FormattedCharSequence> cir) {
-		if (!(text instanceof Component component) || !ZakoOptConfig.bidiCache()) {
+		if (!(text instanceof Component component) || !Features.BIDI_CACHE.on) {
 			return;
 		}
-		boolean identity = ZakoOptConfig.microOpts2();
+		boolean identity = Features.MICRO_OPTS.stableResults;
 		FormattedCharSequence cached;
 		synchronized (zakoopt$visualOrder) {
 			cached = identity ? zakoopt$byIdentity.get(component) : null;
@@ -47,11 +48,11 @@ public class ClientLanguageMixin {
 
 	@Inject(method = "getVisualOrder", at = @At("RETURN"), cancellable = true)
 	private void zakoopt$store(FormattedText text, CallbackInfoReturnable<FormattedCharSequence> cir) {
-		if (text instanceof Component component && ZakoOptConfig.bidiCache()) {
+		if (text instanceof Component component && Features.BIDI_CACHE.on) {
 			FormattedCharSequence stable = StableText.mark(cir.getReturnValue());
 			synchronized (zakoopt$visualOrder) {
 				zakoopt$visualOrder.put(component, stable);
-				if (ZakoOptConfig.microOpts2()) {
+				if (Features.MICRO_OPTS.stableResults) {
 					zakoopt$remember(component, stable);
 				}
 			}

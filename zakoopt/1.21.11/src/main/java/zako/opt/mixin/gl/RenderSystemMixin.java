@@ -10,13 +10,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.ZakoOptConfig;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.entity.SkinAtlas;
+import zako.opt.block.FarLeaves;
 import zako.opt.gl.FrameFence;
+import zako.opt.gl.GpuTimers;
 import zako.opt.gl.ImmediateRing;
 
 @Mixin(RenderSystem.class)
 public class RenderSystemMixin {
 	@Inject(method = "flipFrame", at = @At("HEAD"))
 	private static void zakoopt$endFrame(Window window, TracyFrameCapture tracy, CallbackInfo ci) {
+		GpuTimers.endFrame();
+		FarLeaves.frame();
 		ImmediateRing.endFrame();
 		FrameFence.endFrame();
 		SkinAtlas.endFrame();

@@ -1,5 +1,7 @@
 package zako.opt.entity;
 
+import zako.opt.feature.Features;
+
 import com.google.common.collect.MapMaker;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -8,7 +10,6 @@ import org.joml.Vector3fc;
 
 import java.util.List;
 import java.util.Map;
-import zako.opt.ZakoOptConfig;
 
 @UtilityClass
 public class ItemLod {
@@ -17,11 +18,11 @@ public class ItemLod {
 	private final Map<BakedQuad, Flat> FLAT = new MapMaker().weakKeys().makeMap();
 
 	public boolean enabled() {
-		return ZakoOptConfig.itemLod();
+		return Features.ITEM_LOD.on;
 	}
 
 	public float distanceSq() {
-		float d = ZakoOptConfig.itemLodDistance();
+		float d = Features.ITEM_LOD.distance;
 		return d * d;
 	}
 

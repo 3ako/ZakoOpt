@@ -1,5 +1,7 @@
 package zako.opt.mixin.block;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import zako.opt.ZakoOptConfig;
 import zako.opt.block.BlockEntityDistance;
 
 // priority below the default 1000 so this HEAD hook runs before other mods' (Lunar's costs more than the test itself)
@@ -24,7 +25,7 @@ public class BlockEntityRenderDispatcherCullMixin {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Inject(method = "tryExtractRenderState", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$earlyCull(CallbackInfoReturnable<BlockEntityRenderState> cir, @Local(argsOnly = true) BlockEntity blockEntity) {
-		if (ZakoOptConfig.blockEntityEarlyCull() && cameraPos != null) {
+		if (Features.BLOCK_ENTITY_EARLY_CULL.on && cameraPos != null) {
 			BlockEntityRenderer renderer = ((BlockEntityRenderDispatcher) (Object) this).getRenderer(blockEntity);
 			if (renderer != null && !BlockEntityDistance.inDistance(renderer, blockEntity, cameraPos)) {
 				cir.setReturnValue(null);

@@ -19,6 +19,6 @@ public class DebugScreenEntriesMixin {
 
 	@Inject(method = "<clinit>", at = @At("RETURN"))
 	private static void zakoopt$register(CallbackInfo ci) {
-		register(Identifier.fromNamespaceAndPath("zakoopt", "status"), (displayer, level, clientChunk, serverChunk) -> displayer.addLine(DebugInfo.line()));
+		register(Identifier.fromNamespaceAndPath("zakoopt", "status"), (displayer, level, clientChunk, serverChunk) -> DebugInfo.lines().forEach(displayer::addLine));
 	}
 }

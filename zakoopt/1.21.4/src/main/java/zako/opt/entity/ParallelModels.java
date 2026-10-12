@@ -1,5 +1,7 @@
 package zako.opt.entity;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -7,7 +9,6 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import org.joml.Quaternionf;
-import zako.opt.ZakoOptConfig;
 import zako.opt.gl.ReserveBuffer;
 import zako.opt.mixin.entity.ModelPartAccessor;
 import zako.opt.mixin.entity.PoseAccessor;
@@ -95,7 +96,7 @@ public class ParallelModels {
 	}
 
 	public boolean enabled() {
-		return ZakoOptConfig.parallelModels() && ZakoOptConfig.fastCubes();
+		return Features.PARALLEL_MODELS.on && Features.MICRO_OPTS.fastCubes;
 	}
 
 	public void begin() {

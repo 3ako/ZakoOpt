@@ -1,5 +1,7 @@
 package zako.opt.mixin.hud;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.ZakoOptConfig;
 import zako.opt.hud.ChatBatch;
 import zako.opt.text.StableText;
 
@@ -27,7 +28,7 @@ public class ChatComponentBatchMixin {
 
 	@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I"))
 	private int zakoopt$deferLine(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y, int color, Operation<Integer> original) {
-		if (!ZakoOptConfig.microOpts3()) {
+		if (!Features.MICRO_OPTS.fewerChecks) {
 			return original.call(graphics, font, text, x, y, color);
 		}
 		ChatBatch.defer(graphics.pose().last().pose(), font, text, x, y, color);
@@ -42,7 +43,7 @@ public class ChatComponentBatchMixin {
 	// a chat line keeps its text object for as long as it is shown, so the text mesh cache may hold on to it
 	@ModifyExpressionValue(method = "addMessageToDisplayQueue", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/ComponentRenderUtils;wrapComponents(Lnet/minecraft/network/chat/FormattedText;ILnet/minecraft/client/gui/Font;)Ljava/util/List;"))
 	private List<FormattedCharSequence> zakoopt$stableLines(List<FormattedCharSequence> lines) {
-		if (!ZakoOptConfig.preparedTextCache()) {
+		if (!Features.PREPARED_TEXT_CACHE.on) {
 			return lines;
 		}
 		List<FormattedCharSequence> stable = new ArrayList<>(lines.size());

@@ -1,5 +1,7 @@
 package zako.opt.particle;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -21,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import zako.opt.ZakoOptConfig;
 import zako.opt.mixin.particle.QuadParticleRenderStateAccessor;
 import zako.opt.mixin.particle.QuadParticleStorageInvoker;
 
@@ -40,7 +41,7 @@ public class ParallelParticleVertices {
 	public QuadParticleRenderState.PreparedBuffers prepare(QuadParticleRenderState state, ParticleFeatureRenderer.ParticleBufferCache cache) {
 		QuadParticleRenderStateAccessor acc = (QuadParticleRenderStateAccessor) state;
 		int particles = acc.zakoopt$particleCount();
-		if (particles < 1024 || !LITTLE_ENDIAN || !ZakoOptConfig.parallelParticleVertices()) {
+		if (particles < 1024 || !LITTLE_ENDIAN || !Features.PARALLEL_PARTICLES.vertices) {
 			return null;
 		}
 		// same layer order and offsets as vanilla, so PreparedLayer entries match the buffer

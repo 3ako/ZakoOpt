@@ -1,5 +1,7 @@
 package zako.opt.update;
 
+import zako.opt.feature.Features;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.experimental.UtilityClass;
@@ -13,7 +15,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import zako.opt.ZakoOptConfig;
 import zako.opt.ZakoOptions;
 
 // one request to the GitHub releases API per game launch, when the title screen first opens; nothing at all when
@@ -28,7 +29,7 @@ public class UpdateCheck {
 	private boolean shown;
 
 	public void start() {
-		if (ZakoOptConfig.values.updateCheck && !started) {
+		if (Features.UPDATE_CHECK.value && !started) {
 			started = true;
 			fetch();
 		}

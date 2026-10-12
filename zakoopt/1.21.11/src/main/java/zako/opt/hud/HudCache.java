@@ -1,5 +1,7 @@
 package zako.opt.hud;
 
+import zako.opt.feature.Features;
+
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -16,7 +18,6 @@ import net.minecraft.resources.Identifier;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import zako.opt.ZakoOptConfig;
 
 // HUD drawn into its own texture at the monitor refresh rate; frames in between only blend that texture in.
 // Crosshair and camera overlays (vignette, pumpkin...) blend with the world, so they stay live every frame.
@@ -49,7 +50,7 @@ public class HudCache {
 		Minecraft mc = Minecraft.getInstance();
 		boolean was = active;
 		long now = System.nanoTime();
-		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && ZakoOptConfig.hudCache() && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
+		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && Features.HUD_CACHE.on && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
 		if (!active) {
 			return;
 		}
@@ -103,10 +104,14 @@ public class HudCache {
 		} finally {
 			drawing = false;
 		}
+		HudTiles.mark(target);
 	}
 
 	public void composite() {
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+		if (HudTiles.blend(target, main)) {
+			return;
+		}
 		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder()
 				.createRenderPass(() -> "zakoopt hud composite", main.getColorTextureView(), OptionalInt.empty(),
 						main.useDepth ? main.getDepthTextureView() : null, OptionalDouble.empty())) {

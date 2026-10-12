@@ -1,5 +1,7 @@
 package zako.opt.mixin.entity;
 
+import zako.opt.feature.Features;
+
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -10,7 +12,6 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.ZakoOptConfig;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class LivingEntityRendererChecksMixin {
 
 	@WrapOperation(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;isEntityUpsideDown(Lnet/minecraft/world/entity/LivingEntity;)Z"))
 	private boolean zakoopt$cachedUpsideDown(LivingEntity entity, Operation<Boolean> original) {
-		if (!ZakoOptConfig.microOpts3()) {
+		if (!Features.MICRO_OPTS.fewerChecks) {
 			return original.call(entity);
 		}
 		if (entity instanceof Player player) {
@@ -50,6 +51,6 @@ public class LivingEntityRendererChecksMixin {
 	// isInvisibleTo answers isInvisible() or false, so a visible entity needs no team lookup
 	@WrapOperation(method = "shouldShowName", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInvisibleTo(Lnet/minecraft/world/entity/player/Player;)Z"))
 	private boolean zakoopt$visibleSkipsTeam(LivingEntity entity, Player player, Operation<Boolean> original) {
-		return (entity.isInvisible() || !ZakoOptConfig.microOpts3()) && original.call(entity, player);
+		return (entity.isInvisible() || !Features.MICRO_OPTS.fewerChecks) && original.call(entity, player);
 	}
 }

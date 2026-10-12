@@ -1,7 +1,8 @@
 package zako.opt.gl;
 
+import zako.opt.feature.Features;
+
 import lombok.experimental.UtilityClass;
-import zako.opt.ZakoOptConfig;
 
 import java.lang.reflect.Field;
 
@@ -23,7 +24,7 @@ public class LunarMultiDraw {
 	};
 
 	public void keep(Object owner) {
-		Field field = ZakoOptConfig.lunarMultiDraw() ? FIELD.get(owner.getClass()) : null;
+		Field field = Features.LUNAR_MULTIDRAW.on ? FIELD.get(owner.getClass()) : null;
 		if (field != null) {
 			try {
 				field.set(owner, Boolean.FALSE);

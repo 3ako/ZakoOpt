@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.ZakoOptConfig;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.entity.SkinAtlas;
+import zako.opt.block.FarLeaves;
 import zako.opt.gl.DrawStats;
+import zako.opt.gl.GpuTimers;
 import net.minecraft.client.Minecraft;
 import zako.opt.gl.ImmediateRing;
 
@@ -17,6 +19,8 @@ import zako.opt.gl.ImmediateRing;
 public class RenderSystemMixin {
 	@Inject(method = "flipFrame", at = @At("HEAD"))
 	private static void zakoopt$endFrame(long window, TracyFrameCapture tracy, CallbackInfo ci) {
+		GpuTimers.endFrame();
+		FarLeaves.frame();
 		ImmediateRing.endFrame();
 		SkinAtlas.endFrame();
 		AnimFreeze.frame++;
