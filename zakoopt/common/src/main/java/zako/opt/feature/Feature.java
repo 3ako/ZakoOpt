@@ -29,7 +29,7 @@ public abstract class Feature {
 
 	// once a frame on the render thread
 	public void refresh() {
-		on = flag(value) && blocked() == null;
+		on = flag(value) && blocked() == null && available();
 	}
 
 	public boolean available() {
