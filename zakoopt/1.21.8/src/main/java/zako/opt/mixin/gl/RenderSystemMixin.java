@@ -3,6 +3,8 @@ package zako.opt.mixin.gl;
 import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.spongepowered.asm.mixin.Mixin;
+import zako.opt.block.FarLeaves;
+import zako.opt.gl.GpuTimers;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -16,6 +18,8 @@ import zako.opt.gl.ImmediateRing;
 public class RenderSystemMixin {
 	@Inject(method = "flipFrame", at = @At("HEAD"))
 	private static void zakoopt$endFrame(long window, TracyFrameCapture tracy, CallbackInfo ci) {
+		GpuTimers.endFrame();
+		FarLeaves.frame();
 		ImmediateRing.endFrame();
 		FrameFence.endFrame();
 		SkinAtlas.endFrame();

@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"gl.RenderTargetBlitMixin",
 		"block.AbstractSignRendererMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.SignModelCacheMixin",

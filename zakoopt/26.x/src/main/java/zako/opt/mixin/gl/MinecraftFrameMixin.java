@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.ZakoOptConfig;
+import zako.opt.block.FarLeaves;
 import zako.opt.entity.AnimFreeze;
 import zako.opt.gl.FrameFence;
 import zako.opt.entity.SkinAtlas;
@@ -15,6 +16,7 @@ public class MinecraftFrameMixin {
 	@Inject(method = "renderFrame", at = @At("HEAD"))
 	private void zakoopt$frame(boolean advanceGameTime, CallbackInfo ci) {
 		FrameFence.endFrame();
+		FarLeaves.frame();
 		SkinAtlas.endFrame();
 		AnimFreeze.frame++;
 		ZakoOptConfig.refresh();

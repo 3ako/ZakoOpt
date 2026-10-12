@@ -55,7 +55,7 @@ public class OcclusionCull {
 	private final boolean FORCED = Boolean.getBoolean("zakoopt.occlusion_cull.force");
 	private final TerrainRenderPass[] PASSES = {DefaultTerrainRenderPasses.SOLID, DefaultTerrainRenderPasses.CUTOUT, DefaultTerrainRenderPasses.TRANSLUCENT};
 
-	private int program, vao, fbo, texture, uDepth, uBlock, uSize;
+	private int program, vao, fbo, texture, uDepth, uBlock, uSize, uReversed;
 	private int texWidth, texHeight;
 	private boolean ready, failed, armed;
 	private int frame;
@@ -70,12 +70,15 @@ public class OcclusionCull {
 	private final long[] fences = new long[SLOTS];
 	private final int[] slotFrame = new int[SLOTS], slotWidth = new int[SLOTS], slotHeight = new int[SLOTS];
 	private final Matrix4f[] slotMatrix = {new Matrix4f(), new Matrix4f(), new Matrix4f()};
+	// 26.2 on keeps depth in 0..1 with near at 1 (reversed); older versions keep -1..1 with far at 1
+	private final boolean[] slotReversed = new boolean[SLOTS], slotZeroToOne = new boolean[SLOTS];
 	private final double[][] slotCamera = new double[SLOTS][3];
 
 	// the newest depth copy the CPU holds
 	private float[] depth = new float[0];
 	private int depthWidth, depthHeight, depthFrame = Integer.MIN_VALUE / 2;
 	private final Matrix4f depthMatrix = new Matrix4f();
+	private boolean depthReversed, depthZeroToOne;
 	private double depthX, depthY, depthZ;
 
 	// value: frame << 1 | hidden, so each section is tested once a frame whichever pass asks first
@@ -119,8 +122,7 @@ public class OcclusionCull {
 	}
 
 	public void endPass(ChunkRenderMatrices matrices, ChunkRenderListIterable lists, TerrainRenderPass pass, CameraTransform camera) {
-		// Sodium 0.8 draws cutout geometry within the solid pass, so the opaque depth is complete once that ends
-		if (pass != DefaultTerrainRenderPasses.SOLID || !armed || failed) {
+		if (pass != DefaultTerrainRenderPasses.CUTOUT || !armed || failed) {
 			return;
 		}
 		armed = false;
@@ -213,7 +215,7 @@ public class OcclusionCull {
 		if (dx * dx + dy * dy + dz * dz < NEAR * NEAR) {
 			return false;
 		}
-		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, nearest = Float.MAX_VALUE;
+		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, nearest = depthReversed ? -Float.MAX_VALUE : Float.MAX_VALUE;
 		for (int i = 0; i < 8; i++) {
 			// one block of margin: models may stick out of their section a little
 			float px = (float) (x - 1 + ((i & 1) == 0 ? 0 : 18) - depthX);
@@ -231,7 +233,7 @@ public class OcclusionCull {
 			maxX = Math.max(maxX, nx);
 			minY = Math.min(minY, ny);
 			maxY = Math.max(maxY, ny);
-			nearest = Math.min(nearest, nz);
+			nearest = depthReversed ? Math.max(nearest, nz) : Math.min(nearest, nz);
 		}
 		// partly off the screen it was drawn on: what lies there is unknown
 		if (minX < -1 || maxX > 1 || minY < -1 || maxY > 1) {
@@ -242,11 +244,11 @@ public class OcclusionCull {
 		if ((x1 - x0 + 1) * (y1 - y0 + 1) > MAX_TEXELS) {
 			return false;
 		}
-		float boxDepth = nearest * 0.5f + 0.5f;
+		float boxDepth = depthZeroToOne ? nearest : nearest * 0.5f + 0.5f;
 		for (int ty = y0; ty <= y1; ty++) {
 			int row = ty * depthWidth;
 			for (int tx = x0; tx <= x1; tx++) {
-				if (depth[row + tx] >= boxDepth) {
+				if (depthReversed ? depth[row + tx] <= boxDepth : depth[row + tx] >= boxDepth) {
 					return false;
 				}
 			}
@@ -285,6 +287,8 @@ public class OcclusionCull {
 			depthHeight = h;
 			depthFrame = slotFrame[newest];
 			depthMatrix.set(slotMatrix[newest]);
+			depthReversed = slotReversed[newest];
+			depthZeroToOne = slotZeroToOne[newest];
 			depthX = slotCamera[newest][0];
 			depthY = slotCamera[newest][1];
 			depthZ = slotCamera[newest][2];
@@ -340,6 +344,8 @@ public class OcclusionCull {
 		GL20C.glUniform1i(uDepth, 0);
 		GL20C.glUniform2i(uBlock, BLOCK, BLOCK);
 		GL20C.glUniform2i(uSize, srcW, srcH);
+		boolean reversed = reversed(matrices);
+		GL20C.glUniform1i(uReversed, reversed ? 1 : 0);
 		GL11C.glDrawArrays(GL11C.GL_TRIANGLES, 0, 3);
 
 		GL15C.glBindBuffer(GL21C.GL_PIXEL_PACK_BUFFER, pbos[s]);
@@ -362,6 +368,8 @@ public class OcclusionCull {
 		slotWidth[s] = w;
 		slotHeight[s] = h;
 		slotMatrix[s].set(matrices.projection()).mul(matrices.modelView());
+		slotReversed[s] = reversed;
+		slotZeroToOne[s] = zeroToOne();
 		slotCamera[s][0] = camera.x;
 		slotCamera[s][1] = camera.y;
 		slotCamera[s][2] = camera.z;
@@ -443,13 +451,25 @@ public class OcclusionCull {
 			return;
 		}
 		line = "Occlusion%s: %d%% of triangles culled (%d of %d sections); %.2f ms CPU; depth %d frames old".formatted(
-				trialFrame >= 0 ? " (measuring)" : worth ? "" : " (off: slower here)",
+				FORCED ? " (forced)" : trialFrame >= 0 ? " (measuring)" : worth ? "" : " (off: slower here)",
 				weightAll == 0 ? 0 : weightCulled * 100 / weightAll, culled / statFrames, sections / statFrames, cpuNs / 1e6 / statFrames, frame - depthFrame);
 		sections = culled = weightAll = weightCulled = cpuNs = statFrames = 0;
 		windowStart = now;
 		if (verdicts.size() > 65536) {
 			verdicts.clear();
 		}
+	}
+
+	// depth falls with distance: a point far down the view axis lands below a near one
+	private boolean reversed(ChunkRenderMatrices matrices) {
+		var p = matrices.projection();
+		float near = (p.m22() * -1 + p.m32()) / (p.m23() * -1 + p.m33()), far = (p.m22() * -1000 + p.m32()) / (p.m23() * -1000 + p.m33());
+		return far < near;
+	}
+
+	private boolean zeroToOne() {
+		var caps = org.lwjgl.opengl.GL.getCapabilities();
+		return (caps.OpenGL45 || caps.GL_ARB_clip_control) && GL11C.glGetInteger(org.lwjgl.opengl.GL45C.GL_CLIP_DEPTH_MODE) == org.lwjgl.opengl.GL45C.GL_ZERO_TO_ONE;
 	}
 
 	private boolean init() {
@@ -466,13 +486,15 @@ public class OcclusionCull {
 					uniform sampler2D depth;
 					uniform ivec2 block;
 					uniform ivec2 size;
+					uniform bool reversed;
 					out vec4 color;
 					void main() {
 						ivec2 origin = ivec2(gl_FragCoord.xy) * block;
-						float far = 0.0;
+						float far = reversed ? 1.0 : 0.0;
 						for (int y = 0; y < block.y; y++) {
 							for (int x = 0; x < block.x; x++) {
-								far = max(far, texelFetch(depth, min(origin + ivec2(x, y), size - 1), 0).r);
+								float d = texelFetch(depth, min(origin + ivec2(x, y), size - 1), 0).r;
+								far = reversed ? min(far, d) : max(far, d);
 							}
 						}
 						color = vec4(far);
@@ -490,6 +512,7 @@ public class OcclusionCull {
 			uDepth = GL20C.glGetUniformLocation(program, "depth");
 			uBlock = GL20C.glGetUniformLocation(program, "block");
 			uSize = GL20C.glGetUniformLocation(program, "size");
+			uReversed = GL20C.glGetUniformLocation(program, "reversed");
 			vao = GL30C.glGenVertexArrays();
 
 			int prevTexture = GL11C.glGetInteger(GL11C.GL_TEXTURE_BINDING_2D);

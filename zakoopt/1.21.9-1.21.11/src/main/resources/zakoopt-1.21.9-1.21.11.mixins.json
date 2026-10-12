@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"gl.MinecraftTimerMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
 		"block.PistonHeadRendererMixin",

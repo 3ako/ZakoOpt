@@ -19,7 +19,7 @@ public class GpuTimers {
 	private final int SLOTS = 4;
 	private final int MARKS = 64;
 
-	private boolean supported, checked, active;
+	private boolean supported, checked, active, shown;
 	private int slot;
 	private final int[][] queries = new int[SLOTS][];
 	private final String[][] names = new String[SLOTS][MARKS];
@@ -35,8 +35,9 @@ public class GpuTimers {
 		zako.opt.DebugInfo.EXTRA.add(GpuTimers::lines);
 	}
 
+	// read while the GUI is extracted, which on 26.x is outside the frame's own timing
 	public List<String> lines() {
-		return active ? lines : List.of();
+		return shown ? lines : List.of();
 	}
 
 	public double utilization() {
@@ -45,6 +46,7 @@ public class GpuTimers {
 
 	public void beginFrame() {
 		active = DebugToggle.visible() && supported();
+		shown = active;
 		if (!active) {
 			lastFrameNs = 0;
 			return;
@@ -81,13 +83,19 @@ public class GpuTimers {
 			GL15C.glEndQuery(GL33C.GL_TIME_ELAPSED);
 		}
 		pending[slot] = true;
+		// a mark after the end of the frame would start a query nothing ends
+		active = false;
 		window();
 	}
 
 	public boolean supported() {
 		if (!checked) {
 			checked = true;
-			supported = GL.getCapabilities().OpenGL33 || GL.getCapabilities().GL_ARB_timer_query;
+			try {
+				supported = GL.getCapabilities().OpenGL33 || GL.getCapabilities().GL_ARB_timer_query;
+			} catch (IllegalStateException e) {
+				supported = false;
+			}
 			if (supported) {
 				for (int s = 0; s < SLOTS; s++) {
 					queries[s] = new int[MARKS];

@@ -103,10 +103,14 @@ public class HudCache {
 		} finally {
 			drawing = false;
 		}
+		HudTiles.mark(target);
 	}
 
 	public void composite() {
 		RenderTarget main = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+		if (HudTiles.blend(target, main)) {
+			return;
+		}
 		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder()
 				.createRenderPass(() -> "zakoopt hud composite", main.getColorTextureView(), Optional.empty(),
 						main.hasDepth() ? main.getDepthTextureView() : null, OptionalDouble.empty())) {

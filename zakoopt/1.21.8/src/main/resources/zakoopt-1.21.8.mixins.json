@@ -14,6 +14,7 @@
 		"entity.LivingEntityLodMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"entity.PlayerLodMixin",
+		"gl.MinecraftTimerMixin",
 		"gl.RenderSystemMixin",
 		"hud.GameRendererHudMixin",
 		"particle.ParticleEngineLodMixin",

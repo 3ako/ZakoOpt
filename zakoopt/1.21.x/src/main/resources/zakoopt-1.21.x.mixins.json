@@ -8,6 +8,11 @@
 	},
 	"client": [
 		"entity.ItemRendererMixin",
+		"gl.FrameGraphTimerMixin",
+		"gl.GameRendererTimerMixin",
+		"gl.LevelTimerMixin",
+		"gl.LightTextureTimerMixin",
+		"gl.RenderTargetBlitMixin",
 		"gl.GlBufferCloseMixin",
 		"gl.GlCommandEncoderClearMixin",
 		"gl.GlCommandEncoderDepthClearMixin",

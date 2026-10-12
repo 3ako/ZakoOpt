@@ -19,7 +19,7 @@ public class GpuTimers {
 	private final int SLOTS = 4;
 	private final int MARKS = 64;
 
-	private boolean supported, checked, active;
+	private boolean supported, checked, active, shown;
 	private int slot;
 	private final int[][] queries = new int[SLOTS][];
 	private final String[][] names = new String[SLOTS][MARKS];
@@ -31,8 +31,9 @@ public class GpuTimers {
 	private double utilization;
 	private List<String> lines = List.of();
 
+	// read while the GUI is extracted, which on 26.x is outside the frame's own timing
 	public List<String> lines() {
-		return active ? lines : List.of();
+		return shown ? lines : List.of();
 	}
 
 	public double utilization() {
@@ -41,6 +42,7 @@ public class GpuTimers {
 
 	public void beginFrame() {
 		active = Minecraft.getInstance().getDebugOverlay().showDebugScreen() && supported();
+		shown = active;
 		if (!active) {
 			lastFrameNs = 0;
 			return;
@@ -77,6 +79,8 @@ public class GpuTimers {
 			GL15C.glEndQuery(GL33C.GL_TIME_ELAPSED);
 		}
 		pending[slot] = true;
+		// a mark after the end of the frame would start a query nothing ends
+		active = false;
 		window();
 	}
 

@@ -14,7 +14,7 @@ public class DebugScreenOverlayMixin {
 	@ModifyReturnValue(method = "getGameInformation", at = @At("RETURN"))
 	private List<String> zakoopt$status(List<String> lines) {
 		List<String> out = new ArrayList<>(lines);
-		out.add(DebugInfo.line());
+		out.addAll(DebugInfo.lines());
 		return out;
 	}
 }
