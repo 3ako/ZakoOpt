@@ -22,7 +22,7 @@ public abstract class SodiumLeafCullMixin {
 	@Shadow
 	protected BlockPos pos;
 
-	@Inject(method = "shouldDrawSide", at = @At("HEAD"), cancellable = true)
+	@Inject(require = 0, method = "shouldDrawSide", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$innerLeaves(Direction facing, CallbackInfoReturnable<Boolean> cir) {
 		if (Features.LEAF_CULL.on && slice != null && LeafCulling.hidden(state, slice, pos, facing)) {
 			cir.setReturnValue(false);

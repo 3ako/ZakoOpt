@@ -19,21 +19,21 @@ import zako.opt.gl.OcclusionCull;
 
 @Mixin(value = DefaultChunkRenderer.class, remap = false)
 public class SodiumOcclusionCullMixin {
-	@Inject(method = "render", at = @At("HEAD"))
+	@Inject(require = 0, method = "render", at = @At("HEAD"))
 	private void zakoopt$begin(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable lists, TerrainRenderPass pass, CameraTransform camera, CallbackInfo ci) {
 		if (Features.OCCLUSION_CULL.on) {
 			OcclusionCull.beginPass(pass, camera);
 		}
 	}
 
-	@Inject(method = "render", at = @At("TAIL"))
+	@Inject(require = 0, method = "render", at = @At("TAIL"))
 	private void zakoopt$test(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable lists, TerrainRenderPass pass, CameraTransform camera, CallbackInfo ci) {
 		if (Features.OCCLUSION_CULL.on) {
 			OcclusionCull.endPass(matrices, lists, pass, camera);
 		}
 	}
 
-	@ModifyExpressionValue(method = "fillCommandBuffer", at = @At(value = "INVOKE",
+	@ModifyExpressionValue(require = 0, method = "fillCommandBuffer", at = @At(value = "INVOKE",
 			target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/lists/ChunkRenderList;sectionsWithGeometryIterator(Z)Lnet/caffeinemc/mods/sodium/client/util/iterator/ByteIterator;"))
 	private static ByteIterator zakoopt$skipHidden(ByteIterator sections, @Local(argsOnly = true) RenderRegion region) {
 		return Features.OCCLUSION_CULL.on ? OcclusionCull.filter(sections, region) : sections;

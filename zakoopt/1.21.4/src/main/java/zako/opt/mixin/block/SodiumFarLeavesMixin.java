@@ -23,13 +23,13 @@ public class SodiumFarLeavesMixin {
 	@Unique
 	private BlockPos zakoopt$pos;
 
-	@Inject(method = "renderModel", at = @At("HEAD"))
+	@Inject(require = 0, method = "renderModel", at = @At("HEAD"))
 	private void zakoopt$block(BakedModel model, BlockState state, BlockPos pos, BlockPos origin, CallbackInfo ci) {
 		zakoopt$state = state;
 		zakoopt$pos = pos;
 	}
 
-	@WrapOperation(method = "processQuad", at = @At(value = "INVOKE",
+	@WrapOperation(require = 0, method = "processQuad", at = @At(value = "INVOKE",
 			target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/DefaultMaterials;forRenderLayer(Lnet/minecraft/client/renderer/RenderType;)Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;"))
 	private Material zakoopt$farLeaves(RenderType type, Operation<Material> original) {
 		return original.call(FarLeaves.type(zakoopt$state, zakoopt$pos, type));

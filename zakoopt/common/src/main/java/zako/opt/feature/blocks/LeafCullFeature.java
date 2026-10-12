@@ -11,7 +11,7 @@ import zako.opt.feature.Impact;
 	key = "leaf_cull",
 	group = FeatureGroup.BLOCKS,
 	impact = Impact.HIGH,
-	mixins = "block.SodiumLeafCullMixin"
+	mixins = {"block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin"}
 )
 public class LeafCullFeature extends Feature {
 	@Override

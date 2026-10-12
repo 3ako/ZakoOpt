@@ -30,7 +30,7 @@ public class FarLeaves {
 
 	// on a chunk builder thread
 	public RenderType type(BlockState state, BlockPos pos, RenderType original) {
-		if (!Features.FAR_LEAVES.on || !(state.getBlock() instanceof LeavesBlock)) {
+		if (!Features.FAR_LEAVES.on || state == null || !(state.getBlock() instanceof LeavesBlock)) {
 			return original;
 		}
 		int sx = pos.getX() >> 4, sy = pos.getY() >> 4, sz = pos.getZ() >> 4;
