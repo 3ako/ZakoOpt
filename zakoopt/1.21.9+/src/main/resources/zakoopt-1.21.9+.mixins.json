@@ -8,6 +8,7 @@
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",
+		"entity.EntityRenderStatePoolMixin",
 		"entity.ModelPartAccessor"
 	],
 	"injectors": {

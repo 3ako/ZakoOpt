@@ -5,10 +5,8 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @UtilityClass
 public class ZakoOptions {
@@ -44,16 +42,6 @@ public class ZakoOptions {
 	}
 
 	public final List<Page> PAGES = pages(ZakoOptConfig.values);
-	private final Set<String> RECOMMENDED = toggles(pages(new ZakoOptConfig.Values())).stream().filter(t -> t.get().get()).map(Toggle::key).collect(Collectors.toSet());
-
-	public boolean recommended(String key) {
-		return RECOMMENDED.contains(key);
-	}
-
-	public List<Toggle> recommended() {
-		return toggles(PAGES).stream().filter(t -> recommended(t.key()) && t.available()).toList();
-	}
-
 	private List<Toggle> toggles(List<Page> pages) {
 		return pages.stream().flatMap(p -> p.groups().stream()).flatMap(g -> g.options().stream())
 				.filter(Toggle.class::isInstance).map(Toggle.class::cast).toList();
@@ -63,6 +51,7 @@ public class ZakoOptions {
 		return List.of(
 				new Page("render", List.of(
 						new Group("render", List.of(
+								new Toggle("core_pin", Impact.HIGH, b -> v.corePin = b, () -> v.corePin),
 								new Toggle("frame_fence", Impact.HIGH, b -> v.frameFence = b, () -> v.frameFence, "gl.GlCommandEncoderMixin"),
 								new Toggle("lunar_multidraw", Impact.HIGH, b -> v.lunarMultiDraw = b, () -> v.lunarMultiDraw, "gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin"),
 								new Toggle("lazy_clear", Impact.LOW, b -> v.lazyClear = b, () -> v.lazyClear, "gl.GlCommandEncoderClearMixin"),
@@ -72,17 +61,21 @@ public class ZakoOptions {
 								new Toggle("writer_cache", Impact.LOW, b -> v.writerCache = b, () -> v.writerCache, "gl.VertexConsumerUtilsMixin"),
 								new Toggle("fbo_share", Impact.LOW, b -> v.fboShare = b, () -> v.fboShare, "gl.GlCommandEncoderDepthClearMixin", "gl.GlTextureViewMixin"),
 								new Toggle("outline_skip", Impact.LOW, b -> v.outlineSkip = b, () -> v.outlineSkip, "entity.LevelRendererOutlineMixin"),
+								new Toggle("display_cull", Impact.MEDIUM, b -> v.displayCull = b, () -> v.displayCull, "entity.DisplayCullMixin"),
 								new Toggle("immediate_ring", Impact.MEDIUM, b -> v.immediateRing = b, () -> v.immediateRing, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
 								new Toggle("immediate_ring_force", Impact.MEDIUM, b -> v.immediateRingForce = b, () -> v.immediateRingForce, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"),
 								new Toggle("ring_zero_copy", Impact.MEDIUM, b -> v.ringZeroCopy = b, () -> v.ringZeroCopy, "gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"))),
 						new Group("items", List.of(
 								new Toggle("item_lod", Impact.HIGH, b -> v.itemLod = b, () -> v.itemLod, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
 								new Toggle("item_single_copy", Impact.MEDIUM, b -> v.itemSingleCopy = b, () -> v.itemSingleCopy, "entity.ItemClusterRenderStateMixin"),
+								new Toggle("resting_items", Impact.MEDIUM, b -> v.restingItems = b, () -> v.restingItems, "entity.ItemEntityRestMixin"),
 								new Distance("item_lod_distance", 4, 48, i -> v.itemLodDistance = i, () -> v.itemLodDistance, "entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"),
 								new Toggle("parallel_models", Impact.HIGH, b -> v.parallelModels = b, () -> v.parallelModels, "entity.ModelParallelMixin", "entity.ModelFeatureRendererMixin"),
+								new Toggle("state_pool", Impact.MEDIUM, b -> v.statePool = b, () -> v.statePool, "entity.EntityRenderStatePoolMixin"),
 								new Toggle("entity_lod", Impact.HIGH, b -> v.entityLod = b, () -> v.entityLod, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Distance("entity_lod_distance", 8, 96, i -> v.entityLodDistance = i, () -> v.entityLodDistance, "entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Toggle("player_lod", Impact.MEDIUM, b -> v.playerLod = b, () -> v.playerLod, "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
+								new Distance("player_lod_distance", 8, 96, i -> v.playerLodDistance = i, () -> v.playerLodDistance, "entity.AvatarLodMixin", "entity.PlayerLodMixin"),
 								new Toggle("entity_anim_freeze", Impact.HIGH, b -> v.entityAnimFreeze = b, () -> v.entityAnimFreeze, "entity.ModelFeatureRendererMixin", "entity.LivingEntityAnimFreezeMixin"),
 								new Distance("entity_anim_distance", 4, 96, i -> v.entityAnimDistance = i, () -> v.entityAnimDistance, "entity.ModelFeatureRendererMixin", "entity.LivingEntityAnimFreezeMixin"))),
 						new Group("spawners", List.of(

@@ -19,7 +19,10 @@ public class DebugInfo {
 		long on = available.stream().filter(t -> t.get().get()).count();
 		String ring = !ZakoOptConfig.values.immediateRing ? "off" : System.getProperty("zakoopt.ring") != null || ZakoOptConfig.values.immediateRingForce ? (ZakoOptConfig.immediateRing() ? "on" : "off") + " (forced)"
 				: ZakoOptConfig.RING_PRESENT ? RingAutoTune.status() : "n/a";
-		String hud = MixinPlugin.VULKAN ? "off (VulkanMod)" : ZakoOptConfig.FOREIGN_HUD ? "off (other HUD mod)" : HudWorth.isMainSwapped() ? "off (main target swapped by another mod)" : !ZakoOptConfig.values.hudCache ? "off" : HudWorth.isWorth() ? "on" : "idle (FPS too close to monitor rate)";
-		return "ZakoOpt " + ZakoOptions.VERSION + ": " + on + "/" + available.size() + " on, ring " + ring + ", HUD cache " + hud;
+		String hud = MixinPlugin.VULKAN ? "off (VulkanMod)" : ZakoOptConfig.FOREIGN_HUD ? "off (" + ZakoOptConfig.FOREIGN_HUD_MOD + ")" : HudWorth.isMainSwapped() ? "off (main target swapped by another mod)" : !ZakoOptConfig.values.hudCache ? "off" : HudWorth.isWorth() ? "on" : "idle (FPS too close to monitor rate)";
+		if (!ZakoOptConfig.values.enabled) {
+			return "ZakoOpt " + ZakoOptions.VERSION + ": off";
+		}
+		return "ZakoOpt " + ZakoOptions.VERSION + ": " + on + "/" + available.size() + " on, ring " + ring + ", HUD cache " + hud + ", cores " + zako.opt.cpu.CorePin.status();
 	}
 }

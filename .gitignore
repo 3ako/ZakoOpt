@@ -16,7 +16,7 @@ tools/sparktree/yarn-*.tiny
 build/
 
 # служебное: замеры, отчёты, бенч и его мод, заметки, IDE
-bench/
+/bench/
 reports/
 charts/
 tools/

@@ -1,6 +1,7 @@
 package zako.opt.particle;
 
 import lombok.experimental.UtilityClass;
+import zako.opt.cpu.CorePin;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,6 +92,7 @@ public class Workers {
 		}
 
 		void work() {
+			CorePin.check();
 			while (true) {
 				int n = next.get();
 				if (n < ready) {
@@ -129,6 +131,7 @@ public class Workers {
 		}
 
 		void run() {
+			CorePin.check();
 			int b;
 			while ((b = next.getAndIncrement()) < blocks) {
 				try {

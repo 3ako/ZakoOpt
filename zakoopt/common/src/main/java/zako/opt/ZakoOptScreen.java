@@ -12,6 +12,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,7 +36,7 @@ public class ZakoOptScreen extends OptionsSubScreen {
 	protected void addTitle() {
 		layout.setHeaderHeight(52);
 		LinearLayout header = layout.addToHeader(LinearLayout.vertical().spacing(6));
-		header.addChild(new StringWidget(title, font), s -> s.alignHorizontallyCenter());
+		header.addChild(new StringWidget(title, font), LayoutSettings::alignHorizontallyCenter);
 		search = header.addChild(new EditBox(font, 0, 0, 200, 18, Component.translatable("zakoopt.search")), s -> s.alignHorizontallyCenter());
 		search.setHint(Component.translatable("zakoopt.search"));
 		search.setValue(query);
@@ -71,13 +72,18 @@ public class ZakoOptScreen extends OptionsSubScreen {
 			Button channel = Button.builder(Component.translatable("zakoopt.option.channel"), b -> ConfirmLinkScreen.confirmLinkNow(this, ZakoOptConfig.CHANNEL))
 					.tooltip(Tooltip.create(Component.translatable("zakoopt.option.channel.tooltip")))
 					.build();
-			OptionInstance<Boolean> all = OptionInstance.createBoolean("zakoopt.option.all", OptionInstance.cachedConstantTooltip(Component.translatable("zakoopt.option.all.tooltip")),
-					ZakoOptions.recommended().stream().allMatch(t -> t.get().get()), b -> {
-						ZakoOptions.recommended().forEach(t -> t.set().accept(b));
+			OptionInstance<Boolean> all = OptionInstance.createBoolean("zakoopt.option.enabled", OptionInstance.cachedConstantTooltip(Component.translatable("zakoopt.option.enabled.tooltip")),
+					ZakoOptConfig.values.enabled, b -> {
+						ZakoOptConfig.values.enabled = b;
 						ZakoOptConfig.save();
-						refresh();
 					});
 			list.addSmall(all.createButton(options), channel);
+			boolean inWorld = minecraft.level != null;
+			Button bench = Button.builder(Component.translatable("zakoopt.bench.button"), b -> zako.opt.bench.Bench.confirm(this))
+					.tooltip(Tooltip.create(Component.translatable(inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.button.tooltip")))
+					.build();
+			bench.active = !inWorld && !zako.opt.bench.Bench.running();
+			list.addSmall(java.util.List.of(bench));
 		}
 		for (ZakoOptions.Page page : ZakoOptions.PAGES) {
 			for (ZakoOptions.Group group : page.groups()) {
@@ -89,7 +95,7 @@ public class ZakoOptScreen extends OptionsSubScreen {
 				OptionInstance<?>[] widgets = shown.stream().map(ZakoOptScreen::widget).toArray(OptionInstance[]::new);
 				list.addSmall(widgets);
 				for (int i = 0; i < widgets.length; i++) {
-					if (ZakoOptConfig.FOREIGN_HUD && shown.get(i).key().equals("hud_cache")) {
+					if (Blocked.reason(shown.get(i).key()) != null) {
 						AbstractWidget button = list.findOption(widgets[i]);
 						button.active = false;
 					}
@@ -115,8 +121,9 @@ public class ZakoOptScreen extends OptionsSubScreen {
 
 	private static OptionInstance<?> widget(ZakoOptions.Option option) {
 		String key = "zakoopt.option." + option.key();
-		boolean foreignHud = ZakoOptConfig.FOREIGN_HUD && option.key().equals("hud_cache");
-		Component text = Component.translatable(foreignHud ? "zakoopt.option.hud_cache.foreign" : key + ".tooltip");
+		Component blocked = Blocked.reason(option.key());
+		Component text = blocked == null ? Component.translatable(key + ".tooltip")
+				: Component.empty().append(blocked.copy().withStyle(net.minecraft.ChatFormatting.RED)).append("\n\n").append(Component.translatable(key + ".tooltip"));
 		return switch (option) {
 			case ZakoOptions.Toggle t -> OptionInstance.createBoolean(key,
 					OptionInstance.cachedConstantTooltip(Component.empty().append(text).append("\n\n")

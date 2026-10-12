@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.loader.api.FabricLoader;
 import net.irisshaders.iris.api.v0.IrisApi;
+import zako.opt.cpu.CorePin;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,16 +19,20 @@ import zako.opt.gl.RingAutoTune;
 @Slf4j(topic = "zakoopt")
 public class ZakoOptConfig {
 	public final URI CHANNEL = URI.create("https://t.me/StarikZako");
-	private final boolean IRIS = FabricLoader.getInstance().isModLoaded("iris");
+	public final boolean IRIS = FabricLoader.getInstance().isModLoaded("iris");
 	// AxolotlClient draws its HUD straight to the screen, Exordium caches the HUD itself by swapping the main render target:
 	// with our HUD cache either one flickers
 	// mods that cache or spread the HUD over frames themselves: two such layers wash the HUD out
-	public final boolean FOREIGN_HUD = FabricLoader.getInstance().isModLoaded("axolotlclient") || FabricLoader.getInstance().isModLoaded("exordium")
-			|| FabricLoader.getInstance().isModLoaded("gnetum");
+	// mods that draw the HUD their own way; Soup Visual renders the extracted HUD itself mid-extraction, so the cache's texture
+	// stayed empty and the HUD blinked
+	public final String FOREIGN_HUD_MOD = java.util.stream.Stream.of("axolotlclient", "exordium", "gnetum", "soupapi")
+			.flatMap(id -> FabricLoader.getInstance().getModContainer(id).stream())
+			.map(mod -> mod.getMetadata().getName()).findFirst().orElse(null);
+	public final boolean FOREIGN_HUD = FOREIGN_HUD_MOD != null;
 	private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public final boolean RING_PRESENT = ZakoOptConfig.class.getClassLoader().getResource("zako/opt/gl/ImmediateRing.class") != null && !MixinPlugin.VULKAN;
 	private final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("zakoopt.json");
-	private final int CORES = Runtime.getRuntime().availableProcessors();
+	public final int CORES = Runtime.getRuntime().availableProcessors();
 
 	public Values values = load();
 	private boolean guiAnimatedItems;
@@ -43,6 +48,7 @@ public class ZakoOptConfig {
 	private boolean entityLod;
 	private int entityLodDistance;
 	private boolean playerLod;
+	private int playerLodDistance;
 	private boolean entityAnimFreeze;
 	private int entityAnimDistance;
 	private boolean particleLight;
@@ -55,6 +61,10 @@ public class ZakoOptConfig {
 	private int spawnerDistance;
 	private boolean blockEntityCache;
 	private boolean blockEntityEarlyCull;
+	private boolean displayCull;
+	private boolean restingItems;
+	private boolean statePool;
+	private boolean corePin;
 	private boolean lunarMultiDraw;
 	private boolean immediateRing;
 	private boolean movingBlockFlatLight;
@@ -95,6 +105,7 @@ public class ZakoOptConfig {
 		public boolean entityLod = true;
 		public int entityLodDistance = 35;
 		public boolean playerLod = true;
+		public int playerLodDistance = 35;
 		public boolean entityAnimFreeze = false;
 		public int entityAnimDistance = 16;
 		public boolean particleLight = true;
@@ -121,8 +132,14 @@ public class ZakoOptConfig {
 		public boolean immediateRingForce = false;
 		public boolean blockEntityCache = true;
 		public boolean blockEntityEarlyCull = true;
+		public boolean displayCull = true;
+		public boolean restingItems = true;
+		public boolean statePool = true;
+		public boolean corePin = false;
 		public boolean lunarMultiDraw = true;
 		public boolean updateCheck = true;
+		// the whole mod's effect, for comparing against plain play; the options keep their values
+		public boolean enabled = true;
 	}
 
 	private Values load() {
@@ -156,7 +173,7 @@ public class ZakoOptConfig {
 
 	// -Dzakoopt.<key> overrides the config file; the benchmark toggles these at runtime
 	private boolean on(String key, boolean value) {
-		if ("false".equals(System.getProperty("zakoopt.all"))) {
+		if (!values.enabled || "false".equals(System.getProperty("zakoopt.all"))) {
 			return false;
 		}
 		String p = System.getProperty("zakoopt." + key);
@@ -170,7 +187,7 @@ public class ZakoOptConfig {
 
 	// "auto" (and the config switch) only parallelize with 4+ logical CPUs; "true" forces it
 	private boolean resolveParallelParticles() {
-		if ("false".equals(System.getProperty("zakoopt.all"))) {
+		if (!values.enabled || "false".equals(System.getProperty("zakoopt.all"))) {
 			return false;
 		}
 		String p = System.getProperty("zakoopt.parallelparticles");
@@ -195,6 +212,7 @@ public class ZakoOptConfig {
 		entityLod = on("entitylod", values.entityLod);
 		entityLodDistance = num("entitylod.distance", values.entityLodDistance);
 		playerLod = on("playerlod", values.playerLod);
+		playerLodDistance = num("playerlod.distance", values.playerLodDistance);
 		entityAnimFreeze = on("entityanim", values.entityAnimFreeze);
 		entityAnimDistance = num("entityanim.distance", values.entityAnimDistance);
 		particleLight = on("particlelight", values.particleLight);
@@ -208,9 +226,17 @@ public class ZakoOptConfig {
 		spawnerDistance = num("spawner.distance", values.spawnerDistance);
 		blockEntityCache = on("becache", values.blockEntityCache);
 		blockEntityEarlyCull = on("becull", values.blockEntityEarlyCull);
+		displayCull = on("displaycull", values.displayCull);
+		restingItems = on("restingitems", values.restingItems);
+		// the Iris shadow pass extracts the same entities again for its own camera, which would overwrite the pooled state
+		statePool = on("statepool", values.statePool) && !(IRIS && IrisApi.getInstance().isShaderPackInUse());
+		corePin = on("corepin", values.corePin) && CorePin.available();
+		// refresh runs on the render thread, which moves itself here
+		CorePin.set(corePin);
+		CorePin.check();
 		lunarMultiDraw = on("lunarmultidraw", values.lunarMultiDraw);
 		boolean ringForced = System.getProperty("zakoopt.ring") != null || values.immediateRingForce;
-		if (values.immediateRing && !ringForced && RING_PRESENT) {
+		if (values.enabled && values.immediateRing && !ringForced && RING_PRESENT) {
 			RingAutoTune.frame();
 		}
 		immediateRing = on("ring", values.immediateRing) && (ringForced || RingAutoTune.ringAllowed());
@@ -288,6 +314,10 @@ public class ZakoOptConfig {
 		return playerLod;
 	}
 
+	public int playerLodDistance() {
+		return playerLodDistance;
+	}
+
 	public boolean entityAnimFreeze() {
 		return entityAnimFreeze;
 	}
@@ -334,6 +364,22 @@ public class ZakoOptConfig {
 
 	public boolean blockEntityEarlyCull() {
 		return blockEntityEarlyCull;
+	}
+
+	public boolean displayCull() {
+		return displayCull;
+	}
+
+	public boolean restingItems() {
+		return restingItems;
+	}
+
+	public boolean statePool() {
+		return statePool;
+	}
+
+	public boolean corePin() {
+		return corePin;
 	}
 
 	public boolean lunarMultiDraw() {

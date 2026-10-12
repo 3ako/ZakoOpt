@@ -15,6 +15,7 @@ public class EntityLod {
 	}
 
 	public boolean farPlayer(double distanceSq) {
-		return ZakoOptConfig.playerLod() && far(distanceSq);
+		double d = ZakoOptConfig.playerLodDistance();
+		return ZakoOptConfig.entityLod() && ZakoOptConfig.playerLod() && distanceSq > d * d;
 	}
 }
