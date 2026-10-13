@@ -12,7 +12,11 @@ public class RawVertices {
 	private final boolean SODIUM = FabricLoader.getInstance().isModLoaded("sodium");
 
 	public boolean accepts(VertexConsumer consumer, VertexFormat format) {
-		return SODIUM ? SodiumVertices.accepts(consumer) : consumer instanceof RawBuffer raw && raw.zakoopt$accepts(format);
+		// a BufferBuilder in another format (Iris extends the vanilla ones) needs elements the cached vertices lack
+		if (consumer instanceof RawBuffer raw && !raw.zakoopt$accepts(format)) {
+			return false;
+		}
+		return SODIUM ? SodiumVertices.accepts(consumer) : consumer instanceof RawBuffer;
 	}
 
 	public void push(VertexConsumer consumer, MemoryStack stack, long src, int count, VertexFormat format) {
