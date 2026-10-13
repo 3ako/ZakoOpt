@@ -130,6 +130,11 @@ public class Scene {
 				f("scoreboard players set #particles zakoopt_t %d", all || view.key().equals("holograms") ? 1 : 0));
 	}
 
+	// a low render distance leaves the far part unloaded, and fill then places nothing at all
+	public List<String> forestLoaded(boolean loaded) {
+		return List.of(f("forceload %s -10 -130 74 -46", loaded ? "add" : "remove"));
+	}
+
 	// for the far leaves pick only: dark oaks with some oaks on grass behind the scene, out of every other camera's sight
 	public List<String> forest() {
 		Random random = new Random(42);

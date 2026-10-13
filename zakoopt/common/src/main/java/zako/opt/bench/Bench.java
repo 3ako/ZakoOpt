@@ -269,11 +269,13 @@ public class Bench {
 		// the far leaves pick has no switch measured with it, so it gets its own stop, with the forest planted there first
 		if (option("far_leaves") != null) {
 			Scene.View forest = Scene.FOREST;
+			server(mc, Scene.forestLoaded(true));
 			server(mc, tp(forest));
-			sleep(2000);
+			sleep(4000);
 			server(mc, Scene.forest());
 			sleep(3000);
 			pick(mc, saved, List.of("far_leaves", "far_leaves_distance"), forest, "zakoopt.bench.forest", picks);
+			server(mc, Scene.forestLoaded(false));
 		}
 
 		server(mc, tp(o));
