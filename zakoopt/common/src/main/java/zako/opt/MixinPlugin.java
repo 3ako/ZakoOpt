@@ -22,6 +22,9 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	// the immediate ring lives in OpenGL buffers; VulkanMod draws without them and rewrites RenderType.draw
 	private static final List<String> RING_MIXINS = List.of("gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin", "gl.ByteBufferBuilderMixin", "gl.ByteBufferBuilderPoolMixin", "gl.RenderTypeDrawMixin");
 
+	// a Sodium class only some releases have: its mixin would log a missing target on all the others
+	private static final String OLD_LEAF_CULL_TARGET = "net/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/BlockOcclusionCache.class";
+
 	private static boolean sodiumAdded;
 
 	// every config uses this plugin: only the first one asked gets the Sodium mixins
@@ -31,7 +34,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 			return null;
 		}
 		sodiumAdded = true;
-		return SODIUM_MIXINS.stream().filter(m -> built(m) && (LUNAR || !LUNAR_MIXINS.contains(m))).toList();
+		return SODIUM_MIXINS.stream().filter(m -> built(m) && (LUNAR || !LUNAR_MIXINS.contains(m))
+				&& (!m.equals("block.SodiumLeafCullOldMixin") || MixinPlugin.class.getClassLoader().getResource(OLD_LEAF_CULL_TARGET) != null)).toList();
 	}
 
 	public static boolean built(String mixin) {
