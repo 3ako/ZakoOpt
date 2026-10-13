@@ -79,5 +79,6 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+		GuardWeaver.weave(targetClass, mixinClassName, mixinInfo);
 	}
 }

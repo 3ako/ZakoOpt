@@ -20,6 +20,7 @@ public class DebugInfo {
 	public List<String> lines() {
 		List<String> lines = new ArrayList<>();
 		lines.add(line());
+		lines.addAll(Guard.lines());
 		EXTRA.forEach(extra -> lines.addAll(extra.get()));
 		return lines;
 	}

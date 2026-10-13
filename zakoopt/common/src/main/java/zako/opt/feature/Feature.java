@@ -23,6 +23,8 @@ public abstract class Feature {
 	public boolean value = data.enabled();
 	// what the game runs with this frame; hot code reads only this
 	public boolean on;
+	// a handler of it threw: off until restart
+	public volatile boolean broken;
 
 	// why it cannot work on this machine, as a translation key or a mod name; null: it can
 	public String blocked() {
@@ -31,7 +33,7 @@ public abstract class Feature {
 
 	// once a frame on the render thread
 	public void refresh() {
-		on = flag(value) && blocked() == null && available();
+		on = flag(value) && blocked() == null && available() && !broken;
 	}
 
 	public String key() {
