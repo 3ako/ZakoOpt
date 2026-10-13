@@ -58,12 +58,13 @@ public class Scene {
 		c.add("weather clear");
 		c.add("gamemode creative @a");
 		c.add(f("fill -4 %d -8 130 %d 4 minecraft:smooth_stone", Y - 1, Y - 1));
-		// the pistons' clock: #p runs 0..3 with the game time, every row's command blocks power its pistons on half of it
+		// the pistons' clock: #p runs 0..3 with the game time, every row's command blocks power its pistons on half of it;
+		// it stands by the pistons, since command blocks run only within the simulation distance
 		c.add("scoreboard objectives add zakoopt_t dummy");
 		c.add("scoreboard players set #4 zakoopt_t 4");
 		c.addAll(zone(OVERVIEW));
-		c.add(f("setblock -2 %d -6 minecraft:repeating_command_block[facing=up]{auto:1b,Command:\"execute store result score #p zakoopt_t run time query gametime\"}", Y - 6));
-		c.add(f("setblock -2 %d -6 minecraft:chain_command_block[facing=up]{auto:1b,Command:\"scoreboard players operation #p zakoopt_t %%= #4 zakoopt_t\"}", Y - 5));
+		c.add(f("setblock 130 %d -6 minecraft:repeating_command_block[facing=up]{auto:1b,Command:\"execute store result score #p zakoopt_t run time query gametime\"}", Y - 6));
+		c.add(f("setblock 130 %d -6 minecraft:chain_command_block[facing=up]{auto:1b,Command:\"scoreboard players operation #p zakoopt_t %%= #4 zakoopt_t\"}", Y - 5));
 		for (int i = 0; i < 3; i++) {
 			c.add(f("bossbar add zakoopt:b%d %s", i, text("Boss " + i)));
 			c.add(f("bossbar set zakoopt:b%d value %d", i, 30 + i * 25));
