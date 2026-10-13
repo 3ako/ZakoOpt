@@ -24,8 +24,9 @@ public class MinecraftTimerMixin {
 		}
 	}
 
-	// vanilla ends the profile it began under the same condition: with no begin, its end would throw
-	@WrapOperation(method = "renderFrame", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/TimerQuery;endProfile()V"))
+	// vanilla ends the profile it began under the same condition: with no begin, its end would throw; 26.1.2 ends it with a
+	// return value and has its own mixin for that
+	@WrapOperation(method = "renderFrame", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/TimerQuery;endProfile()V"), require = 0)
 	private void zakoopt$ownTimersEnd(TimerQuery query, Operation<Void> original) {
 		if (!GpuTimers.supported()) {
 			original.call(query);

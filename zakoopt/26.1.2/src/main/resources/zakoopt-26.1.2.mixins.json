@@ -5,6 +5,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"gl.RenderTargetBlitMixin",
+		"gl.MinecraftProfileEndTimerMixin",
 		"block.AbstractSignRendererMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.SignModelCacheMixin",
