@@ -16,6 +16,16 @@ public class Versions {
 		return false;
 	}
 
+	// patch releases (1.1.1 -> 1.1.2) go out quietly: only a new major.minor is offered
+	public boolean offered(String candidate, String current) {
+		return newer(release(candidate), release(current));
+	}
+
+	private String release(String version) {
+		int[] p = parts(version);
+		return p[0] + "." + (p.length > 1 ? p[1] : 0);
+	}
+
 	private int[] parts(String version) {
 		String core = version.replaceFirst("^[vV]", "").split("[+\\-]", 2)[0];
 		String[] split = core.split("\\.");
@@ -35,6 +45,11 @@ public class Versions {
 		check(newer("1.1", "1.0.9"));
 		check(!newer("0.9.9", "1.0.0"));
 		check(!newer("garbage", "1.0.0"));
+		check(!offered("1.1.2", "1.1.1"));
+		check(!offered("v1.1.0", "1.1.5"));
+		check(offered("1.2.0", "1.1.9"));
+		check(offered("v2.0", "1.9.9"));
+		check(offered("1.1.2", "1.0.3"));
 		System.out.println("ok");
 	}
 

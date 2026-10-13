@@ -65,7 +65,7 @@ public class UpdateCheck {
 					}
 					JsonObject release = JsonParser.parseString(response.body()).getAsJsonObject();
 					String tag = release.get("tag_name").getAsString();
-					if (Versions.newer(tag, ZakoOptions.VERSION)) {
+					if (Versions.offered(tag, ZakoOptions.VERSION)) {
 						latest = tag;
 					}
 				})
