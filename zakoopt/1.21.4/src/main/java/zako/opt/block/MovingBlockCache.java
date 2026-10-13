@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import lombok.experimental.UtilityClass;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -41,7 +42,9 @@ public class MovingBlockCache {
 		}
 	};
 
-	private record Key(BlockState state, long seed, boolean checkSides, int overlay) {
+	// tint: grass, leaves, vines... take their colour from the biome where they are tesselated, so a mesh is only good
+	// for blocks of the same colour
+	private record Key(BlockState state, long seed, boolean checkSides, int overlay, int tint) {
 	}
 
 	private record Mesh(BakedModel model, RenderType type, ByteBuffer vertices, int count) {
@@ -51,7 +54,7 @@ public class MovingBlockCache {
 	public boolean render(BlockRenderDispatcher dispatcher, BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource buffers,
 						  Level level, boolean checkSides, int overlay) {
 		BakedModel model = dispatcher.getBlockModel(state);
-		Key key = new Key(state, state.getSeed(pos), checkSides, overlay);
+		Key key = new Key(state, state.getSeed(pos), checkSides, overlay, Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 0));
 		Mesh entry = CACHE.get(key);
 		if (entry == null || entry.model != model) {
 			entry = capture(dispatcher, model, pos, state, level, key);

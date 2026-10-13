@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import lombok.experimental.UtilityClass;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderLayerHelper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeStorage;
@@ -28,16 +29,29 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import zako.opt.gl.RawVertices;
 
-// piston-moved blocks: tesselate each BlockState once, then per frame only translate positions and set one light value
+// piston-moved blocks: tesselate each BlockState once per tint, then per frame only translate positions and set one light value
 @UtilityClass
 public class MovingBlockCache {
-	private final Map<BlockState, Entry> CACHE = new IdentityHashMap<>();
+	private final Map<Key, Entry> CACHE = new LinkedHashMap<>(64, 0.75f, true) {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<Key, MovingBlockCache.Entry> eldest) {
+			if (size() <= 1024) {
+				return false;
+			}
+			free(eldest.getValue());
+			return true;
+		}
+	};
+
+	// grass, leaves, vines... take their colour from the biome where they are tesselated: the tint is part of the key, or every
+	// moved block of a state would show the colour of the first one
+	private record Key(BlockState state, int tint) {
+	}
 
 	private record Layer(RenderType type, ByteBuffer vertices, int count) {
 	}
@@ -56,13 +70,14 @@ public class MovingBlockCache {
 			if (!(model instanceof SingleVariant)) {
 				return false;
 			}
-			Entry entry = CACHE.get(state.blockState);
+			Key key = new Key(state.blockState, Minecraft.getInstance().getBlockColors().getColor(state.blockState, state, state.blockPos, 0));
+			Entry entry = CACHE.get(key);
 			if (entry == null || entry.model != model) {
 				if (entry != null) {
-					entry.layers.forEach(layer -> MemoryUtil.memFree(layer.vertices));
+					free(entry);
 				}
 				entry = capture(state, model, dispatcher);
-				CACHE.put(state.blockState, entry);
+				CACHE.put(key, entry);
 			}
 			for (Layer layer : entry.layers) {
 				if (!RawVertices.accepts(buffers.getBuffer(layer.type), layer.type.format())) {
@@ -75,6 +90,10 @@ public class MovingBlockCache {
 			}
 			return true;
 		});
+	}
+
+	private void free(Entry entry) {
+		entry.layers.forEach(layer -> MemoryUtil.memFree(layer.vertices));
 	}
 
 	private Entry capture(MovingBlockRenderState state, BlockStateModel model, BlockRenderDispatcher dispatcher) {

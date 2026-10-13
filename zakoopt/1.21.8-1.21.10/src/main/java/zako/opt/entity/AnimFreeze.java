@@ -115,6 +115,8 @@ public class AnimFreeze {
 				return c;
 			}
 		}
+		// a render type built per call (energySwirl, breezeWind) never matches again: drop what no frame has used since the last one
+		holder.captures.removeIf(old -> old.usedFrame < frame - 1);
 		Capture c = new Capture();
 		c.model = model;
 		c.type = type;

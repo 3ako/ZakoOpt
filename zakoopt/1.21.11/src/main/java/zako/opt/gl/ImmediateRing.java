@@ -152,11 +152,14 @@ public class ImmediateRing {
 		for (Map.Entry<VertexFormat, Ring> e : RINGS.entrySet()) {
 			Ring ring = e.getValue();
 			if (ring.needed > 0 && liveBuilders == 0) {
-				waitAll();
-				ring.buffer.close();
-				int size = Math.min(MAX_SEGMENT, Integer.highestOneBit(ring.needed) << 1);
-				allocate(ring, e.getKey(), size);
-				log.info("Immediate ring for {} grown to {} KB per frame", e.getKey(), size >> 10);
+				int size = (int) Math.min(MAX_SEGMENT, (long) Integer.highestOneBit(ring.needed) << 1);
+				// at the cap already: a frame bigger than it falls back to the vanilla upload, not a full sync and reallocation every frame
+				if (size > ring.segmentSize) {
+					waitAll();
+					ring.buffer.close();
+					allocate(ring, e.getKey(), size);
+					log.info("Immediate ring for {} grown to {} KB per frame", e.getKey(), size >> 10);
+				}
 				ring.needed = 0;
 			}
 			ring.cursor = segmentStart(ring);
