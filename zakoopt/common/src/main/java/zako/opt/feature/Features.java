@@ -101,10 +101,17 @@ public class Features {
 		return ZakoOptConfig.IRIS && IrisApi.getInstance().isShaderPackInUse();
 	}
 
+	// set by features whose change needs the terrain meshed again: one rebuild for all of them, the master switch flips several
+	public boolean terrainChanged;
+
 	public void refresh() {
 		active = ZakoOptConfig.enabled && !"false".equals(System.getProperty("zakoopt.all"));
 		for (Feature f : ALL) {
 			f.refresh();
+		}
+		if (terrainChanged) {
+			terrainChanged = false;
+			zako.opt.block.Terrain.rebuild();
 		}
 	}
 

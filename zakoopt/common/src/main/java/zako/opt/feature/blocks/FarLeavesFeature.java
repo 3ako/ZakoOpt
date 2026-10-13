@@ -1,7 +1,7 @@
 package zako.opt.feature.blocks;
 
-import zako.opt.block.Terrain;
 import zako.opt.feature.Feature;
+import zako.opt.feature.Features;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
 import zako.opt.feature.Impact;
@@ -26,7 +26,7 @@ public class FarLeavesFeature extends Feature {
 		boolean was = on;
 		super.refresh();
 		if (was != on) {
-			Terrain.rebuild();
+			Features.terrainChanged = true;
 		}
 	}
 }
