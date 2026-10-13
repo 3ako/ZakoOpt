@@ -1,5 +1,6 @@
 package zako.opt;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -71,7 +72,8 @@ public abstract class PanelScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		return click(event.x(), event.y(), event.button()) || super.mouseClicked(event, doubleClick);
+		// 26.3 numbers buttons the SDL way, left is 1 there; Panel takes 0 as left
+		return click(event.x(), event.y(), event.button() == InputConstants.MOUSE_BUTTON_LEFT ? 0 : -1) || super.mouseClicked(event, doubleClick);
 	}
 
 	@Override
