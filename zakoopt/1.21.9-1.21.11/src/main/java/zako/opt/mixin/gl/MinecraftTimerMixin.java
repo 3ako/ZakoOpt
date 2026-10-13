@@ -24,6 +24,12 @@ public class MinecraftTimerMixin {
 		}
 	}
 
+	// vanilla ends the profile it began under the same condition: with no begin, its end would throw
+	@WrapOperation(method = "runTick", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/TimerQuery;endProfile()Lcom/mojang/blaze3d/systems/TimerQuery$FrameProfile;"))
+	private TimerQuery.FrameProfile zakoopt$ownTimersEnd(TimerQuery query, Operation<TimerQuery.FrameProfile> original) {
+		return GpuTimers.supported() ? null : original.call(query);
+	}
+
 	@Inject(method = "runTick", at = @At("HEAD"))
 	private void zakoopt$utilization(CallbackInfo ci) {
 		if (GpuTimers.supported()) {
