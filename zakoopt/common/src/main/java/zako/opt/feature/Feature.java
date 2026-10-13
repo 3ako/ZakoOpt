@@ -17,6 +17,8 @@ public abstract class Feature {
 	private final FeatureData data = getClass().getAnnotation(FeatureData.class);
 	private final String property = "zakoopt." + data.key();
 	private final List<Field> settings = Arrays.stream(getClass().getFields()).filter(f -> f.isAnnotationPresent(Setting.class)).toList();
+	// a class lookup per mixin: refresh() reads it every frame, so it is resolved once
+	private final boolean available = data.mixins().length == 0 || Arrays.stream(data.mixins()).anyMatch(MixinPlugin::applies);
 	// as set by the player and stored in the config
 	public boolean value = data.enabled();
 	// what the game runs with this frame; hot code reads only this
@@ -30,10 +32,6 @@ public abstract class Feature {
 	// once a frame on the render thread
 	public void refresh() {
 		on = flag(value) && blocked() == null && available();
-	}
-
-	public boolean available() {
-		return data.mixins().length == 0 || Arrays.stream(data.mixins()).anyMatch(MixinPlugin::applies);
 	}
 
 	public String key() {
