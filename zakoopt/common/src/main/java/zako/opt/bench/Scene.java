@@ -114,7 +114,7 @@ public class Scene {
 
 	public List<String> spawnerStrip(int strip) {
 		int z = SPAWNERS.z() + 8 + strip * 4;
-		return List.of(f("fill 220 %d %d 244 %d %d minecraft:spawner{SpawnData:{entity:{id:\"minecraft:%s\"}},Delay:32767s,MinSpawnDelay:32767s,MaxSpawnDelay:32767s}",
+		return List.of(f("fill 220 %d %d 244 %d %d minecraft:spawner{SpawnData:{entity:{id:\"minecraft:%s\"}},Delay:32767s,MinSpawnDelay:32767s,MaxSpawnDelay:32767s,RequiredPlayerRange:128s}",
 				Y, z, Y, z + 3, KINDS[strip % KINDS.length]));
 	}
 
@@ -187,7 +187,7 @@ public class Scene {
 			c.add(f("setblock %d %d %d minecraft:%s%s", 64 + i % 12 * 2, y, z + i / 12 * 2, b, nbt));
 		}
 		for (int i = 0; i < 4; i++) {
-			c.add(f("setblock %d %d %d minecraft:spawner{SpawnData:{entity:{id:\"minecraft:%s\"}},Delay:32767s,MinSpawnDelay:32767s,MaxSpawnDelay:32767s}", 88 + i * 2, y, z + 1,
+			c.add(f("setblock %d %d %d minecraft:spawner{SpawnData:{entity:{id:\"minecraft:%s\"}},Delay:32767s,MinSpawnDelay:32767s,MaxSpawnDelay:32767s,RequiredPlayerRange:128s}", 88 + i * 2, y, z + 1,
 					KINDS[(lv + i) % 6]));
 		}
 		// E: pistons pushing stone up and down every 2 ticks, powered from the cells under them by the row's two command blocks
