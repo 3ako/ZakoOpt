@@ -47,9 +47,11 @@ public class MixinPlugin implements IMixinConfigPlugin {
 				&& (LUNAR || !LUNAR_MIXINS.contains(mixin));
 	}
 
-	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics
+	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics;
+	// GPU timers and the window blit call GL directly, and VulkanMod has no GL context to call
 	private static boolean openGl(String mixin) {
-		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin");
+		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin")
+				|| mixin.endsWith("TimerMixin") || mixin.equals("gl.RenderTargetBlitMixin");
 	}
 
 	@Override
