@@ -1,6 +1,5 @@
 package zako.opt.gl;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +7,6 @@ import net.caffeinemc.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.LocalSectionIndex;
 import net.caffeinemc.mods.sodium.client.render.chunk.data.SectionRenderDataStorage;
-import net.caffeinemc.mods.sodium.client.render.chunk.data.SectionRenderDataUnsafe;
 import net.caffeinemc.mods.sodium.client.render.chunk.lists.ChunkRenderList;
 import net.caffeinemc.mods.sodium.client.render.chunk.lists.ChunkRenderListIterable;
 import net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegion;
@@ -126,6 +124,9 @@ public class OcclusionCull {
 			return;
 		}
 		armed = false;
+		if (GlTargets.depth(MainView.target()) < 0) {
+			return;
+		}
 		if (!ready && !init()) {
 			return;
 		}
@@ -301,7 +302,7 @@ public class OcclusionCull {
 			return;
 		}
 		GpuTimers.mark("occlusion depth");
-		var target = Minecraft.getInstance().getMainRenderTarget();
+		var target = MainView.target();
 		int srcW = target.width, srcH = target.height;
 		int w = (srcW + BLOCK - 1) / BLOCK, h = (srcH + BLOCK - 1) / BLOCK;
 
@@ -338,9 +339,11 @@ public class OcclusionCull {
 		GL20C.glUseProgram(program);
 		GL30C.glBindVertexArray(vao);
 		// blaze3d binds sampler objects to the units, and one left on unit 0 would override the texture's own sampling
-		int prevSampler = GL11C.glGetInteger(GL33C.GL_SAMPLER_BINDING);
-		GL33C.glBindSampler(0, 0);
-		GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, ((GlTexture) target.getDepthTexture()).glId());
+		int prevSampler = GlTargets.SAMPLERS ? GL11C.glGetInteger(GL33C.GL_SAMPLER_BINDING) : 0;
+		if (GlTargets.SAMPLERS) {
+			GL33C.glBindSampler(0, 0);
+		}
+		GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, GlTargets.depth(target));
 		GL20C.glUniform1i(uDepth, 0);
 		GL20C.glUniform2i(uBlock, BLOCK, BLOCK);
 		GL20C.glUniform2i(uSize, srcW, srcH);
@@ -379,7 +382,9 @@ public class OcclusionCull {
 		GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, prevRead);
 		GL11C.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 		GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, prevTexture);
-		GL33C.glBindSampler(0, prevSampler);
+		if (GlTargets.SAMPLERS) {
+			GL33C.glBindSampler(0, prevSampler);
+		}
 		GL13C.glActiveTexture(prevUnit);
 		GL30C.glBindVertexArray(prevVao);
 		GL20C.glUseProgram(prevProgram);
@@ -435,7 +440,7 @@ public class OcclusionCull {
 			}
 			long data = storage.getDataPointer(local);
 			for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-				elements += SectionRenderDataUnsafe.getVertexCount(data, facing);
+				elements += SodiumSections.count(data, facing);
 			}
 		}
 		return elements;
