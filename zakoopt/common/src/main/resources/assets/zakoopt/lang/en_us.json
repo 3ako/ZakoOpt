@@ -171,5 +171,7 @@
   "zakoopt.welcome.title": "ZakoOpt: tune the settings?",
   "zakoopt.welcome": "The mod checks what speeds the game up on your computer and sets itself up. Takes 3–4 minutes and leaves your worlds alone.",
   "zakoopt.welcome.later": "Later",
-  "zakoopt.welcome.start": "Tune"
+  "zakoopt.welcome.start": "Tune",
+  "zakoopt.guard.chat": "ZakoOpt turned off %s after an error. Please send logs/latest.log to the author.",
+  "zakoopt.guard.chat.other": "ZakoOpt hit an error. Please send logs/latest.log to the author."
 }

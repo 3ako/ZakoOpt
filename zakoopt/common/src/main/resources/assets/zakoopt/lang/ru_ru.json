@@ -171,5 +171,7 @@
   "zakoopt.welcome.title": "ZakoOpt: подобрать настройки?",
   "zakoopt.welcome": "Мод проверит, что ускоряет игру именно на вашем компьютере, и настроится сам. Займёт 3–4 минуты, ваши миры не затронет.",
   "zakoopt.welcome.later": "Позже",
-  "zakoopt.welcome.start": "Подобрать"
+  "zakoopt.welcome.start": "Подобрать",
+  "zakoopt.guard.chat": "ZakoOpt выключила %s из-за ошибки. Пожалуйста, отправьте автору файл logs/latest.log.",
+  "zakoopt.guard.chat.other": "В ZakoOpt произошла ошибка. Пожалуйста, отправьте автору файл logs/latest.log."
 }

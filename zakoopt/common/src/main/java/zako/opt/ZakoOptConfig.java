@@ -74,5 +74,6 @@ public class ZakoOptConfig {
 	// System.getProperty hashes the key on every call, too slow for hot paths; resolved once per frame instead
 	public void refresh() {
 		Features.refresh();
+		Guard.tell();
 	}
 }
