@@ -9,11 +9,8 @@ import zako.opt.feature.Feature;
 import zako.opt.feature.Features;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -23,21 +20,9 @@ public class Guard {
 	// dev runs from Gradle crash on our errors instead, so they get seen; -Dzakoopt.guard.crash=true does the same in a real game
 	private final boolean CRASH = FabricLoader.getInstance().isDevelopmentEnvironment() || Boolean.getBoolean("zakoopt.guard.crash");
 	private final Set<String> FAILED = ConcurrentHashMap.newKeySet();
-	// thrown by the game or another mod inside an original call one of our handlers made: theirs, so it goes on as if we were not there
-	private final Map<Throwable, Boolean> FOREIGN = Collections.synchronizedMap(new WeakHashMap<>());
 	// features turned off since the player was last told; told in chat once a world is open
 	private final List<Feature> UNTOLD = new CopyOnWriteArrayList<>();
 	private volatile boolean untold;
-
-	// woven around each Operation.call in a guarded handler
-	public Throwable foreign(Throwable t) {
-		FOREIGN.put(t, Boolean.TRUE);
-		return t;
-	}
-
-	public boolean isForeign(Throwable t) {
-		return FOREIGN.containsKey(t);
-	}
 
 	public void fail(Throwable t, String mixin, String method) {
 		if (CRASH) {
