@@ -9,13 +9,11 @@ import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TryCatchBlockNode;
-import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -42,7 +40,9 @@ public class GuardWeaver implements Opcodes {
 		for (MethodNode m : List.copyOf(target.methods)) {
 			int at = m.name.indexOf("zakoopt$");
 			String merged = mergedFrom(m);
-			if (at < 0 || !own.contains(m.name.substring(at)) || merged != null && !merged.equals(mixinClass)
+			// a handler around an original call (@WrapOperation) is left as is: the catch would push it past the JIT's inlining limits,
+			// and running the original again after ours threw could do the game's work twice, so an error there crashes plainly
+			if (at < 0 || !own.contains(m.name.substring(at)) || merged != null && !merged.equals(mixinClass) || m.desc.contains(OPERATION)
 					|| (m.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0 || m.instructions.size() == 0 || !WRAPPED.add(target.name + "." + m.name + m.desc)) {
 				continue;
 			}
@@ -94,20 +94,17 @@ public class GuardWeaver implements Opcodes {
 		Type ret = Type.getReturnType(m.desc);
 		Type[] args = Type.getArgumentTypes(m.desc);
 		int[] slots = new int[args.length];
-		int slot = isStatic ? 0 : 1, operation = -1;
+		int slot = isStatic ? 0 : 1;
 		for (int i = 0; i < args.length; i++) {
 			slots[i] = slot;
 			slot += args[i].getSize();
-			if (operation < 0 && args[i].getDescriptor().equals(OPERATION)) {
-				operation = i;
-			}
 		}
 		int access = ACC_PRIVATE | ACC_SYNTHETIC | (isStatic ? ACC_STATIC : 0);
-		boolean fallsBack = operation >= 0 || ret.getSort() == Type.VOID || args.length > 0 && args[0].equals(ret);
+		boolean fallsBack = ret.getSort() == Type.VOID || args.length > 0 && args[0].equals(ret);
 		if (fallsBack) {
 			MethodNode fallback = new MethodNode(access, m.name + "$fallback", m.desc, null, null);
-			fallback.instructions = fallback(args, slots, ret, operation);
-			fallback.maxStack = 8 + operation * 2;
+			fallback.instructions = fallback(args, slots, ret);
+			fallback.maxStack = 2;
 			fallback.maxLocals = slot;
 			c.methods.add(fallback);
 		}
@@ -167,58 +164,12 @@ public class GuardWeaver implements Opcodes {
 	}
 
 	// what the game would have done without the handler
-	private InsnList fallback(Type[] args, int[] slots, Type ret, int operation) {
+	private InsnList fallback(Type[] args, int[] slots, Type ret) {
 		InsnList h = new InsnList();
-		if (operation >= 0) {
-			h.add(new VarInsnNode(ALOAD, slots[operation]));
-			h.add(new IntInsnNode(SIPUSH, operation));
-			h.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-			for (int i = 0; i < operation; i++) {
-				h.add(new InsnNode(DUP));
-				h.add(new IntInsnNode(SIPUSH, i));
-				h.add(new VarInsnNode(args[i].getOpcode(ILOAD), slots[i]));
-				box(h, args[i]);
-				h.add(new InsnNode(AASTORE));
-			}
-			h.add(new MethodInsnNode(INVOKEINTERFACE, "com/llamalad7/mixinextras/injector/wrapoperation/Operation", "call", "([Ljava/lang/Object;)Ljava/lang/Object;", true));
-			unbox(h, ret);
-		} else if (ret.getSort() != Type.VOID) {
+		if (ret.getSort() != Type.VOID) {
 			h.add(new VarInsnNode(args[0].getOpcode(ILOAD), slots[0]));
 		}
 		h.add(new InsnNode(ret.getOpcode(IRETURN)));
 		return h;
-	}
-
-	private void box(InsnList h, Type t) {
-		String owner = boxed(t);
-		if (owner != null) {
-			h.add(new MethodInsnNode(INVOKESTATIC, owner, "valueOf", "(" + t.getDescriptor() + ")L" + owner + ";", false));
-		}
-	}
-
-	private void unbox(InsnList h, Type t) {
-		String owner = boxed(t);
-		if (t.getSort() == Type.VOID) {
-			h.add(new InsnNode(POP));
-		} else if (owner != null) {
-			h.add(new TypeInsnNode(CHECKCAST, owner));
-			h.add(new MethodInsnNode(INVOKEVIRTUAL, owner, t.getClassName() + "Value", "()" + t.getDescriptor(), false));
-		} else {
-			h.add(new TypeInsnNode(CHECKCAST, t.getInternalName()));
-		}
-	}
-
-	private String boxed(Type t) {
-		return switch (t.getSort()) {
-			case Type.BOOLEAN -> "java/lang/Boolean";
-			case Type.BYTE -> "java/lang/Byte";
-			case Type.CHAR -> "java/lang/Character";
-			case Type.SHORT -> "java/lang/Short";
-			case Type.INT -> "java/lang/Integer";
-			case Type.FLOAT -> "java/lang/Float";
-			case Type.LONG -> "java/lang/Long";
-			case Type.DOUBLE -> "java/lang/Double";
-			default -> null;
-		};
 	}
 }
