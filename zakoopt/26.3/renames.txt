@@ -1,3 +1,14 @@
+net.minecraft.client.renderer.RenderType=net.minecraft.client.renderer.rendertype.RenderType
+net.minecraft.Util=net.minecraft.util.Util
+net.minecraft.resources.ResourceLocation=net.minecraft.resources.Identifier
+net.minecraft.world.level.GameRules=net.minecraft.world.level.gamerules.GameRules
+ResourceLocation=Identifier
+net.minecraft.client.renderer.block.model.BakedQuad=net.minecraft.client.resources.model.geometry.BakedQuad
+net.minecraft.client.renderer.block.model.ItemTransform=net.minecraft.client.resources.model.cuboid.ItemTransform
+net.minecraft.client.renderer.state.CameraRenderState=net.minecraft.client.renderer.state.level.CameraRenderState
+net.minecraft.client.renderer.state.LevelRenderState=net.minecraft.client.renderer.state.level.LevelRenderState
+net.minecraft.client.renderer.state.ParticleGroupRenderState=net.minecraft.client.renderer.state.level.ParticleGroupRenderState
+net.minecraft.client.renderer.state.QuadParticleRenderState=net.minecraft.client.renderer.state.level.QuadParticleRenderState
 com.mojang.blaze3d.GpuDeviceLossException=com.mojang.renderpearl.api.device.GpuDeviceLossException
 com.mojang.blaze3d.GpuFormat=com.mojang.renderpearl.api.GpuFormat
 com.mojang.blaze3d.GpuOutOfMemoryException=com.mojang.renderpearl.api.device.GpuOutOfMemoryException

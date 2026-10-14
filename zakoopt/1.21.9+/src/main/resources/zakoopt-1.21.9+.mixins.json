@@ -9,7 +9,12 @@
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",
 		"entity.EntityRenderStatePoolMixin",
-		"entity.ModelPartAccessor"
+		"entity.ModelPartAccessor",
+		"DebugScreenEntriesMixin",
+		"block.SpawnerRendererMixin",
+		"entity.LivingEntityLodMixin",
+		"particle.QuadParticleGroupMixin",
+		"particle.QuadParticleRenderStateAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -9,6 +9,9 @@ public class GlTargets {
 	// blaze3d binds no sampler objects before 1.21.5, so there are none to take off a unit and put back
 	public final boolean SAMPLERS = false;
 
+	// blaze3d keeps a render target bound between passes before 1.21.5: a GL pass draws into the bound one
+	public final boolean UNBOUND = false;
+
 	public int color(RenderTarget target) {
 		return target.getColorTextureId();
 	}

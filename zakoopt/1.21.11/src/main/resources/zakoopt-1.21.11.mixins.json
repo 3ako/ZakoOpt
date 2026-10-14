@@ -12,8 +12,7 @@
 		"gl.RenderSystemMixin",
 		"gl.RenderTypeAccessor",
 		"gl.RenderTypeDrawMixin",
-		"gl.RenderTypesMixin",
-		"hud.GameRendererHudMixin"
+		"gl.RenderTypesMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

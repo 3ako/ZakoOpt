@@ -1,2 +1,5 @@
 net.minecraft.client.renderer.RenderType=net.minecraft.client.renderer.rendertype.RenderType
 net.minecraft.Util=net.minecraft.util.Util
+net.minecraft.resources.ResourceLocation=net.minecraft.resources.Identifier
+net.minecraft.world.level.GameRules=net.minecraft.world.level.gamerules.GameRules
+ResourceLocation=Identifier

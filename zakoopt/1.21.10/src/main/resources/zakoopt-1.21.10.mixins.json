@@ -4,11 +4,9 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"DebugScreenEntriesMixin",
 		"DebugScreenEntryListMixin",
 		"entity.LivingEntityRendererSkinMixin",
-		"gl.RenderSystemMixin",
-		"hud.GameRendererHudMixin"
+		"gl.RenderSystemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -8,20 +8,17 @@
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
 		"block.PistonHeadRendererMixin",
-		"block.SpawnerRendererMixin",
 		"entity.ItemLayerAccessor",
 		"entity.ItemStackRenderStateMixin",
 		"entity.LevelRendererOutlineMixin",
-		"entity.LivingEntityLodMixin",
 		"entity.SubmitNodeStorageMixin",
-		"particle.QuadParticleGroupMixin",
-		"particle.QuadParticleRenderStateAccessor",
 		"particle.QuadParticleRenderStateMixin",
 		"particle.QuadParticleStorageInvoker",
 		"block.AbstractSignRendererMixin",
 		"entity.ModelFeatureRendererInvoker",
 		"entity.ModelFeatureRendererMixin",
-		"entity.ModelStorageAccessor"
+		"entity.ModelStorageAccessor",
+		"hud.GameRendererHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

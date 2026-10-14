@@ -5,10 +5,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"block.PistonHeadRendererMixin",
-		"block.SpawnerRendererMixin",
 		"entity.ItemLayerAccessor",
 		"entity.ItemStackRenderStateMixin",
-		"entity.LivingEntityLodMixin",
 		"gl.GameRendererTimerMixin",
 		"gl.GlCommandEncoderClearMixin",
 		"gl.LunarMultiDrawMixin",
@@ -20,8 +18,6 @@
 		"hud.GuiRendererAnimatedMixin",
 		"hud.ImmediatelyFastAnimatedAtlasMixin",
 		"particle.ParticleMixin",
-		"particle.QuadParticleGroupMixin",
-		"particle.QuadParticleRenderStateAccessor",
 		"particle.QuadParticleStorageInvoker"
 	],
 	"injectors": {

@@ -4,7 +4,6 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"DebugScreenEntriesMixin",
 		"DebugScreenEntryListMixin",
 		"text.FontMixin"
 	],

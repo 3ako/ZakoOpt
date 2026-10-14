@@ -25,8 +25,8 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 		version = "${rootProject.version}+${minecraft_version}"
 
 		def layers = layers.split(',')*.trim()
-		// renames.txt (old.Class=new.Class): the layers' Java is compiled from a copy with those classes renamed, and a file the
-		// module has itself at the same path replaces the layer's one
+		// renames.txt (old.Class=new.Class, or a simple OldName=NewName): the layers' Java is compiled from a copy with those classes
+		// renamed, and a file the module has itself at the same path replaces the layer's one
 		def renames = project.file('renames.txt')
 		sourceSets.main {
 			layers.each {
@@ -39,7 +39,9 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 		if (renames.exists()) {
 			def map = renames.readLines().findAll { it.contains('=') }.collectEntries { it.split('=', 2) as List }
 			def forms = map.collectMany { from, to -> [[from, to], [from.replace('.', '/'), to.replace('.', '/')]] }
-			def pattern = java.util.regex.Pattern.compile(forms.collect { java.util.regex.Pattern.quote(it[0]) }.sort { -it.length() }.join('|') + '(?![A-Za-z0-9_])')
+			// a simple class name (ResourceLocation=Identifier) only as a whole word; a qualified one also inside a descriptor (Lnet/...;)
+			def pattern = java.util.regex.Pattern.compile(forms.collect { it[0] }.sort { -it.length() }
+				.collect { (it.contains('.') || it.contains('/') ? '' : '(?<![A-Za-z0-9_$])') + java.util.regex.Pattern.quote(it) }.join('|') + '(?![A-Za-z0-9_])')
 			def target = forms.collectEntries { it }
 			def ownRoot = project.file('src/main/java')
 			def rewrite = tasks.register('renameLayerSources', Sync) {
