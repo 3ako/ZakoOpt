@@ -4,21 +4,11 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"block.BlockEntityRenderStateMixin",
 		"entity.ItemFeatureRendererMixin",
 		"entity.LevelRendererOutlineMixin",
-		"entity.ModelFeatureRendererInvoker",
-		"entity.ModelFeatureRendererMixin",
-		"entity.RenderTypeFeatureRendererInvoker",
-		"gl.FrameBufferCacheMixin",
-		"gl.GlBufferCloseMixin",
-		"gl.GlCommandEncoderDepthClearMixin",
 		"gl.GlCommandEncoderTexBufferMixin",
 		"hud.GameRendererHudMixin",
-		"hud.GuiHudMixin",
-		"hud.GuiRendererTargetMixin",
-		"hud.HudInvoker",
-		"hud.HudLiveMixin"
+		"entity.LivingEntityRendererSkinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

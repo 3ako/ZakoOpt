@@ -3,17 +3,12 @@
 	"package": "zako.opt.mixin",
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
-	"injectors": {
-		"defaultRequire": 1
-	},
 	"client": [
 		"block.PistonHeadRendererMixin",
 		"block.SpawnerRendererMixin",
 		"entity.ItemLayerAccessor",
 		"entity.ItemStackRenderStateMixin",
 		"entity.LivingEntityLodMixin",
-		"entity.LivingEntityRendererSkinMixin",
-		"gl.FrameGraphTimerMixin",
 		"gl.GameRendererTimerMixin",
 		"gl.GlCommandEncoderClearMixin",
 		"gl.LunarMultiDrawMixin",
@@ -28,5 +23,8 @@
 		"particle.QuadParticleGroupMixin",
 		"particle.QuadParticleRenderStateAccessor",
 		"particle.QuadParticleStorageInvoker"
-	]
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }

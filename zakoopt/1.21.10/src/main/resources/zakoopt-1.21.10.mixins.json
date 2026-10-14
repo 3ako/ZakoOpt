@@ -6,11 +6,7 @@
 	"client": [
 		"DebugScreenEntriesMixin",
 		"DebugScreenEntryListMixin",
-		"block.AbstractSignRendererMixin",
 		"entity.LivingEntityRendererSkinMixin",
-		"entity.ModelFeatureRendererInvoker",
-		"entity.ModelFeatureRendererMixin",
-		"entity.ModelStorageAccessor",
 		"gl.RenderSystemMixin",
 		"hud.GameRendererHudMixin"
 	],

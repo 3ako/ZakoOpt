@@ -1,0 +1,4 @@
+// version code shared by the 1.21.4 and 1.21.8 modules
+plugins {
+	id 'java'
+}

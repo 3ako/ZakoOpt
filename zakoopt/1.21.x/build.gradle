@@ -1,4 +1,4 @@
-// version code shared by the 1.21.x modules; compiled by each of them against its own Minecraft
+// version code shared by every 1.21 module (1.21.4 to 1.21.11); compiled by each of them against its own Minecraft
 plugins {
 	id 'java'
 }

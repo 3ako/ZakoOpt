@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"entity.LivingEntityRendererSkinMixin",
+		"entity.LivingEntityAnimFreezeMixin",
+		"entity.LivingEntityLodMixin",
+		"entity.PlayerLodMixin",
+		"gl.MinecraftTimerMixin",
+		"particle.ParticleEngineParallelMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

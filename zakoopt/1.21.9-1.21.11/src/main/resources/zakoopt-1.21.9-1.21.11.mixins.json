@@ -17,7 +17,11 @@
 		"particle.QuadParticleGroupMixin",
 		"particle.QuadParticleRenderStateAccessor",
 		"particle.QuadParticleRenderStateMixin",
-		"particle.QuadParticleStorageInvoker"
+		"particle.QuadParticleStorageInvoker",
+		"block.AbstractSignRendererMixin",
+		"entity.ModelFeatureRendererInvoker",
+		"entity.ModelFeatureRendererMixin",
+		"entity.ModelStorageAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

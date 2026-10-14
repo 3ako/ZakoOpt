@@ -22,7 +22,7 @@ public class SodiumOcclusionCullMixin {
 	@Inject(require = 0, method = "render", at = @At("HEAD"))
 	private void zakoopt$begin(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable lists, TerrainRenderPass pass, CameraTransform camera, CallbackInfo ci) {
 		if (Features.OCCLUSION_CULL.on) {
-			OcclusionCull.beginPass(pass, camera);
+			OcclusionCull.beginPass(pass, camera, matrices);
 		}
 	}
 

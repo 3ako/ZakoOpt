@@ -1,0 +1,4 @@
+// version code shared by 26.2 and newer; 26.3 compiles it through its renames.txt
+plugins {
+	id 'java'
+}
