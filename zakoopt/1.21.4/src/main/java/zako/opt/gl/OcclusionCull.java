@@ -43,11 +43,21 @@ public class OcclusionCull {
 	private final double MOVE = 0.5;
 	private final int EXPIRE = 6;
 	private final int MAX_TEXELS = 4096;
+	// how often the GL context is asked whether it is still the same one, in frames
+	private final int CONTEXT_EVERY = 120;
 	// whether culling pays here is measured, not guessed: the depth pass alone can cost an integrated GPU more than the culling
 	// saves. Every RETRIAL_NS the frame time is sampled in on-off-on-off runs of TRIAL frames, and culling stays only if it wins
 	private final int TRIAL = 40;
 	private final long RETRIAL_NS = 20_000_000_000L;
-	private final double MARGIN = 0.98;
+	// the camera may not turn further than this between two frames for a verdict to hold: a copy that old was drawn at
+	// most TURN times its age in degrees away
+	private final double TURN = 1.5;
+	// the verdict only changes when the two runs are clearly apart; inside the band the machine is left as it is, so a
+	// borderline case does not flip every RETRIAL_NS
+	private final double PAYS = 0.95;
+	private final double COSTS = 1.05;
+	// fewer measured frames than this and a run says nothing at all
+	private final int MIN_SAMPLES = TRIAL / 2;
 	// -Dzakoopt.occlusion_cull.force=true: always on, for checking what it hides
 	private final boolean FORCED = Boolean.getBoolean("zakoopt.occlusion_cull.force");
 	private final TerrainRenderPass[] PASSES = {DefaultTerrainRenderPasses.SOLID, DefaultTerrainRenderPasses.CUTOUT, DefaultTerrainRenderPasses.TRANSLUCENT};
@@ -55,12 +65,20 @@ public class OcclusionCull {
 	private int program, vao, fbo, texture, uDepth, uBlock, uSize, uReversed;
 	private int texWidth, texHeight;
 	private boolean ready, failed, armed;
+	// a GL name means nothing outside the context that made it: after a driver reset or a move to another GPU the old ones dangle
+	private String context = "";
+	private int contextFrame;
 	private int frame;
 	private long lastPassNs;
 	private double camX, camY, camZ;
 	private boolean worth = true;
 	private int trialFrame = -1;
 	private long trialEndNs, lastFrameNs;
+	// where the view looked when the last depth copy was made, and where it looks now
+	private final float[] lastForward = new float[3];
+	private final float[] depthForward = new float[3];
+	private final float[][] slotForward = new float[SLOTS][3];
+	private boolean forwardKnown, usableNow;
 	private final long[][] trialTimes = new long[2][TRIAL * 2];
 
 	private final int[] pbos = new int[SLOTS];
@@ -110,11 +128,16 @@ public class OcclusionCull {
 		camY = camera.y;
 		camZ = camera.z;
 		armed = true;
+		if (contextLost()) {
+			release();
+		}
 		if (ready) {
 			long start = System.nanoTime();
 			collect();
 			cpuNs += System.nanoTime() - start;
 		}
+		// every section asks the same question about the same depth copy, so it is asked once
+		usableNow = usable();
 	}
 
 	public void endPass(ChunkRenderMatrices matrices, ChunkRenderListIterable lists, TerrainRenderPass pass, CameraTransform camera) {
@@ -124,6 +147,10 @@ public class OcclusionCull {
 		armed = false;
 		if (!ready && !init()) {
 			return;
+		}
+		// where this frame looks, so the next one can tell how far the view has turned since the depth was drawn
+		if (forward(matrices, lastForward)) {
+			forwardKnown = true;
 		}
 		long start = System.nanoTime();
 		if (culling()) {
@@ -181,12 +208,33 @@ public class OcclusionCull {
 			trialTimes[run % 2][(run / 2) * TRIAL + trialFrame % TRIAL] = dt;
 		}
 		if (++trialFrame == TRIAL * 4) {
-			long on = median(trialTimes[0]), off = median(trialTimes[1]);
-			worth = on < off * MARGIN;
-			log.info("Occlusion culling {}: {} us a frame with it, {} us without", worth ? "on" : "off", on / 1000, off / 1000);
+			// a run with too few usable frames says nothing: a verdict must not be taken from a scene that never drew
+			int withCulling = count(trialTimes[0]), without = count(trialTimes[1]);
+			if (withCulling < MIN_SAMPLES || without < MIN_SAMPLES) {
+				log.warn("Occlusion culling: {} of {} frames measured with it and {} of {} without, keeping it {}",
+						withCulling, TRIAL * 2, without, TRIAL * 2, worth ? "on" : "off");
+			} else {
+				long on = median(trialTimes[0]), off = median(trialTimes[1]);
+				boolean pays = on < off * PAYS, costs = on > off * COSTS;
+				if (pays || costs) {
+					worth = pays;
+				}
+				log.info("Occlusion culling {}: {} us a frame with it, {} us without", worth ? "on" : "off", on / 1000, off / 1000);
+			}
 			trialFrame = -1;
 			trialEndNs = now;
 		}
+	}
+
+	// the frames a run really drew with, of the TRIAL * 2 it was given
+	private int count(long[] times) {
+		int n = 0;
+		for (long time : times) {
+			if (time > 0) {
+				n++;
+			}
+		}
+		return n;
 	}
 
 	private long median(long[] times) {
@@ -195,13 +243,27 @@ public class OcclusionCull {
 		return sorted.length == 0 ? Long.MAX_VALUE : sorted[sorted.length / 2];
 	}
 
+	// a verdict holds only while the view it was made from still stands: the camera may not have moved much, and may not
+	// have turned much either
 	private boolean usable() {
+		int age = frame - depthFrame;
+		if (age < 1 || age > EXPIRE) {
+			return false;
+		}
 		double mx = camX - depthX, my = camY - depthY, mz = camZ - depthZ;
-		return frame - depthFrame <= EXPIRE && mx * mx + my * my + mz * mz <= MOVE * MOVE;
+		if (mx * mx + my * my + mz * mz > MOVE * MOVE) {
+			return false;
+		}
+		if (!forwardKnown) {
+			return true;
+		}
+		// the depth was drawn with the view of its own frame: the further it turned since, the less of it may be trusted
+		double dot = lastForward[0] * depthForward[0] + lastForward[1] * depthForward[1] + lastForward[2] * depthForward[2];
+		return dot >= Math.cos(Math.toRadians(TURN * age));
 	}
 
 	private boolean test(int cx, int cy, int cz) {
-		if (!usable()) {
+		if (!usableNow) {
 			return false;
 		}
 		int x = cx << 4, y = cy << 4, z = cz << 4;
@@ -288,6 +350,7 @@ public class OcclusionCull {
 			depthX = slotCamera[newest][0];
 			depthY = slotCamera[newest][1];
 			depthZ = slotCamera[newest][2];
+			System.arraycopy(slotForward[newest], 0, depthForward, 0, 3);
 		}
 		GL15C.glBindBuffer(GL21C.GL_PIXEL_PACK_BUFFER, prev);
 	}
@@ -366,6 +429,7 @@ public class OcclusionCull {
 		slotCamera[s][0] = camera.x;
 		slotCamera[s][1] = camera.y;
 		slotCamera[s][2] = camera.z;
+		forward(matrices, slotForward[s]);
 
 		GL15C.glBindBuffer(GL21C.GL_PIXEL_PACK_BUFFER, prevPack);
 		GL30C.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, prevDraw);
@@ -452,6 +516,20 @@ public class OcclusionCull {
 		}
 	}
 
+	// a model view holds the camera's own axes in its rows, so its negated third row is where the camera looks
+	private boolean forward(ChunkRenderMatrices matrices, float[] out) {
+		var mv = matrices.modelView();
+		float x = -mv.m02(), y = -mv.m12(), z = -mv.m22();
+		double len = Math.sqrt(x * x + y * y + z * z);
+		if (len < 1.0E-6) {
+			return false;
+		}
+		out[0] = (float) (x / len);
+		out[1] = (float) (y / len);
+		out[2] = (float) (z / len);
+		return true;
+	}
+
 	// depth falls with distance: a point far down the view axis lands below a near one
 	private boolean reversed(ChunkRenderMatrices matrices) {
 		var p = matrices.projection();
@@ -462,6 +540,53 @@ public class OcclusionCull {
 	private boolean zeroToOne() {
 		var caps = org.lwjgl.opengl.GL.getCapabilities();
 		return (caps.OpenGL45 || caps.GL_ARB_clip_control) && GL11C.glGetInteger(org.lwjgl.opengl.GL45C.GL_CLIP_DEPTH_MODE) == org.lwjgl.opengl.GL45C.GL_ZERO_TO_ONE;
+	}
+
+	// a GL name means nothing outside the context that made it, and glGetString answers with another driver after a reset or a
+	// move to another GPU: everything init() built then dangles, so it is built again
+	private boolean contextLost() {
+		if (frame - contextFrame < CONTEXT_EVERY) {
+			return false;
+		}
+		contextFrame = frame;
+		String renderer = GL11C.glGetString(GL11C.GL_RENDERER);
+		String version = GL11C.glGetString(GL11C.GL_VERSION);
+		if (renderer == null || version == null) {
+			// no context to ask: nothing can be drawn anyway, so what we have is kept
+			return false;
+		}
+		String now = renderer + " " + version;
+		if (context.isEmpty()) {
+			context = now;
+			return false;
+		}
+		if (now.equals(context)) {
+			return false;
+		}
+		log.warn("The GL context changed, building the occlusion culling again: \"{}\" -> \"{}\"", context, now);
+		context = now;
+		return true;
+	}
+
+	// frees what init() made, so a rebuild starts clean and one that failed halfway leaves nothing behind
+	private void release() {
+		for (int p = 0; p < SLOTS; p++) {
+			if (fences[p] != 0) {
+				GL32C.glDeleteSync(fences[p]);
+				fences[p] = 0;
+			}
+		}
+		if (pbos[0] != 0) { GL15C.glDeleteBuffers(pbos); }
+		if (texture != 0) { GL11C.glDeleteTextures(texture); }
+		if (fbo != 0) { GL30C.glDeleteFramebuffers(fbo); }
+		if (vao != 0) { GL30C.glDeleteVertexArrays(vao); }
+		if (program != 0) { GL20C.glDeleteProgram(program); }
+		program = vao = fbo = texture = uDepth = uBlock = uSize = uReversed = 0;
+		java.util.Arrays.fill(pbos, 0);
+		verdicts.clear();
+		depthFrame = Integer.MIN_VALUE / 2;
+		texWidth = texHeight = -1;
+		ready = failed = false;
 	}
 
 	private boolean init() {
@@ -525,6 +650,7 @@ public class OcclusionCull {
 			log.info("Occlusion culling ready");
 			return true;
 		} catch (RuntimeException e) {
+			release();
 			failed = true;
 			log.error("Occlusion culling could not start", e);
 			return false;
