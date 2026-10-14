@@ -29,6 +29,7 @@
 		"gl.ByteBufferBuilderMixin",
 		"gl.ByteBufferBuilderMoveMixin",
 		"gl.GlStateManagerStatsMixin",
+		"gl.LevelRendererScaleAccessor",
 		"gl.MinecraftTargetAccessor",
 		"gl.RenderSystemMixin",
 		"gl.RenderTypeStatsMixin",

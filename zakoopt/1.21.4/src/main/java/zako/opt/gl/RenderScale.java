@@ -10,6 +10,7 @@ import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import zako.opt.feature.Features;
+import zako.opt.mixin.gl.LevelRendererScaleAccessor;
 import zako.opt.mixin.gl.MinecraftTargetAccessor;
 
 // the world is drawn into a smaller target that stands in for the main one, then one pass stretches it into the real main
@@ -57,7 +58,7 @@ public class RenderScale {
 	}
 
 	private void resizeOutline(Minecraft mc, int w, int h) {
-		RenderTarget outline = mc.levelRenderer.entityOutlineTarget();
+		RenderTarget outline = ((LevelRendererScaleAccessor) mc.levelRenderer).zakoopt$entityOutlineTarget();
 		if (outline != null && (outline.width != w || outline.height != h)) {
 			outline.resize(w, h);
 		}
