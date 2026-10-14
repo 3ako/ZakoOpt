@@ -18,6 +18,8 @@ subprojects {
 
 // layers: shared source folders (common, 26.x, sodium-0.8...) compiled by every version module that lists them, against its own Minecraft
 // (1.21.x runs on intermediary names, so a layer's classes cannot be shared as built)
+// a layer is named after the game versions it serves: 1.21.9+ starts at 1.21.9 because the 1.21.10 module also runs on 1.21.9,
+// 1.21.x is every 1.21 module, sodium-0.8 is every module built against Sodium 0.8 or newer; gradlew layerMap shows what comes from where
 def layerNames = ['common', 'sodium-0.8', '1.21.x', '1.21.4-1.21.8', '1.21.4-1.21.10', '1.21.8+', '1.21.9+', '1.21.8-1.21.10', '1.21.8-1.21.11', '1.21.9-1.21.11', '1.21.11+', '26.x', '26.2+']
 configure(subprojects.findAll { !(it.name in layerNames) }) {
 	plugins.withId('java') {
@@ -36,11 +38,12 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 				resources.srcDir project(":${it}").file('src/main/resources')
 			}
 		}
+		def pattern = null
 		if (renames.exists()) {
 			def map = renames.readLines().findAll { it.contains('=') }.collectEntries { it.split('=', 2) as List }
 			def forms = map.collectMany { from, to -> [[from, to], [from.replace('.', '/'), to.replace('.', '/')]] }
 			// a simple class name (ResourceLocation=Identifier) only as a whole word; a qualified one also inside a descriptor (Lnet/...;)
-			def pattern = java.util.regex.Pattern.compile(forms.collect { it[0] }.sort { -it.length() }
+			pattern = java.util.regex.Pattern.compile(forms.collect { it[0] }.sort { -it.length() }
 				.collect { (it.contains('.') || it.contains('/') ? '' : '(?<![A-Za-z0-9_$])') + java.util.regex.Pattern.quote(it) }.join('|') + '(?![A-Za-z0-9_])')
 			def target = forms.collectEntries { it }
 			def ownRoot = project.file('src/main/java')
@@ -59,6 +62,42 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 		// every layer and the version module itself may bring a mixin config named zakoopt[-<name>].mixins.json
 		def mixinConfigs = (layers + [minecraft_version]).collect { it == 'common' ? 'zakoopt.mixins.json' : "zakoopt-${it}.mixins.json" }
 			.findAll { name -> ([project.file('src/main/resources')] + layers.collect { project(":${it}").file('src/main/resources') }).any { new File(it, name).exists() } }
+
+		// layerMap: which folder each source file of this version comes from; -Pfile=<part of a path> narrows it down
+		// (gradlew layerMap -Pfile=HudCache shows it for every version)
+		tasks.register('layerMap') {
+			group = 'help'
+			description = 'Prints the folder each source file of this version is taken from'
+			doLast {
+				def filter = project.findProperty('file')
+				def roots = [java: 'src/main/java', resources: 'src/main/resources']
+				def origin = [:] // path -> [folder, folders it replaces]
+				(layers + [project.name]).each { folder ->
+					roots.each { kind, root ->
+						def dir = project(":${folder}").file(root)
+						if (!dir.directory) return
+						dir.eachFileRecurse(groovy.io.FileType.FILES) { f ->
+							def path = dir.toPath().relativize(f.toPath()).toString().replace('\\', '/')
+							def previous = origin[path]
+							origin[path] = [folder, previous ? previous[1] + [previous[0]] : []]
+						}
+					}
+				}
+				def renamed = { String path, String folder ->
+					renames.exists() && folder != project.name && path.endsWith('.java')
+						&& project(":${folder}").file("src/main/java/${path}").readLines().any { pattern.matcher(it).find() }
+				}
+				def rows = origin.findAll { path, o -> !filter || path.contains(filter) }.sort()
+				def width = rows.keySet()*.length().max() ?: 0
+				rows.each { path, o ->
+					def notes = []
+					if (o[1]) notes << "replaces ${o[1].join(', ')}"
+					if (renamed(path, o[0])) notes << 'renamed classes'
+					println "${path.padRight(width)}  ${o[0]}${notes ? '  (' + notes.join('; ') + ')' : ''}"
+				}
+				println "${project.name}: ${rows.size()} files${filter ? " matching '${filter}'" : ''}, folders in order: ${layers.join(', ')}, ${project.name}"
+			}
+		}
 
 		processResources {
 			def props = [version: rootProject.version, minecraft: minecraft_version, minecraft_range: project.findProperty('minecraft_range') ?: "~${minecraft_version}", sodium_min: sodium_min, sodium_recommended: sodium_recommended,
