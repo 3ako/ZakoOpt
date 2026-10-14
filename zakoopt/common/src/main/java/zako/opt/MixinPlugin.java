@@ -48,7 +48,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	}
 
 	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics;
-	// GPU timers, the window blit and the render scale call GL directly, and VulkanMod has no GL context to call
+	// GPU timers and the window blit call GL directly, and VulkanMod has no GL context to call; the render scale's swapped
+	// main textures come out as stripes under VulkanMod even through the game's own API
 	private static boolean openGl(String mixin) {
 		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin")
 				|| mixin.endsWith("TimerMixin") || mixin.equals("gl.RenderTargetBlitMixin")
