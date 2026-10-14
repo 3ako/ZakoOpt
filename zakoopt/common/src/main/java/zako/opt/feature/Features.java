@@ -37,6 +37,7 @@ public class Features {
 	public final ImmediateRingFeature IMMEDIATE_RING = add(new ImmediateRingFeature());
 	public final RingZeroCopyFeature RING_ZERO_COPY = add(new RingZeroCopyFeature());
 	public final FastBlitFeature FAST_BLIT = add(new FastBlitFeature());
+	public final RenderScaleFeature RENDER_SCALE = add(new RenderScaleFeature());
 	public final OcclusionCullFeature OCCLUSION_CULL = add(new OcclusionCullFeature());
 
 	public final ItemLodFeature ITEM_LOD = add(new ItemLodFeature());
