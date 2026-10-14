@@ -1,43 +1,22 @@
 package zako.opt.gl;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.renderpearl.api.GpuFormat;
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.commands.RenderPass;
-import com.mojang.renderpearl.api.pipeline.ColorTargetState;
-import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.textures.FilterMode;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.GlobalSettingsUniform;
-import net.minecraft.resources.Identifier;
 import zako.opt.feature.Features;
-import zako.opt.mixin.gl.GameRendererScaleAccessor;
+import zako.opt.hud.HudGpu;
 import zako.opt.mixin.gl.LevelRendererScaleAccessor;
 import zako.opt.mixin.gl.RenderTargetAccessor;
-
-import java.util.Optional;
-import java.util.OptionalDouble;
 
 // the world is drawn at a lower resolution: while it renders, the main target holds the textures of a smaller one, so every
 // renderer and mod that keeps the main target object draws into them. One pass then stretches it into the real main textures
 // and sharpens it with AMD FSR 1 RCAS. The GUI is drawn afterwards at full resolution
 @UtilityClass
 public class RenderScale {
-	private final RenderPipeline UPSCALE = RenderPipeline.builder()
-			.withBindGroupLayout(BindGroupLayouts.GLOBALS)
-			.withLocation(Identifier.fromNamespaceAndPath("zakoopt", "pipeline/fsr_upscale"))
-			.withVertexShader("core/screenquad")
-			.withFragmentShader(Identifier.fromNamespaceAndPath("zakoopt", "core/fsr_upscale"))
-			.withBindGroupLayout(BindGroupLayouts.IN_SAMPLER)
-			.withColorTargetState(ColorTargetState.DEFAULT)
-			.withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
-			.build();
-
 	private TextureTarget low;
 	private GlobalSettingsUniform lowGlobals;
 	private GpuBuffer fullGlobals;
@@ -54,20 +33,23 @@ public class RenderScale {
 	}
 
 	public void begin(Minecraft mc) {
-		RenderTarget main = mc.gameRenderer.mainRenderTarget();
+		RenderTarget main = HudGpu.mainTarget(mc);
 		int w = main.width, h = main.height;
 		if (Features.RENDER_SCALE.on) {
 			w = Math.max(1, w * Features.RENDER_SCALE.percent / 100);
 			h = Math.max(1, h * Features.RENDER_SCALE.percent / 100);
 		}
-		// the hand's depth and the entity outlines are drawn alongside the main target, so they take its size
-		fit(((GameRendererScaleAccessor) mc.gameRenderer).zakoopt$hud3DTarget(), w, h);
-		fit(((LevelRendererScaleAccessor) mc.levelRenderer).zakoopt$entityOutlineTarget(), w, h);
+		// the entity outlines are drawn alongside the main target, so they take its size
+		RenderTarget outline = ((LevelRendererScaleAccessor) mc.levelRenderer).zakoopt$entityOutlineTarget();
+		if (outline != null) {
+			fit(outline, w, h);
+		}
+		ScaleGpu.fitAlongside(mc, w, h);
 		if (!Features.RENDER_SCALE.on) {
 			return;
 		}
 		if (low == null) {
-			low = new TextureTarget("zakoopt render scale", w, h, GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
+			low = ScaleGpu.createTarget(w, h);
 			lowGlobals = new GlobalSettingsUniform();
 		} else {
 			fit(low, w, h);
@@ -85,19 +67,13 @@ public class RenderScale {
 			return;
 		}
 		scaled = false;
-		RenderTarget main = mc.gameRenderer.mainRenderTarget();
+		RenderTarget main = HudGpu.mainTarget(mc);
 		swap(main, low);
 		RenderSystem.setGlobalSettingsUniform(fullGlobals);
-		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder()
-				.createRenderPass(() -> "zakoopt render scale", main.getColorTextureView(), Optional.empty(), null, OptionalDouble.empty())) {
-			pass.setPipeline(RenderSystem.getCompiledPipeline(UPSCALE));
-			RenderSystem.bindDefaultUniforms(pass);
-			pass.setUniform("InSampler", low.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-			pass.draw(3, 1, 0, 0);
-		}
+		ScaleGpu.upscale(low, main);
 	}
 
-	private void fit(RenderTarget target, int w, int h) {
+	public void fit(RenderTarget target, int w, int h) {
 		if (target.width != w || target.height != h) {
 			target.resize(w, h);
 		}

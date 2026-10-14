@@ -120,7 +120,7 @@ public abstract class Panel extends PanelScreen {
 				c.fill(tx0, y + 3, kx, y + 5, ACCENT);
 				c.fill(kx - 2, y - 1, kx + 2, y + 9, ACCENT);
 				c.fill(kx - 1, y, kx + 1, y + 8, dragging != null && dragging.slider() == d ? STRONG : KNOB_ON);
-				Component text = Component.translatable("zakoopt.blocks", value);
+				Component text = Component.translatable(d.unit(), value);
 				c.text(text, x1 - font.width(text), y, TEXT);
 				hit(tx0 - 4, y - 3, tx1 + 4, y + 11, null, d);
 			}

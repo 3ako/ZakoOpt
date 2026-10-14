@@ -36,7 +36,7 @@ public class ZakoOptions {
 	public record Toggle(String key, Impact impact, Consumer<Boolean> set, Supplier<Boolean> get, String... requires) implements Option {
 	}
 
-	public record Distance(String key, int min, int max, Consumer<Integer> set, Supplier<Integer> get, String... requires) implements Option {
+	public record Distance(String key, int min, int max, String unit, Consumer<Integer> set, Supplier<Integer> get, String... requires) implements Option {
 	}
 
 	public record Group(FeatureGroup type, List<Option> options) {
@@ -75,7 +75,7 @@ public class ZakoOptions {
 		}
 		Range range = s.getAnnotation(Range.class);
 		if (s.getType() == int.class && range != null) {
-			return new Distance(key, range.min(), range.max(), i -> f.set(s, i), () -> (Integer) f.get(s), requires);
+			return new Distance(key, range.min(), range.max(), range.unit(), i -> f.set(s, i), () -> (Integer) f.get(s), requires);
 		}
 		throw new IllegalStateException("Setting " + key + ": a " + s.getType().getSimpleName() + " field" + (s.getType() == int.class ? " needs @Range" : " is not supported"));
 	}

@@ -6,9 +6,10 @@
 	"client": [
 		"entity.ItemFeatureRendererMixin",
 		"entity.LevelRendererOutlineMixin",
+		"entity.LivingEntityRendererSkinMixin",
+		"gl.GameRendererScaleMixin",
 		"gl.GlCommandEncoderTexBufferMixin",
-		"hud.GameRendererHudMixin",
-		"entity.LivingEntityRendererSkinMixin"
+		"hud.GameRendererHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
