@@ -1,8 +1,10 @@
 package zako.opt.feature;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import net.irisshaders.iris.api.v0.IrisApi;
 import zako.opt.ZakoOptConfig;
 import zako.opt.feature.blocks.*;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 // every feature of the mod, in the order the options screens list them within their groups
 @UtilityClass
+@Slf4j(topic = "zakoopt")
 public class Features {
 	private final List<Feature> LIST = new ArrayList<>();
 
@@ -155,25 +158,80 @@ public class Features {
 	private final Map<String, Object> LAUNCH_OVERRIDDEN = new LinkedHashMap<>();
 
 	// zakoopt.json keeps the field names the config had before features were classes
+	// every value is taken on its own, so one broken line leaves the rest of the file alone
 	public void read(JsonObject json) {
 		for (Feature f : ALL) {
 			String name = config(f.data().config(), f.key());
 			if (json.has(name)) {
-				f.value = json.get(name).getAsBoolean();
+				f.value = jsonBoolean(json, name, f.value);
 			}
 			for (Field s : f.settings()) {
 				Setting setting = s.getAnnotation(Setting.class);
 				String field = config(setting.config(), setting.key());
 				if (json.has(field)) {
-					f.set(s, s.getType() == int.class ? (Object) json.get(field).getAsInt() : (Object) json.get(field).getAsBoolean());
+					f.set(s, jsonValue(json, field, s, f.get(s)));
 				}
 				String launch = System.getProperty("zakoopt." + setting.key());
 				if (launch != null) {
 					LAUNCH_OVERRIDDEN.put(setting.key(), f.get(s));
-					f.set(s, s.getType() == int.class ? (Object) Integer.parseInt(launch) : (Object) Boolean.parseBoolean(launch));
+					f.set(s, launchValue(launch, setting.key(), s, f.get(s)));
 				}
 			}
 		}
+	}
+
+	// a value the file cannot be trusted for keeps what the feature had, and says so once
+	public boolean jsonBoolean(JsonObject json, String name, boolean fallback) {
+		JsonElement e = json.get(name);
+		if (e == null || !e.isJsonPrimitive() || !e.getAsJsonPrimitive().isBoolean()) {
+			bad(name, e, fallback);
+			return fallback;
+		}
+		return e.getAsBoolean();
+	}
+
+	// one setting in its own right type: an int outside its @Range is pulled back in, so a hand-edited file cannot drive a hot
+	// path past it
+	public Object jsonValue(JsonObject json, String name, Field setting, Object fallback) {
+		JsonElement e = json.get(name);
+		if (setting.getType() != int.class) {
+			return jsonBoolean(json, name, (Boolean) fallback);
+		}
+		int value;
+		try {
+			value = e.getAsInt();
+		} catch (RuntimeException ex) {
+			bad(name, e, fallback);
+			return fallback;
+		}
+		return inRange(setting, name, value);
+	}
+
+	// -Dzakoopt.<key> at launch; a bad one is reported and dropped, the configured value stands
+	private Object launchValue(String given, String name, Field setting, Object fallback) {
+		if (setting.getType() != int.class) {
+			return Boolean.parseBoolean(given);
+		}
+		try {
+			return inRange(setting, name, Integer.parseInt(given.trim()));
+		} catch (NumberFormatException e) {
+			log.warn("-Dzakoopt.{} is \"{}\", not a number; the configured value stands", name, given);
+			return fallback;
+		}
+	}
+
+	private int inRange(Field setting, String name, int value) {
+		Range range = setting.getAnnotation(Range.class);
+		if (range == null || value >= range.min() && value <= range.max()) {
+			return value;
+		}
+		int clamped = Math.min(range.max(), Math.max(range.min(), value));
+		log.warn("{} is {}, pulled back to {} (its range is {}..{})", name, value, clamped, range.min(), range.max());
+		return clamped;
+	}
+
+	private void bad(String name, JsonElement e, Object fallback) {
+		log.warn("{} in the config is {}, not a usable value; keeping {}", name, e, fallback);
 	}
 
 	public void write(JsonObject json) {

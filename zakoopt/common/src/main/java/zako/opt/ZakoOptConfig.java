@@ -12,8 +12,10 @@ import zako.opt.feature.Features;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 @UtilityClass
 @Slf4j(topic = "zakoopt")
@@ -44,18 +46,28 @@ public class ZakoOptConfig {
 			try {
 				JsonObject json = JsonParser.parseString(Files.readString(FILE, StandardCharsets.UTF_8)).getAsJsonObject();
 				Features.read(json);
-				if (json.has("enabled")) {
-					enabled = json.get("enabled").getAsBoolean();
-				}
-				if (json.has("welcomed")) {
-					welcomed = json.get("welcomed").getAsBoolean();
-				}
+				enabled = Features.jsonBoolean(json, "enabled", enabled);
+				welcomed = Features.jsonBoolean(json, "welcomed", welcomed);
 				return;
 			} catch (Exception e) {
-				log.warn("Can't read {}, using defaults", FILE, e);
+				// the file is the player's, not ours to overwrite: it goes aside and this session runs on the defaults
+				log.warn("Can't read {}, starting from the defaults", FILE, e);
+				moveAside();
+				return;
 			}
 		}
 		save();
+	}
+
+	// keeps a config we could not read instead of throwing it away, and leaves the next save a clean one to write
+	private void moveAside() {
+		Path aside = FILE.resolveSibling(FILE.getFileName() + ".broken");
+		try {
+			Files.move(FILE, aside, StandardCopyOption.REPLACE_EXISTING);
+			log.warn("The old config is at {}", aside);
+		} catch (IOException e) {
+			log.error("Can't move {} aside", FILE, e);
+		}
 	}
 
 	public void save() {
@@ -64,8 +76,15 @@ public class ZakoOptConfig {
 		Features.write(json);
 		json.addProperty("enabled", enabled);
 		json.addProperty("welcomed", welcomed);
+		Path tmp = FILE.resolveSibling(FILE.getFileName() + ".tmp");
 		try {
-			Files.writeString(FILE, GSON.toJson(json), StandardCharsets.UTF_8);
+			// written whole next to it and moved into place, so a crash or a full disk mid-write leaves the old file readable
+			Files.writeString(tmp, GSON.toJson(json), StandardCharsets.UTF_8);
+			try {
+				Files.move(tmp, FILE, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+			} catch (AtomicMoveNotSupportedException e) {
+				Files.move(tmp, FILE, StandardCopyOption.REPLACE_EXISTING);
+			}
 		} catch (IOException e) {
 			log.error("Can't save {}", FILE, e);
 		}
