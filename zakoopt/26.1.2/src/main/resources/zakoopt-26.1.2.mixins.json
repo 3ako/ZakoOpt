@@ -26,7 +26,8 @@
 		"hud.GuiHudMixin",
 		"hud.GuiInvoker",
 		"hud.GuiRendererPipMixin",
-		"hud.GuiRendererTargetMixin"
+		"hud.GuiRendererTargetMixin",
+		"entity.LivingEntityRendererSkinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

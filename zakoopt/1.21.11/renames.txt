@@ -1,0 +1,2 @@
+net.minecraft.client.renderer.RenderType=net.minecraft.client.renderer.rendertype.RenderType
+net.minecraft.Util=net.minecraft.util.Util

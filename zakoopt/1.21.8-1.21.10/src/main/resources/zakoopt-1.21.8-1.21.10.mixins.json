@@ -4,14 +4,8 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"gl.BatchableBufferSourceMixin",
-		"gl.BufferSourceMixin",
-		"gl.ByteBufferBuilderMixin",
-		"gl.ByteBufferBuilderPoolMixin",
 		"gl.GlBufferInvoker",
-		"gl.RenderTypeAccessor",
 		"gl.RenderTypeDrawMixin",
-		"gl.RenderTypesMixin",
 		"text.FontMixin"
 	],
 	"injectors": {

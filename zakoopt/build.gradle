@@ -18,7 +18,7 @@ subprojects {
 
 // layers: shared source folders (common, 26.x, sodium-0.8...) compiled by every version module that lists them, against its own Minecraft
 // (1.21.x runs on intermediary names, so a layer's classes cannot be shared as built)
-def layerNames = ['common', 'sodium-0.8', '1.21.8+', '1.21.9+', '1.21.x', '1.21.8-1.21.10', '1.21.9-1.21.11', '1.21.11+', '26.x']
+def layerNames = ['common', 'sodium-0.8', '1.21.x', '1.21.4-1.21.8', '1.21.4-1.21.10', '1.21.8+', '1.21.9+', '1.21.8-1.21.10', '1.21.8-1.21.11', '1.21.9-1.21.11', '1.21.11+', '26.x', '26.2+']
 configure(subprojects.findAll { !(it.name in layerNames) }) {
 	plugins.withId('java') {
 		base.archivesName = 'zakoopt'

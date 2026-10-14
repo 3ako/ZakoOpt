@@ -20,7 +20,8 @@
 		"gl.BufferBuilderRawMixin",
 		"particle.BubbleColumnUpParticleMixin",
 		"particle.ParticleAccessor",
-		"text.ClientLanguageMixin"
+		"text.ClientLanguageMixin",
+		"gl.FrameGraphTimerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
