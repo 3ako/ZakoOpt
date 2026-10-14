@@ -31,6 +31,11 @@ public class ScaleGpu {
 			.withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
 			.build();
 
+	// a pipeline that failed to compile throws here
+	public boolean ready() {
+		return RenderSystem.getCompiledPipeline(UPSCALE) != null;
+	}
+
 	public TextureTarget createTarget(int w, int h) {
 		return new TextureTarget("zakoopt render scale", w, h, GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
 	}

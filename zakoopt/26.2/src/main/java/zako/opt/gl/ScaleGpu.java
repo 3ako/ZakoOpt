@@ -30,6 +30,11 @@ public class ScaleGpu {
 			.withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
 			.build();
 
+	// the game skips draws with a pipeline that failed to compile instead of throwing
+	public boolean ready() {
+		return RenderSystem.getDevice().precompilePipeline(UPSCALE).isValid();
+	}
+
 	public TextureTarget createTarget(int w, int h) {
 		return new TextureTarget("zakoopt render scale", w, h, true, GpuFormat.RGBA8_UNORM);
 	}

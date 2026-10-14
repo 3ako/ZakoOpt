@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlobalSettingsUniform;
 import zako.opt.feature.Features;
@@ -15,6 +16,7 @@ import zako.opt.mixin.gl.RenderTargetAccessor;
 // the world is drawn at a lower resolution: while it renders, the main target holds the textures of a smaller one, so every
 // renderer and mod that keeps the main target object draws into them. One pass then stretches it into the real main textures
 // and sharpens it with AMD FSR 1 RCAS. The GUI is drawn afterwards at full resolution
+@Slf4j(topic = "zakoopt")
 @UtilityClass
 public class RenderScale {
 	private TextureTarget low;
@@ -33,9 +35,16 @@ public class RenderScale {
 	}
 
 	public void begin(Minecraft mc) {
+		boolean on = Features.RENDER_SCALE.on;
+		// checked before anything is resized: with nothing to stretch the low frame back, the world would stay black
+		if (on && !ScaleGpu.ready()) {
+			Features.RENDER_SCALE.broken = true;
+			log.error("Render scale shader did not compile; turned off until restart");
+			on = false;
+		}
 		RenderTarget main = HudGpu.mainTarget(mc);
 		int w = main.width, h = main.height;
-		if (Features.RENDER_SCALE.on) {
+		if (on) {
 			w = Math.max(1, w * Features.RENDER_SCALE.percent / 100);
 			h = Math.max(1, h * Features.RENDER_SCALE.percent / 100);
 		}
@@ -45,7 +54,7 @@ public class RenderScale {
 			fit(outline, w, h);
 		}
 		ScaleGpu.fitAlongside(mc, w, h);
-		if (!Features.RENDER_SCALE.on) {
+		if (!on) {
 			return;
 		}
 		if (low == null) {

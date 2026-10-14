@@ -33,6 +33,11 @@ public class ScaleGpu {
 	// 1.21.8 draws only with a vertex buffer bound, though the shader reads none of it
 	private GpuBuffer vertices;
 
+	// the game skips draws with a pipeline that failed to compile instead of throwing
+	public boolean ready() {
+		return RenderSystem.getDevice().precompilePipeline(UPSCALE).isValid();
+	}
+
 	public TextureTarget createTarget(int w, int h) {
 		return new TextureTarget("zakoopt render scale", w, h, true);
 	}
