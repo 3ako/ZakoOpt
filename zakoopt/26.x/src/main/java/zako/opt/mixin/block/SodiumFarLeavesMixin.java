@@ -24,10 +24,13 @@ public class SodiumFarLeavesMixin {
 	@Unique
 	private BlockPos zakoopt$pos;
 
-	@Inject(require = 0, method = "renderModel", at = @At("HEAD"))
+	@Inject(require = 0, method = "renderModel", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$block(CallbackInfo ci, @Local(argsOnly = true) BlockState state, @Local(argsOnly = true, ordinal = 0) BlockPos pos) {
 		zakoopt$state = state;
 		zakoopt$pos = pos;
+		if (FarLeaves.hidePlant(state, pos)) {
+			ci.cancel();
+		}
 	}
 
 	@WrapOperation(require = 0, method = "processQuad", at = @At(value = "INVOKE",

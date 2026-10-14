@@ -99,10 +99,14 @@ public class OcclusionCull {
 		return line;
 	}
 
-	public void beginPass(TerrainRenderPass pass, CameraTransform camera) {
+	// prototype: -Dzakoopt.occlusion_cull.cpu=true takes the depth from CpuOcclusion instead of the GPU copy
+	private boolean cpu;
+
+	public void beginPass(TerrainRenderPass pass, CameraTransform camera, ChunkRenderMatrices matrices) {
 		if (pass != DefaultTerrainRenderPasses.SOLID || failed) {
 			return;
 		}
+		cpu = Boolean.getBoolean("zakoopt.occlusion_cull.cpu");
 		long now = System.nanoTime();
 		if (now - lastPassNs > 1_000_000_000L) {
 			depthFrame = Integer.MIN_VALUE / 2;
@@ -114,6 +118,26 @@ public class OcclusionCull {
 		camY = camera.y;
 		camZ = camera.z;
 		armed = true;
+		if (cpu) {
+			long start = System.nanoTime();
+			if (culling()) {
+				var target = MainView.target();
+				boolean rev = reversed(matrices), z01 = zeroToOne();
+				depthMatrix.set(matrices.projection()).mul(matrices.modelView());
+				CpuOcclusion.build(depthMatrix, camX, camY, camZ, rev, z01, (float) target.width / target.height);
+				depth = CpuOcclusion.depth;
+				depthWidth = CpuOcclusion.width;
+				depthHeight = CpuOcclusion.height;
+				depthReversed = rev;
+				depthZeroToOne = z01;
+				depthX = camX;
+				depthY = camY;
+				depthZ = camZ;
+				depthFrame = frame;
+			}
+			cpuNs += System.nanoTime() - start;
+			return;
+		}
 		if (ready) {
 			long start = System.nanoTime();
 			collect();
@@ -126,6 +150,14 @@ public class OcclusionCull {
 			return;
 		}
 		armed = false;
+		if (cpu) {
+			if (DebugToggle.visible()) {
+				count(lists);
+			}
+			statFrames++;
+			window();
+			return;
+		}
 		if (!(MainView.target().getDepthTexture() instanceof GlTexture)) {
 			return;
 		}
@@ -146,7 +178,7 @@ public class OcclusionCull {
 
 	// the sections Sodium is about to draw for one region, without the hidden ones
 	public ByteIterator filter(ByteIterator sections, RenderRegion region) {
-		if (sections == null || !ready) {
+		if (sections == null || !ready && !cpu) {
 			return sections;
 		}
 		filter.in = sections;
@@ -208,6 +240,10 @@ public class OcclusionCull {
 	}
 
 	private boolean test(int cx, int cy, int cz) {
+		// measurement only: everything well under the camera counts as hidden, the most culling underground could ever give
+		if (cpu && Boolean.getBoolean("zakoopt.occlusion_cull.ceiling")) {
+			return (cy << 4) + 16 < camY - 24;
+		}
 		if (!usable()) {
 			return false;
 		}
@@ -238,13 +274,17 @@ public class OcclusionCull {
 			maxY = Math.max(maxY, ny);
 			nearest = depthReversed ? Math.max(nearest, nz) : Math.min(nearest, nz);
 		}
-		// partly off the screen it was drawn on: what lies there is unknown
-		if (minX < -1 || maxX > 1 || minY < -1 || maxY > 1) {
+		// only the part on the screen can be seen, so only that part has to be covered
+		if (maxX < -1 || minX > 1 || maxY < -1 || minY > 1) {
 			return false;
 		}
+		minX = Math.max(minX, -1);
+		maxX = Math.min(maxX, 1);
+		minY = Math.max(minY, -1);
+		maxY = Math.min(maxY, 1);
 		int x0 = (int) ((minX * 0.5f + 0.5f) * depthWidth), x1 = Math.min(depthWidth - 1, (int) ((maxX * 0.5f + 0.5f) * depthWidth));
 		int y0 = (int) ((minY * 0.5f + 0.5f) * depthHeight), y1 = Math.min(depthHeight - 1, (int) ((maxY * 0.5f + 0.5f) * depthHeight));
-		if ((x1 - x0 + 1) * (y1 - y0 + 1) > MAX_TEXELS) {
+		if ((x1 - x0 + 1) * (y1 - y0 + 1) > (cpu ? depthWidth * depthHeight : MAX_TEXELS)) {
 			return false;
 		}
 		float boxDepth = depthZeroToOne ? nearest : nearest * 0.5f + 0.5f;
@@ -453,8 +493,8 @@ public class OcclusionCull {
 		if (now - windowStart < 1_000_000_000L || statFrames == 0) {
 			return;
 		}
-		line = "Occlusion%s: %d%% of triangles culled (%d of %d sections); %.2f ms CPU; depth %d frames old".formatted(
-				FORCED ? " (forced)" : trialFrame >= 0 ? " (measuring)" : worth ? "" : " (off: slower here)",
+		line = "Occlusion%s%s: %d%% of triangles culled (%d of %d sections); %.2f ms CPU; depth %d frames old".formatted(
+				cpu ? " CPU[groups %d planes %d missing %d covered %d]".formatted(CpuOcclusion.groups, CpuOcclusion.planes, CpuOcclusion.missing, CpuOcclusion.covered) : "", FORCED ? " (forced)" : trialFrame >= 0 ? " (measuring)" : worth ? "" : " (off: slower here)",
 				weightAll == 0 ? 0 : weightCulled * 100 / weightAll, culled / statFrames, sections / statFrames, cpuNs / 1e6 / statFrames, frame - depthFrame);
 		sections = culled = weightAll = weightCulled = cpuNs = statFrames = 0;
 		windowStart = now;
@@ -471,7 +511,13 @@ public class OcclusionCull {
 	}
 
 	private boolean zeroToOne() {
-		var caps = org.lwjgl.opengl.GL.getCapabilities();
+		org.lwjgl.opengl.GLCapabilities caps;
+		try {
+			caps = org.lwjgl.opengl.GL.getCapabilities();
+		} catch (IllegalStateException e) {
+			// no GL context: the Vulkan backend, whose depth is always 0..1
+			return true;
+		}
 		return (caps.OpenGL45 || caps.GL_ARB_clip_control) && GL11C.glGetInteger(org.lwjgl.opengl.GL45C.GL_CLIP_DEPTH_MODE) == org.lwjgl.opengl.GL45C.GL_ZERO_TO_ONE;
 	}
 

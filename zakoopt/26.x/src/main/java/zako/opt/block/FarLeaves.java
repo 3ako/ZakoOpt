@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import zako.opt.feature.Features;
@@ -39,7 +40,22 @@ public class FarLeaves {
 		return far ? ChunkSectionLayer.SOLID : original;
 	}
 
+	// prototype: grass, flowers and other small plants past the far leaves distance are left out of the mesh
+	private volatile boolean plants;
+
+	// on a chunk builder thread
+	public boolean hidePlant(BlockState state, BlockPos pos) {
+		if (!plants || !Features.FAR_LEAVES.on || state == null || !(state.getBlock() instanceof VegetationBlock)) {
+			return false;
+		}
+		int sx = pos.getX() >> 4, sy = pos.getY() >> 4, sz = pos.getZ() >> 4;
+		boolean far = distance(sx, sy, sz) > Features.FAR_LEAVES.distance;
+		sections.put(SectionPos.asLong(sx, sy, sz), far);
+		return far;
+	}
+
 	public void frame() {
+		plants = Boolean.getBoolean("zakoopt.far_plants");
 		if (!Features.FAR_LEAVES.on) {
 			if (!sections.isEmpty()) {
 				sections.clear();

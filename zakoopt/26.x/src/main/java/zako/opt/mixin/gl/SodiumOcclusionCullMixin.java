@@ -20,9 +20,10 @@ import zako.opt.gl.OcclusionCull;
 @Mixin(value = DefaultChunkRenderer.class, remap = false)
 public class SodiumOcclusionCullMixin {
 	@Inject(require = 0, method = "render", at = @At("HEAD"))
-	private void zakoopt$begin(CallbackInfo ci, @Local(argsOnly = true) TerrainRenderPass pass, @Local(argsOnly = true) CameraTransform camera) {
+	private void zakoopt$begin(CallbackInfo ci, @Local(argsOnly = true) TerrainRenderPass pass, @Local(argsOnly = true) CameraTransform camera,
+			@Local(argsOnly = true) ChunkRenderMatrices matrices) {
 		if (Features.OCCLUSION_CULL.on) {
-			OcclusionCull.beginPass(pass, camera);
+			OcclusionCull.beginPass(pass, camera, matrices);
 		}
 	}
 
