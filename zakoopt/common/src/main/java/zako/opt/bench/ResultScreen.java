@@ -60,7 +60,7 @@ public class ResultScreen extends Panel {
 		y = header(c, Component.translatable("zakoopt.bench.result.other"), x0, x1, y + 6);
 		for (Map.Entry<String, Object> pick : picks.entrySet()) {
 			if (pick.getValue() instanceof Integer distance) {
-				c.text(Component.translatable("zakoopt.option." + pick.getKey()).append(": ").append(Component.translatable("zakoopt.blocks", distance))
+				c.text(Component.translatable("zakoopt.option." + pick.getKey()).append(": ").append(Component.translatable(unit(pick.getKey()), distance))
 						.append(changes.contains(pick.getKey()) ? " *" : ""), x0 + 12, y + 2, TEXT);
 				y += ROW;
 			}
@@ -84,6 +84,11 @@ public class ResultScreen extends Panel {
 			apply.run();
 			onClose();
 		});
+	}
+
+	private String unit(String key) {
+		return ZakoOptions.GROUPS.stream().flatMap(g -> g.available().stream()).filter(o -> o.key().equals(key) && o instanceof ZakoOptions.Distance)
+				.map(o -> ((ZakoOptions.Distance) o).unit()).findFirst().orElse("zakoopt.blocks");
 	}
 
 	private int header(Canvas c, Component text, int x0, int x1, int y) {

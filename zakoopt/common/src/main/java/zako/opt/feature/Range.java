@@ -11,4 +11,7 @@ public @interface Range {
 	int min();
 
 	int max();
+
+	// translation key of the value as shown, %s the number
+	String unit() default "zakoopt.blocks";
 }

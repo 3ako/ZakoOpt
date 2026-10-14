@@ -18,7 +18,7 @@ import zako.opt.feature.Setting;
 )
 public class RenderScaleFeature extends Feature {
 	@Setting(key = "render_scale_percent")
-	@Range(min = 50, max = 90)
+	@Range(min = 50, max = 90, unit = "zakoopt.percent")
 	public int percent = 75;
 
 	@Override

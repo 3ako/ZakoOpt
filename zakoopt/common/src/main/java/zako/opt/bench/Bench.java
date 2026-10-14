@@ -267,15 +267,37 @@ public class Bench {
 			});
 		}
 
-		// the far leaves pick has no switch measured with it, so it gets its own stop, with the forest planted there first
-		if (option("far_leaves") != null) {
+		// the far leaves and render scale picks have no switch measured with them, so they get their own stop, with the forest
+		// planted there first
+		ZakoOptions.Toggle scale = toggle("render_scale");
+		if (option("far_leaves") != null || scale != null) {
 			Scene.View forest = Scene.FOREST;
 			server(mc, Scene.forestLoaded(true));
 			server(mc, tp(forest));
 			waitForestLoaded(mc);
 			server(mc, Scene.forest());
 			sleep(3000);
-			pick(mc, saved, List.of("far_leaves", "far_leaves_distance"), forest, "zakoopt.bench.forest", picks);
+			// the render scale blurs the world, so the numbers alone never turn it on: it is offered by eye only where the GPU holds
+			// the frame back, which a forest of see-through leaves shows and the flat scene does not
+			if (scale != null && option("render_scale_percent") instanceof ZakoOptions.Distance percent) {
+				main(mc, () -> {
+					percent.set().accept(50);
+					return null;
+				});
+				double ratio = abba(mc, new Test(scale.key(), forest.key()), scale, Component.translatable("zakoopt.option.render_scale"), 0, 1, 96);
+				log.info("Benchmark: render scale at 50% {}%", Math.round((1 / ratio - 1) * 100));
+				main(mc, () -> {
+					set(scale, saved.get(scale.key()));
+					set(percent, saved.get(percent.key()));
+					return null;
+				});
+				if (ratio <= 1 / (1 + MIN_GAIN)) {
+					pick(mc, saved, List.of("render_scale", "render_scale_percent"), forest, "zakoopt.bench.render_scale", picks);
+				}
+			}
+			if (option("far_leaves") != null) {
+				pick(mc, saved, List.of("far_leaves", "far_leaves_distance"), forest, "zakoopt.bench.forest", picks);
+			}
 			server(mc, Scene.forestLoaded(false));
 		}
 
