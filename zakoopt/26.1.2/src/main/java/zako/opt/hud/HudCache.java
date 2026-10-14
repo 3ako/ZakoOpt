@@ -50,11 +50,13 @@ public class HudCache {
 		long now = System.nanoTime();
 		active = HudWorth.update(now, MonitorRate.intervalNs(now)) && Features.HUD_CACHE.on && !HudWorth.isMainSwapped() && renderLevel && mc.level != null && mc.screen == null && mc.getOverlay() == null;
 		if (!active) {
+			HudDelta.idle();
 			return;
 		}
 		main = mc.getMainRenderTarget();
 		int w = mc.getWindow().getWidth(), h = mc.getWindow().getHeight();
 		refresh = !was || target == null || target.width != w || target.height != h || now - lastRefresh >= MonitorRate.intervalNs(now);
+		HudDelta.frame(refresh, mc.getDeltaTracker().getGameTimeDeltaTicks());
 		if (refresh) {
 			lastRefresh = now;
 			if (target == null) {
