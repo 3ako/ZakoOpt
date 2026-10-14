@@ -17,7 +17,9 @@ import zako.opt.block.FarLeaves;
 
 // the layer of each quad is resolved in processQuad; one renderer per builder thread. The model's class moved in 26.2,
 // so the block comes in by type
-@Mixin(value = BlockRenderer.class, remap = false)
+// priority above the default: BetterBlockEntities overwrites processQuad at 1000, and Mixin lets only a later mixin
+// inject into a method another one merged
+@Mixin(value = BlockRenderer.class, remap = false, priority = 1100)
 public class SodiumFarLeavesMixin {
 	@Unique
 	private BlockState zakoopt$state;

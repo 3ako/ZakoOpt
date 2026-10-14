@@ -16,7 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.block.FarLeaves;
 
 // the render type of each quad is resolved in processQuad, from the model's own types; one renderer per builder thread
-@Mixin(value = BlockRenderer.class, remap = false)
+// priority above the default: BetterBlockEntities overwrites processQuad at 1000, and Mixin lets only a later mixin
+// inject into a method another one merged
+@Mixin(value = BlockRenderer.class, remap = false, priority = 1100)
 public class SodiumFarLeavesMixin {
 	@Unique
 	private BlockState zakoopt$state;
