@@ -5,6 +5,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"gl.GlStateManagerMixin",
+		"gl.LevelRendererScaleAccessor",
+		"gl.RenderTargetAccessor",
 		"hud.RenderTargetHudMixin",
 		"text.FontManagerMixin"
 	],

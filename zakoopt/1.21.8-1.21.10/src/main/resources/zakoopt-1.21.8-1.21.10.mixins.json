@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"gl.GameRendererScaleMixin",
 		"gl.GlBufferInvoker",
 		"gl.RenderTypeDrawMixin",
 		"text.FontMixin"

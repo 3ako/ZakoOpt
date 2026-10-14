@@ -5,13 +5,11 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"entity.ItemFeatureRendererMixin",
+		"entity.LivingEntityRendererSkinMixin",
 		"gl.GameRendererScaleAccessor",
 		"gl.GameRendererScaleMixin",
 		"gl.GlCommandEncoderTexBufferMixin",
-		"gl.LevelRendererScaleAccessor",
-		"gl.RenderTargetAccessor",
-		"hud.GameRendererHudMixin",
-		"entity.LivingEntityRendererSkinMixin"
+		"hud.GameRendererHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

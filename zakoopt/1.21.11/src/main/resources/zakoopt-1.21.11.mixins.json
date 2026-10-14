@@ -10,9 +10,7 @@
 		"gl.GameRendererScaleMixin",
 		"gl.GlBufferInvoker",
 		"gl.GlTextureViewMixin",
-		"gl.LevelRendererScaleAccessor",
 		"gl.RenderSystemMixin",
-		"gl.RenderTargetAccessor",
 		"gl.RenderTypeAccessor",
 		"gl.RenderTypeDrawMixin",
 		"gl.RenderTypesMixin"
