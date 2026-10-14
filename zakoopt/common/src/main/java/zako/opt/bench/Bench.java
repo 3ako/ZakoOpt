@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -271,7 +272,7 @@ public class Bench {
 			Scene.View forest = Scene.FOREST;
 			server(mc, Scene.forestLoaded(true));
 			server(mc, tp(forest));
-			sleep(4000);
+			waitForestLoaded(mc);
 			server(mc, Scene.forest());
 			sleep(3000);
 			pick(mc, saved, List.of("far_leaves", "far_leaves_distance"), forest, "zakoopt.bench.forest", picks);
@@ -533,6 +534,16 @@ public class Bench {
 		if (server != null) {
 			server.execute(() -> tp(view).forEach(c -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), c)));
 		}
+	}
+
+	// a fresh world has to generate the forest's chunks first, and fill places nothing while any of them is missing
+	private void waitForestLoaded(Minecraft mc) {
+		var server = mc.getSingleplayerServer();
+		BlockPos from = new BlockPos(Scene.FOREST_X0, Scene.Y - 1, Scene.FOREST_Z0), to = new BlockPos(Scene.FOREST_X1, Scene.Y - 1, Scene.FOREST_Z1);
+		for (int i = 0; i < 120 && server != null && !server.submit(() -> server.overworld().hasChunksAt(from, to)).join(); i++) {
+			sleep(250);
+		}
+		sleep(1000);
 	}
 
 	private void server(Minecraft mc, List<String> commands) {

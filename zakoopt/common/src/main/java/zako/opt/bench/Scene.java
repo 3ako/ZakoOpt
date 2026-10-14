@@ -132,15 +132,17 @@ public class Scene {
 	}
 
 	// a low render distance leaves the far part unloaded, and fill then places nothing at all
+	public final int FOREST_X0 = -10, FOREST_Z0 = -130, FOREST_X1 = 74, FOREST_Z1 = -46;
+
 	public List<String> forestLoaded(boolean loaded) {
-		return List.of(f("forceload %s -10 -130 74 -46", loaded ? "add" : "remove"));
+		return List.of(f("forceload %s %d %d %d %d", loaded ? "add" : "remove", FOREST_X0, FOREST_Z0, FOREST_X1, FOREST_Z1));
 	}
 
 	// for the far leaves pick only: dark oaks with some oaks on grass behind the scene, out of every other camera's sight
 	public List<String> forest() {
 		Random random = new Random(42);
 		List<String> c = new ArrayList<>();
-		c.add(f("fill -10 %d -130 74 %d -46 minecraft:grass_block", Y - 1, Y - 1));
+		c.add(f("fill %d %d %d %d %d %d minecraft:grass_block", FOREST_X0, Y - 1, FOREST_Z0, FOREST_X1, Y - 1, FOREST_Z1));
 		for (int x = -8; x <= 72; x += 5) {
 			for (int z = -128; z <= -50; z += 5) {
 				c.add(f("place feature minecraft:%s %d %d %d", random.nextInt(4) == 0 ? "oak" : "dark_oak", x + random.nextInt(3), Y, z + random.nextInt(3)));
