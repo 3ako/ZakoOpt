@@ -8,8 +8,9 @@ import net.minecraft.world.phys.Vec3;
 
 @UtilityClass
 public class ParticleLod {
-	// game time sampled once per ParticleEngine.render; workers read it instead of chasing particle -> level per quad
-	public volatile long tick = -1;
+	// 1.21.4 only: the game time sampled once per ParticleEngine.render, which its light cache keys on. Later versions
+	// read level.getGameTime() themselves; -1 means no frame has been sampled yet, and no cache key may match it
+	public volatile long sampledTick = -1;
 
 	public boolean keep(SingleQuadParticle particle, double x, double y, double z, Vec3 cam) {
 		if (!Features.PARTICLE_LOD.on) {

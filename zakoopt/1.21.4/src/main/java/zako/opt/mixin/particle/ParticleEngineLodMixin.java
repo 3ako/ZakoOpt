@@ -22,7 +22,7 @@ public class ParticleEngineLodMixin {
 
 	@Inject(method = "render", at = @At("HEAD"))
 	private void zakoopt$tick(CallbackInfo ci) {
-		ParticleLod.tick = level.getGameTime();
+		ParticleLod.sampledTick = level.getGameTime();
 	}
 
 	@WrapOperation(method = "renderParticleType", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/client/Camera;F)V"))

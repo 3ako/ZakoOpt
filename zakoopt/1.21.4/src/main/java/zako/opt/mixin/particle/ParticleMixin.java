@@ -46,8 +46,9 @@ public class ParticleMixin {
 	@Inject(method = "getLightColor", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$cachedLight(float partialTick, CallbackInfoReturnable<Integer> cir) {
 		// the parallel pass has already taken the light on the render thread: the light engine is written by another thread
-		// while the game renders, and a worker must not walk into it
-		if (ParticleLight.parallel() || zakoopt$lightTick == ParticleLod.tick && Features.PARTICLE_LIGHT.on) {
+		// while the game renders, and a worker must not walk into it; before the first frame is sampled there is no tick to
+		// key on, and the cache must not answer with the light a particle was born with
+		if (ParticleLight.parallel() || Features.PARTICLE_LIGHT.on && ParticleLod.sampledTick != -1 && zakoopt$lightTick == ParticleLod.sampledTick) {
 			cir.setReturnValue(zakoopt$light);
 		}
 	}
@@ -55,7 +56,7 @@ public class ParticleMixin {
 	@Inject(method = "getLightColor", at = @At("RETURN"))
 	private void zakoopt$storeLight(float partialTick, CallbackInfoReturnable<Integer> cir) {
 		zakoopt$light = cir.getReturnValueI();
-		zakoopt$lightTick = ParticleLod.tick;
+		zakoopt$lightTick = ParticleLod.sampledTick;
 	}
 
 	@Inject(method = "move", at = @At("HEAD"))
