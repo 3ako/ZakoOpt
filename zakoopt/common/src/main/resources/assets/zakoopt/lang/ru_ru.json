@@ -1,4 +1,6 @@
 {
+  "modmenu.summaryTranslation.zakoopt": "Оптимизация клиента Minecraft поверх Sodium",
+  "modmenu.descriptionTranslation.zakoopt": "Оптимизации рендера поверх Sodium. Создаёт меньше лишних проверок и синхронизаций с видеокартой. Подпишись на канал автора: t.me/StarikZako",
   "zakoopt.group.render": "Видеокарта и драйвер",
   "zakoopt.group.items": "Предметы",
   "zakoopt.group.spawners": "Спавнеры",

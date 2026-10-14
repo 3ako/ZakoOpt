@@ -1,4 +1,6 @@
 {
+  "modmenu.summaryTranslation.zakoopt": "Minecraft client optimizations on top of Sodium",
+  "modmenu.descriptionTranslation.zakoopt": "Render optimizations on top of Sodium. Does fewer redundant checks and GPU syncs. Follow to author's channel: t.me/StarikZako",
   "zakoopt.group.render": "GPU & driver",
   "zakoopt.group.items": "Items",
   "zakoopt.group.spawners": "Spawners",
