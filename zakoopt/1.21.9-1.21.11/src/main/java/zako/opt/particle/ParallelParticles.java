@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import zako.opt.mixin.particle.ParticleAccessor;
+import zako.opt.mixin.particle.ParticleLightAccessor;
 import zako.opt.mixin.particle.QuadParticleRenderStateAccessor;
 import zako.opt.mixin.particle.QuadParticleStorageInvoker;
 
@@ -44,6 +45,16 @@ public class ParallelParticles {
 			LOCAL.add(new QuadParticleRenderState());
 		}
 		Vec3 cam = camera.position();
+		// the light of a particle is read from the world, and the world is not safe to read off the render thread: it is
+		// taken here, while the particles are still on this thread, and the workers get it back from the particle's cache
+		for (int i = 0; i < n; i++) {
+			SingleQuadParticle p = arr[i];
+			ParticleAccessor pos = (ParticleAccessor) p;
+			double x = pos.zakoopt$x(), y = pos.zakoopt$y(), z = pos.zakoopt$z();
+			if (frustum.pointInFrustum(x, y, z) && ParticleLod.keep(p, x, y, z, cam)) {
+				((ParticleLightAccessor) p).zakoopt$light(partialTick);
+			}
+		}
 		Throwable error;
 		try {
 			error = Workers.run(blocks, b -> extractRange(arr, b * BLOCK, Math.min(n, (b + 1) * BLOCK), LOCAL.get(b), frustum, camera, cam, partialTick));
@@ -63,13 +74,19 @@ public class ParallelParticles {
 
 	private void extractRange(SingleQuadParticle[] arr, int from, int to, QuadParticleRenderState out,
 									 Frustum frustum, Camera camera, Vec3 cam, float partialTick) {
-		for (int i = from; i < to; i++) {
-			SingleQuadParticle p = arr[i];
-			ParticleAccessor pos = (ParticleAccessor) p;
-			double x = pos.zakoopt$x(), y = pos.zakoopt$y(), z = pos.zakoopt$z();
-			if (frustum.pointInFrustum(x, y, z) && ParticleLod.keep(p, x, y, z, cam)) {
-				p.extract(out, camera, partialTick);
+		// no world is touched here: the flag tells the particle mixin to hand back the light the render thread already took
+		ParticleLight.parallel(true);
+		try {
+			for (int i = from; i < to; i++) {
+				SingleQuadParticle p = arr[i];
+				ParticleAccessor pos = (ParticleAccessor) p;
+				double x = pos.zakoopt$x(), y = pos.zakoopt$y(), z = pos.zakoopt$z();
+				if (frustum.pointInFrustum(x, y, z) && ParticleLod.keep(p, x, y, z, cam)) {
+					p.extract(out, camera, partialTick);
+				}
 			}
+		} finally {
+			ParticleLight.parallel(false);
 		}
 	}
 

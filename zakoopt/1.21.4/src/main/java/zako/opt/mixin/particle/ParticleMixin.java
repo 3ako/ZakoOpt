@@ -1,6 +1,7 @@
 package zako.opt.mixin.particle;
 
 import zako.opt.feature.Features;
+import zako.opt.particle.ParticleLight;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -44,7 +45,9 @@ public class ParticleMixin {
 	// vanilla reads the non-interpolated x/y/z, which only change in tick(), so the value is constant within a tick
 	@Inject(method = "getLightColor", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$cachedLight(float partialTick, CallbackInfoReturnable<Integer> cir) {
-		if (zakoopt$lightTick == ParticleLod.tick && Features.PARTICLE_LIGHT.on) {
+		// the parallel pass has already taken the light on the render thread: the light engine is written by another thread
+		// while the game renders, and a worker must not walk into it
+		if (ParticleLight.parallel() || zakoopt$lightTick == ParticleLod.tick && Features.PARTICLE_LIGHT.on) {
 			cir.setReturnValue(zakoopt$light);
 		}
 	}

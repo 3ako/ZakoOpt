@@ -23,6 +23,7 @@
 		"hud.GuiInvoker",
 		"hud.GuiRendererMixin",
 		"hud.GuiRendererPipMixin",
+		"particle.ParticleLightAccessor",
 		"particle.ParticleMixin"
 	]
 }

@@ -24,6 +24,7 @@
 		"hud.GuiItemAtlasMixin",
 		"hud.GuiRendererAnimatedMixin",
 		"hud.ImmediatelyFastAnimatedAtlasMixin",
+		"particle.ParticleLightAccessor",
 		"particle.ParticleMixin",
 		"particle.QuadParticleGroupMixin",
 		"particle.QuadParticleRenderStateAccessor",

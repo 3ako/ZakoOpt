@@ -18,6 +18,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import zako.opt.gl.RawVertices;
 import zako.opt.mixin.particle.ParticleAccessor;
+import zako.opt.mixin.particle.ParticleLightAccessor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,9 @@ public class ParallelQuadParticles {
 				if (!(arr[i] instanceof SingleQuadParticle)) {
 					return false;
 				}
+				// the light of a particle is read from the world, and the world is not safe to read off the render thread:
+				// it is taken here, while the particles are still on this thread, and the workers get it back from the cache
+				((ParticleLightAccessor) arr[i]).zakoopt$light(partialTick);
 			}
 			int blocks = (n + BLOCK - 1) / BLOCK;
 			while (LOCAL.size() < blocks) {
@@ -83,12 +87,18 @@ public class ParallelQuadParticles {
 	}
 
 	private void renderRange(Particle[] arr, int from, int to, BufferBuilder out, Camera camera, Vec3 cam, float partialTick) {
-		for (int i = from; i < to; i++) {
-			SingleQuadParticle p = (SingleQuadParticle) arr[i];
-			ParticleAccessor pos = (ParticleAccessor) p;
-			if (ParticleLod.keep(p, pos.zakoopt$x(), pos.zakoopt$y(), pos.zakoopt$z(), cam)) {
-				p.render(out, camera, partialTick);
+		// no world is touched here: the flag tells the particle mixin to hand back the light the render thread already took
+		ParticleLight.parallel(true);
+		try {
+			for (int i = from; i < to; i++) {
+				SingleQuadParticle p = (SingleQuadParticle) arr[i];
+				ParticleAccessor pos = (ParticleAccessor) p;
+				if (ParticleLod.keep(p, pos.zakoopt$x(), pos.zakoopt$y(), pos.zakoopt$z(), cam)) {
+					p.render(out, camera, partialTick);
+				}
 			}
+		} finally {
+			ParticleLight.parallel(false);
 		}
 	}
 }

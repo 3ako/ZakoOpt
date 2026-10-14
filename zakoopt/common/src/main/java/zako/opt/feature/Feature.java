@@ -21,8 +21,8 @@ public abstract class Feature {
 	private final boolean available = data.mixins().length == 0 || Arrays.stream(data.mixins()).anyMatch(MixinPlugin::applies);
 	// as set by the player and stored in the config
 	public boolean value = data.enabled();
-	// what the game runs with this frame; hot code reads only this
-	public boolean on;
+	// what the game runs with this frame; hot code reads only this, and a worker thread reads it too
+	public volatile boolean on;
 
 	// why it cannot work on this machine, as a translation key or a mod name; null: it can
 	public String blocked() {

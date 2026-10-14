@@ -9,7 +9,7 @@ import net.minecraft.world.phys.Vec3;
 @UtilityClass
 public class ParticleLod {
 	// game time sampled once per ParticleEngine.render; workers read it instead of chasing particle -> level per quad
-	public long tick = -1;
+	public volatile long tick = -1;
 
 	public boolean keep(SingleQuadParticle particle, double x, double y, double z, Vec3 cam) {
 		if (!Features.PARTICLE_LOD.on) {

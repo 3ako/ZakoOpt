@@ -54,6 +54,7 @@
 		"particle.ClientLevelAmbientMixin",
 		"particle.ParticleEngineLodMixin",
 		"particle.ParticleEngineParallelMixin",
+		"particle.ParticleLightAccessor",
 		"particle.ParticleMixin",
 		"text.EntityRendererNameTagMixin",
 		"text.FontManagerMixin",
