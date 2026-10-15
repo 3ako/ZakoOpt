@@ -68,7 +68,6 @@ public class HudCache {
 			drawing = false;
 			RenderSystem.defaultBlendFunc();
 			Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
-			HudTiles.mark(target);
 		}
 	}
 
@@ -77,9 +76,7 @@ public class HudCache {
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 		RenderSystem.enableBlend();
 		GlStateManager._blendFunc(GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA.value);
-		if (!HudTiles.blend(target, main)) {
-			target.blitAndBlendToScreen(main.width, main.height);
-		}
+		target.blitAndBlendToScreen(main.width, main.height);
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.disableBlend();
 		RenderSystem.enableDepthTest();

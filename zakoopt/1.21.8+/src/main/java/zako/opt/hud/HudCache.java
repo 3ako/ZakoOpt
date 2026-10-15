@@ -81,13 +81,10 @@ public class HudCache {
 		} finally {
 			drawing = false;
 		}
-		HudTiles.mark(target);
 	}
 
 	public void composite() {
 		RenderTarget main = HudGpu.mainTarget(Minecraft.getInstance());
-		if (!HudTiles.blend(target, main)) {
-			HudGpu.composite(target, main);
-		}
+		HudGpu.composite(target, main);
 	}
 }
