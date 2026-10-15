@@ -11,6 +11,8 @@
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",
 		"entity.EntityRenderStatePoolMixin",
+		"entity.PosePoolFrameMixin",
+		"entity.SubmitPosePoolMixin",
 		"entity.ModelPartAccessor",
 		"DebugScreenEntriesMixin",
 		"block.SpawnerRendererMixin",

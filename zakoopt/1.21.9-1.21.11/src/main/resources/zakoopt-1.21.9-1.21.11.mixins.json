@@ -12,6 +12,7 @@
 		"entity.ItemStackRenderStateMixin",
 		"entity.LevelRendererOutlineMixin",
 		"entity.SubmitNodeStorageMixin",
+		"entity.CustomSubmitPosePoolMixin",
 		"particle.QuadParticleRenderStateMixin",
 		"particle.QuadParticleStorageInvoker",
 		"block.AbstractSignRendererMixin",
