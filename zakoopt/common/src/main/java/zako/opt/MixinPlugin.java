@@ -14,7 +14,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	public static final boolean VULKAN = FabricLoader.getInstance().isModLoaded("vulkanmod");
 	// Lunar is no Fabric mod: its launcher class is the tell
 	public static final boolean LUNAR = MixinPlugin.class.getClassLoader().getResource("com/moonsworth/lunar/genesis/Genesis.class") != null;
-	private static final List<String> LUNAR_MIXINS = List.of("gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin");
+	private static final List<String> LUNAR_MIXINS = List.of("gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin", "block.BlockEntityRenderDispatcherCullMixin");
+	private static final List<String> NO_LUNAR_MIXINS = List.of("block.BlockEntityRenderDispatcherCullWrapMixin");
 	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin",
 			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin");
 	// Sodium writes model cubes its own fast way; ours stands in where it is missing
@@ -44,7 +45,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	public static boolean applies(String mixin) {
 		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin))
-				&& (LUNAR || !LUNAR_MIXINS.contains(mixin));
+				&& (LUNAR || !LUNAR_MIXINS.contains(mixin)) && !(LUNAR && NO_LUNAR_MIXINS.contains(mixin));
 	}
 
 	// the HUD cache draws into its own OpenGL framebuffer, which flickers under VulkanMod; the chat batch is plain GuiGraphics;
@@ -59,7 +60,8 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 		String mixin = mixinClassName.substring("zako.opt.mixin.".length());
-		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && (LUNAR || !LUNAR_MIXINS.contains(mixin));
+		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && (LUNAR || !LUNAR_MIXINS.contains(mixin))
+				&& !(LUNAR && NO_LUNAR_MIXINS.contains(mixin));
 	}
 
 	@Override

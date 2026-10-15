@@ -5,6 +5,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"block.BlockEntityRenderDispatcherCullMixin",
+		"block.BlockEntityRenderDispatcherCullWrapMixin",
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.BlockEntityRenderStatePoolMixin",
 		"block.ChestRendererMixin",

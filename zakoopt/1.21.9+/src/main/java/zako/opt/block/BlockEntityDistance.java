@@ -27,10 +27,11 @@ public class BlockEntityDistance {
 	// the early cull's whole test, kept out of its mixin handler: a tiny handler is inlined and its CallbackInfoReturnable never allocated
 	@SuppressWarnings("rawtypes")
 	public boolean culledEarly(BlockEntityRenderDispatcher dispatcher, BlockEntity blockEntity, Vec3 camera) {
-		if (!Features.BLOCK_ENTITY_EARLY_CULL.on || camera == null) {
-			return false;
-		}
-		BlockEntityRenderer renderer = dispatcher.getRenderer(blockEntity);
-		return renderer != null && !inDistance(renderer, blockEntity, camera);
+		return camera != null && culled(dispatcher.getRenderer(blockEntity), blockEntity, camera);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public boolean culled(BlockEntityRenderer renderer, BlockEntity blockEntity, Vec3 camera) {
+		return Features.BLOCK_ENTITY_EARLY_CULL.on && renderer != null && camera != null && !inDistance(renderer, blockEntity, camera);
 	}
 }
