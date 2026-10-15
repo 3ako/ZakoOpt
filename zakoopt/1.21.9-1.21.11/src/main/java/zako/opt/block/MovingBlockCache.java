@@ -9,6 +9,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.UtilityClass;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderLayerHelper;
 import net.minecraft.client.Minecraft;
@@ -50,14 +52,22 @@ public class MovingBlockCache {
 
 	// grass, leaves, vines... take their colour from the biome where they are tesselated: the tint is part of the key, or every
 	// moved block of a state would show the colour of the first one
-	private record Key(BlockState state, int tint) {
+	@AllArgsConstructor
+	@EqualsAndHashCode
+	private static final class Key {
+		BlockState state;
+		int tint;
 	}
 
 	private record Layer(RenderType type, ByteBuffer vertices, int count) {
 	}
 
-	private record Entry(BlockStateModel model, List<Layer> layers) {
+	private record Entry(BlockStateModel model, Layer[] layers) {
 	}
+
+	// render thread only: the key a moving block is looked up with, copied only when a new entry is stored
+	private final Key LOOKUP = new Key(null, 0);
+	private final Vector3f TMP = new Vector3f();
 
 	// renders what it can and removes it from the list; the rest goes the usual Fabric/vanilla way
 	public void render(List<SubmitNodeStorage.MovingBlockSubmit> submits, MultiBufferSource.BufferSource buffers, BlockRenderDispatcher dispatcher) {
@@ -70,22 +80,24 @@ public class MovingBlockCache {
 			if (!(model instanceof SingleVariant)) {
 				return false;
 			}
-			Key key = new Key(state.blockState, Minecraft.getInstance().getBlockColors().getColor(state.blockState, state, state.blockPos, 0));
-			Entry entry = CACHE.get(key);
+			LOOKUP.state = state.blockState;
+			LOOKUP.tint = Minecraft.getInstance().getBlockColors().getColor(state.blockState, state, state.blockPos, 0);
+			Entry entry = CACHE.get(LOOKUP);
 			if (entry == null || entry.model != model) {
 				if (entry != null) {
 					free(entry);
 				}
 				entry = capture(state, model, dispatcher);
-				CACHE.put(key, entry);
+				CACHE.put(new Key(LOOKUP.state, LOOKUP.tint), entry);
 			}
-			for (Layer layer : entry.layers) {
+			Layer[] layers = entry.layers;
+			for (Layer layer : layers) {
 				if (!RawVertices.accepts(buffers.getBuffer(layer.type), layer.type.format())) {
 					return false;
 				}
 			}
 			int light = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, state, state.blockState, state.blockPos);
-			for (Layer layer : entry.layers) {
+			for (Layer layer : layers) {
 				emit(layer, submit.pose(), light, buffers.getBuffer(layer.type));
 			}
 			return true;
@@ -93,7 +105,9 @@ public class MovingBlockCache {
 	}
 
 	private void free(Entry entry) {
-		entry.layers.forEach(layer -> MemoryUtil.memFree(layer.vertices));
+		for (Layer layer : entry.layers) {
+			MemoryUtil.memFree(layer.vertices);
+		}
 	}
 
 	private Entry capture(MovingBlockRenderState state, BlockStateModel model, BlockRenderDispatcher dispatcher) {
@@ -118,7 +132,7 @@ public class MovingBlockCache {
 			}
 		});
 		bytes.values().forEach(ByteBufferBuilder::close);
-		return new Entry(model, layers);
+		return new Entry(model, layers.toArray(new Layer[0]));
 	}
 
 	private void emit(Layer layer, Matrix4f pose, int light, VertexConsumer target) {
@@ -127,7 +141,7 @@ public class MovingBlockCache {
 		int pos = format.getOffset(VertexFormatElement.POSITION);
 		int uv2 = format.contains(VertexFormatElement.UV2) ? format.getOffset(VertexFormatElement.UV2) : -1;
 		int size = layer.count * stride;
-		Vector3f tmp = new Vector3f();
+		Vector3f tmp = TMP;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			long dst = stack.nmalloc(16, size);
 			MemoryUtil.memCopy(MemoryUtil.memAddress(layer.vertices), dst, size);

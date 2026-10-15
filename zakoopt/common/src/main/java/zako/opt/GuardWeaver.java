@@ -30,9 +30,9 @@ public class GuardWeaver implements Opcodes {
 	private final String OPERATION = "Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;";
 	// postApply runs once per mixin, and several of ours may share a target class and a handler name
 	private final Set<String> WRAPPED = ConcurrentHashMap.newKeySet();
-	// once per block entity per frame, cancellable: guarded, the handler is too big to inline and its CallbackInfoReturnable
-	// is allocated on every call (3% of the render thread's garbage on a farm); unguarded it is one call and the JIT drops it
-	private final Set<String> HOT = Set.of("zakoopt$earlyCull");
+	// tiny hooks run per block entity or per buffer every frame: guarded, the handler is too big to inline and its CallbackInfo
+	// is allocated on every call (earlyCull alone was 3% of the render thread's garbage on a farm); unguarded the JIT drops it
+	private final Set<String> HOT = Set.of("zakoopt$earlyCull", "zakoopt$renderType", "zakoopt$release");
 
 	public void weave(ClassNode target, String mixinClass, IMixinInfo mixin) {
 		// entity and particle handlers run thousands of times a frame: guarded they cost 5% FPS with mobs, measured

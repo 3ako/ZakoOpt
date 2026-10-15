@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +39,25 @@ public class SpawnerReplay {
 			y = camera.y;
 			z = camera.z;
 		}
+	}
+
+	// true: this tick's recording was replayed; false: the caller goes through submit
+	public boolean replay(Object key, long tick, Vec3 camera, SubmitNodeCollector collector) {
+		if (tick != cachedTick) {
+			CACHE.clear();
+			cachedTick = tick;
+		}
+		Recording recording = CACHE.get(key);
+		if (recording == null || !recording.replayable) {
+			return false;
+		}
+		replay(recording, camera, collector);
+		return true;
+	}
+
+	public double distanceSq(BlockPos pos, Vec3 camera) {
+		double dx = pos.getX() + 0.5 - camera.x, dy = pos.getY() + 0.5 - camera.y, dz = pos.getZ() + 0.5 - camera.z;
+		return dx * dx + dy * dy + dz * dz;
 	}
 
 	public void submit(Object key, long tick, Vec3 camera, SubmitNodeCollector collector, Consumer<SubmitNodeCollector> body) {
