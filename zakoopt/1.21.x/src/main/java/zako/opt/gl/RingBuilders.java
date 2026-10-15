@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.RenderType;
 
+import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -11,6 +12,8 @@ import java.util.Map;
 public class RingBuilders {
 	private final int DEFAULT_SIZE = 64 << 10;
 	private final Map<RenderType, Integer> SIZES = new IdentityHashMap<>();
+	// closed ring builders handed back on the render thread, attached again instead of making a new one per lease
+	private final ArrayDeque<ByteBufferBuilder> FREE = new ArrayDeque<>();
 	public RenderType current;
 
 	public interface Backed {
@@ -31,9 +34,16 @@ public class RingBuilders {
 		if (address == 0) {
 			return null;
 		}
-		ByteBufferBuilder builder = new ByteBufferBuilder(16);
+		ByteBufferBuilder builder = FREE.isEmpty() ? new ByteBufferBuilder(16) : FREE.pop();
 		((Backed) builder).zakoopt$attach(type, address, size);
 		return builder;
+	}
+
+	// after close(), on the render thread
+	public void recycle(ByteBufferBuilder builder) {
+		if (FREE.size() < 256) {
+			FREE.push(builder);
+		}
 	}
 
 	public void remember(RenderType type, long size) {

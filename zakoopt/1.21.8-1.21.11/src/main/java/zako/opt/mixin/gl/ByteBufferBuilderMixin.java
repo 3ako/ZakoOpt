@@ -27,6 +27,12 @@ public class ByteBufferBuilderMixin implements RingBuilders.Backed {
 	private long writeOffset;
 	@Shadow
 	private int generation;
+	@Shadow
+	private long nextResultOffset;
+	@Shadow
+	private int resultCount;
+	@Unique
+	private static int zakoopt$generation = 1 << 24;
 	@Unique
 	private RenderType zakoopt$type;
 	// 0 = vanilla memory, 1 = inside the immediate ring, 2 = ours but moved to malloc memory
@@ -35,11 +41,19 @@ public class ByteBufferBuilderMixin implements RingBuilders.Backed {
 
 	@Override
 	public void zakoopt$attach(RenderType type, long address, int size) {
-		// untrack before freeing: with --tracy the allocator may hand this address out again, and a still-tracked address aborts the capture
-		MEMORY_POOL.free(pointer);
-		MemoryUtil.getAllocator(false).free(pointer);
+		// a recycled builder was closed and owns no memory; a new one frees its own small block first
+		if (pointer != 0) {
+			// untrack before freeing: with --tracy the allocator may hand this address out again, and a still-tracked address aborts the capture
+			MEMORY_POOL.free(pointer);
+			MemoryUtil.getAllocator(false).free(pointer);
+		}
 		pointer = address;
 		capacity = size;
+		writeOffset = 0;
+		nextResultOffset = 0;
+		resultCount = 0;
+		// a result left from the builder's last use must not pass as current
+		generation = ++zakoopt$generation;
 		zakoopt$type = type;
 		zakoopt$state = 1;
 	}

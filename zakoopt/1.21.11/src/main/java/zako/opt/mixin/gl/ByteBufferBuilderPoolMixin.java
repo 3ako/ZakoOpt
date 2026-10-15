@@ -1,5 +1,6 @@
 package zako.opt.mixin.gl;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import net.raphimc.immediatelyfast.feature.core.ByteBufferBuilderPool;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +16,9 @@ public class ByteBufferBuilderPoolMixin {
 	private static void zakoopt$release(ByteBufferBuilder builder, CallbackInfo ci) {
 		if (((RingBuilders.Backed) builder).zakoopt$ringBacked()) {
 			builder.close();
+			if (RenderSystem.isOnRenderThread()) {
+				RingBuilders.recycle(builder);
+			}
 			ci.cancel();
 		}
 	}
