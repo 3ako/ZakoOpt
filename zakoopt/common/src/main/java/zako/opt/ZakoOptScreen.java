@@ -117,7 +117,7 @@ public class ZakoOptScreen extends Panel {
 		button(c, dx, by, done, this::onClose);
 		Component defaults = Component.translatable("zakoopt.screen.defaults");
 		int defaultsX = dx - 6 - buttonWidth(defaults);
-		button(c, defaultsX, by, defaults, () -> Features.restore(Features.defaults()));
+		button(c, defaultsX, by, defaults, this::confirmDefaults);
 		Component hint = overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
@@ -160,6 +160,17 @@ public class ZakoOptScreen extends Panel {
 		}
 		c.fill(x0 + 6, y + height - 1, x1 - 6, y + height, LINE);
 		return y + height;
+	}
+
+	private void confirmDefaults() {
+		UpdateUi.setScreen(new ConfirmPanel(yes -> {
+			if (yes) {
+				Features.restore(Features.defaults());
+				changed();
+			}
+			UpdateUi.setScreen(this);
+		}, Component.translatable("zakoopt.screen.defaults.title"), Component.translatable("zakoopt.screen.defaults.confirm"),
+				Component.translatable("zakoopt.screen.defaults.yes"), Component.translatable("gui.cancel")));
 	}
 
 	@Override
