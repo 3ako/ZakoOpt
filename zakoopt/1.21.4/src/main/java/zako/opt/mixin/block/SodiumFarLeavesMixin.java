@@ -1,9 +1,6 @@
 package zako.opt.mixin.block;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
-import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -12,6 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.block.FarLeaves;
 
@@ -24,6 +22,8 @@ public class SodiumFarLeavesMixin {
 	private BlockState zakoopt$state;
 	@Unique
 	private BlockPos zakoopt$pos;
+	@Unique
+	private final FarLeaves.Section zakoopt$section = new FarLeaves.Section();
 
 	@Inject(require = 0, method = "renderModel", at = @At("HEAD"))
 	private void zakoopt$block(BakedModel model, BlockState state, BlockPos pos, BlockPos origin, CallbackInfo ci) {
@@ -31,9 +31,10 @@ public class SodiumFarLeavesMixin {
 		zakoopt$pos = pos;
 	}
 
-	@WrapOperation(require = 0, method = "processQuad", at = @At(value = "INVOKE",
+	// on every quad of every block: only the layer argument is swapped, no argument array or wrapper object
+	@ModifyArg(require = 0, method = "processQuad", at = @At(value = "INVOKE",
 			target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/DefaultMaterials;forRenderLayer(Lnet/minecraft/client/renderer/RenderType;)Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;"))
-	private Material zakoopt$farLeaves(RenderType type, Operation<Material> original) {
-		return original.call(FarLeaves.type(zakoopt$state, zakoopt$pos, type));
+	private RenderType zakoopt$farLeaves(RenderType type) {
+		return FarLeaves.type(zakoopt$section, zakoopt$state, zakoopt$pos, type);
 	}
 }

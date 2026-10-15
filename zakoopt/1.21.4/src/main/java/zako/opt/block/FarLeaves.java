@@ -27,22 +27,45 @@ public class FarLeaves {
 	private volatile double camX, camY, camZ;
 	private double checkedX = Double.NaN, checkedY, checkedZ;
 	private int checkedDistance;
+	// bumped whenever the camera position the builders measure from moves on, or a section is flipped
+	private volatile int epoch;
+
+	// one per builder thread: the last section's verdict. A section is meshed by one thread at a time, so its blocks are
+	// decided once instead of per quad
+	public final class Section {
+		private long key = Long.MIN_VALUE;
+		private int epoch = -1;
+		private boolean far;
+	}
 
 	// on a chunk builder thread
-	public RenderType type(BlockState state, BlockPos pos, RenderType original) {
+	private boolean far(Section last, BlockPos pos) {
+		int sx = pos.getX() >> 4, sy = pos.getY() >> 4, sz = pos.getZ() >> 4;
+		long key = SectionPos.asLong(sx, sy, sz);
+		int e = epoch;
+		if (key != last.key || e != last.epoch) {
+			int limit = Features.FAR_LEAVES.distance;
+			last.far = distanceSqr(sx, sy, sz) > (double) limit * limit;
+			last.key = key;
+			last.epoch = e;
+			sections.put(key, last.far);
+		}
+		return last.far;
+	}
+
+	// on a chunk builder thread
+	public RenderType type(Section last, BlockState state, BlockPos pos, RenderType original) {
 		if (!Features.FAR_LEAVES.on || state == null || !(state.getBlock() instanceof LeavesBlock)) {
 			return original;
 		}
-		int sx = pos.getX() >> 4, sy = pos.getY() >> 4, sz = pos.getZ() >> 4;
-		boolean far = distance(sx, sy, sz) > Features.FAR_LEAVES.distance;
-		sections.put(SectionPos.asLong(sx, sy, sz), far);
-		return far ? RenderType.solid() : original;
+		return far(last, pos) ? RenderType.solid() : original;
 	}
 
 	public void frame() {
 		if (!Features.FAR_LEAVES.on) {
 			if (!sections.isEmpty()) {
 				sections.clear();
+				epoch++;
 			}
 			return;
 		}
@@ -63,6 +86,7 @@ public class FarLeaves {
 		checkedY = camY;
 		checkedZ = camZ;
 		checkedDistance = limit;
+		epoch++;
 		SodiumWorldRenderer renderer = SodiumWorldRenderer.instanceNullable();
 		double keep = (mc.options.getEffectiveRenderDistance() + 2) * 16;
 		for (Iterator<Map.Entry<Long, Boolean>> it = sections.entrySet().iterator(); it.hasNext(); ) {
@@ -80,7 +104,11 @@ public class FarLeaves {
 	}
 
 	private double distance(int sx, int sy, int sz) {
+		return Math.sqrt(distanceSqr(sx, sy, sz));
+	}
+
+	private double distanceSqr(int sx, int sy, int sz) {
 		double dx = (sx << 4) + 8 - camX, dy = (sy << 4) + 8 - camY, dz = (sz << 4) + 8 - camZ;
-		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+		return dx * dx + dy * dy + dz * dz;
 	}
 }

@@ -31,6 +31,8 @@ import java.util.WeakHashMap;
 @UtilityClass
 public class ParallelModels {
 	private final int FIELDS = 9;
+	// helpers are woken only once this many models are queued in a pass; fewer are built by the render thread, as on 1.21.9+
+	private final int MIN_JOBS = 24;
 
 	private final Map<ModelPart, Flat> FLATS = new WeakHashMap<>();
 	private final List<Job> JOBS = new ArrayList<>();
@@ -104,7 +106,7 @@ public class ParallelModels {
 			return;
 		}
 		JOBS.clear();
-		stream = Workers.stream(i -> build(JOBS.get(i)));
+		stream = Workers.idleStream(i -> build(JOBS.get(i)));
 	}
 
 	// must run even when the pass failed: helpers spin until the stream is finished
@@ -165,6 +167,9 @@ public class ParallelModels {
 		PENDING.add(buffer);
 		JOBS.add(job);
 		stream.publish(JOBS.size());
+		if (JOBS.size() == MIN_JOBS) {
+			stream.start();
+		}
 		return true;
 	}
 

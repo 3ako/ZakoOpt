@@ -35,10 +35,13 @@ public class Workers {
 	// helpers start right away and take items as the caller publishes them, so work overlaps with preparing the rest
 	public Stream stream(IntConsumer task) {
 		Stream stream = new Stream(task);
-		for (int h = COUNT; h > 0; h--) {
-			POOL.execute(stream::work);
-		}
+		stream.start();
 		return stream;
+	}
+
+	// no helpers until start(): with too little work the caller does it alone in finish/await, and no core spins for nothing
+	public Stream idleStream(IntConsumer task) {
+		return new Stream(task);
 	}
 
 	public final class Stream {
@@ -48,9 +51,21 @@ public class Workers {
 		final AtomicReference<Throwable> error = new AtomicReference<>();
 		volatile int ready;
 		volatile int total = -1;
+		private boolean started;
 
 		Stream(IntConsumer task) {
 			this.task = task;
+		}
+
+		// the caller's thread only; helpers take every item published so far
+		public void start() {
+			if (started) {
+				return;
+			}
+			started = true;
+			for (int h = COUNT; h > 0; h--) {
+				POOL.execute(this::work);
+			}
 		}
 
 		// items 0..count-1 are fully set up and may be taken
