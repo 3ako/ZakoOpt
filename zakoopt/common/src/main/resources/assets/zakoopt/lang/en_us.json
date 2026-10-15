@@ -4,6 +4,7 @@
   "zakoopt.group.spawners": "Spawners",
   "zakoopt.group.particles": "Particles",
   "zakoopt.group.interface": "Interface & text",
+  "zakoopt.group.memory": "Memory & garbage",
   "zakoopt.percent": "%s%%",
   "zakoopt.blocks": "%s blocks",
   "zakoopt.option.frame_fence": "One fence per frame",

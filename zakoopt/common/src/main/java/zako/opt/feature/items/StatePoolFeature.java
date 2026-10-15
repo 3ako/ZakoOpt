@@ -10,7 +10,7 @@ import zako.opt.feature.Impact;
 // the Iris shadow pass extracts the same entities again for its own camera, which would overwrite the pooled state
 @FeatureData(
 	key = "state_pool",
-	group = FeatureGroup.ITEMS,
+	group = FeatureGroup.MEMORY,
 	impact = Impact.MEDIUM,
 	mixins = "entity.EntityRenderStatePoolMixin",
 	bench = BenchView.CROWD

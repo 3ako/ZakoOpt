@@ -4,6 +4,7 @@
   "zakoopt.group.spawners": "Спавнеры",
   "zakoopt.group.particles": "Частицы",
   "zakoopt.group.interface": "Интерфейс и текст",
+  "zakoopt.group.memory": "Память и мусор",
   "zakoopt.percent": "%s%%",
   "zakoopt.blocks": "%s бл.",
   "zakoopt.option.frame_fence": "Один fence на кадр",

@@ -11,7 +11,7 @@ import zako.opt.feature.Impact;
 // for its own camera, which would overwrite a reused state
 @FeatureData(
 	key = "fewer_allocations",
-	group = FeatureGroup.BLOCKS,
+	group = FeatureGroup.MEMORY,
 	impact = Impact.LOW,
 	mixins = "block.BlockEntityRenderStatePoolMixin",
 	bench = BenchView.OVERVIEW
