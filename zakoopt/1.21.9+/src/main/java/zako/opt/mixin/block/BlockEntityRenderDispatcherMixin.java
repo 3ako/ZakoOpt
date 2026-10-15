@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.block.BlockEntityDistance;
 import zako.opt.block.CachedValidity;
 
 @Mixin(BlockEntityRenderDispatcher.class)
@@ -34,6 +33,14 @@ public class BlockEntityRenderDispatcherMixin {
 
 	@WrapOperation(method = "tryExtractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderer;shouldRender(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/phys/Vec3;)Z"))
 	private boolean zakoopt$cachedDistance(BlockEntityRenderer<BlockEntity, ?> renderer, BlockEntity blockEntity, Vec3 camera, Operation<Boolean> original) {
-		return BlockEntityDistance.inDistance(blockEntity, () -> original.call(renderer, blockEntity, camera));
+		if (!Features.MICRO_OPTS.fewerChecks || blockEntity.getLevel() == null) {
+			return original.call(renderer, blockEntity, camera);
+		}
+		CachedValidity cache = (CachedValidity) blockEntity;
+		long tick = blockEntity.getLevel().getGameTime();
+		if (cache.zakoopt$distanceTick() != tick) {
+			cache.zakoopt$setInDistance(original.call(renderer, blockEntity, camera), tick);
+		}
+		return cache.zakoopt$inDistance();
 	}
 }

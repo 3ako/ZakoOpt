@@ -8,6 +8,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import zako.opt.gl.ReserveBuffer;
 import zako.opt.mixin.entity.ModelPartAccessor;
@@ -37,8 +39,9 @@ public class ParallelModels {
 	private final Map<ModelPart, Flat> FLATS = new WeakHashMap<>();
 	private final List<Job> JOBS = new ArrayList<>();
 	private final Set<ReserveBuffer> PENDING = Collections.newSetFromMap(new IdentityHashMap<>());
-	private final ThreadLocal<PoseStack> STACKS = ThreadLocal.withInitial(PoseStack::new);
-	private final ThreadLocal<FastCubes.Scratch> SCRATCH = ThreadLocal.withInitial(FastCubes.Scratch::new);
+	// jobs outlive the pass and are handed out again by index: workers are done with them by end()
+	private final List<Job> POOL = new ArrayList<>();
+	private final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
 	private Workers.Stream stream;
 
 	// a model tree flattened in render order; end[i] is the index after part i's subtree
@@ -75,26 +78,23 @@ public class ParallelModels {
 	}
 
 	private final class Job {
-		final Flat flat;
-		final PoseStack.Pose pose;
-		final boolean trustedNormals;
-		final int light, overlay, abgr;
-		final float[] parts;
-		final byte[] flags;
-		final ReserveBuffer buffer;
+		final Matrix4f pose = new Matrix4f();
+		final Matrix3f normal = new Matrix3f();
+		Flat flat;
+		boolean trustedNormals;
+		int light, overlay, abgr;
+		float[] parts = new float[0];
+		byte[] flags = new byte[0];
+		ReserveBuffer buffer;
 		long offset;
+	}
 
-		Job(Flat flat, ReserveBuffer buffer, PoseStack.Pose pose, int light, int overlay, int abgr) {
-			this.flat = flat;
-			this.buffer = buffer;
-			this.pose = pose;
-			this.trustedNormals = ((PoseAccessor) (Object) pose).zakoopt$trustedNormals();
-			this.light = light;
-			this.overlay = overlay;
-			this.abgr = abgr;
-			this.parts = new float[flat.parts.length * FIELDS];
-			this.flags = new byte[flat.parts.length];
-		}
+	// per thread: part() recurses, but each level is done with these before it descends
+	private final class Scratch {
+		final PoseStack poses = new PoseStack();
+		final Quaternionf rotation = new Quaternionf();
+		final FastCubes.Scratch cubes = new FastCubes.Scratch();
+		long at;
 	}
 
 	public boolean enabled() {
@@ -134,7 +134,26 @@ public class ParallelModels {
 		}
 		ModelPart root = model.root();
 		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
-		Job job = new Job(flat, buffer, poseStack.last().copy(), light, overlay, FastCubes.abgr(color));
+		Job job;
+		if (JOBS.size() < POOL.size()) {
+			job = POOL.get(JOBS.size());
+		} else {
+			job = new Job();
+			POOL.add(job);
+		}
+		PoseStack.Pose last = poseStack.last();
+		job.flat = flat;
+		job.buffer = buffer;
+		job.pose.set(last.pose());
+		job.normal.set(last.normal());
+		job.trustedNormals = ((PoseAccessor) (Object) last).zakoopt$trustedNormals();
+		job.light = light;
+		job.overlay = overlay;
+		job.abgr = FastCubes.abgr(color);
+		if (job.flags.length < flat.parts.length) {
+			job.parts = new float[flat.parts.length * FIELDS];
+			job.flags = new byte[flat.parts.length];
+		}
 		int vertices = 0;
 		for (int i = 0; i < flat.parts.length; i++) {
 			ModelPart p = i == 0 ? root : flat.parts[i];
@@ -195,21 +214,21 @@ public class ParallelModels {
 	}
 
 	private void build(Job job) {
-		PoseStack poses = STACKS.get();
-		PoseStack.Pose base = poses.last();
-		base.pose().set(job.pose.pose());
-		base.normal().set(job.pose.normal());
+		Scratch s = SCRATCH.get();
+		PoseStack.Pose base = s.poses.last();
+		base.pose().set(job.pose);
+		base.normal().set(job.normal);
 		((PoseAccessor) (Object) base).zakoopt$trustedNormals(job.trustedNormals);
 		// read here, not when queued: the buffer may have grown and moved since, after every queued job had finished
-		long[] ptr = {job.buffer.zakoopt$address(job.offset)};
-		FastCubes.Scratch scratch = SCRATCH.get();
+		s.at = job.buffer.zakoopt$address(job.offset);
 		for (int i = 0; i < job.flat.parts.length; ) {
-			i = part(job, poses, i, ptr, scratch);
+			i = part(job, s, i);
 		}
 	}
 
 	// mirrors ModelPart.render / translateAndRotate, reading the snapshot instead of the shared part
-	private int part(Job job, PoseStack poses, int i, long[] ptr, FastCubes.Scratch scratch) {
+	private int part(Job job, Scratch s, int i) {
+		PoseStack poses = s.poses;
 		Flat flat = job.flat;
 		int end = flat.end[i];
 		if ((job.flags[i] & 1) == 0 || flat.empty[i]) {
@@ -220,16 +239,16 @@ public class ParallelModels {
 		poses.pushPose();
 		poses.translate(p[o] / 16.0F, p[o + 1] / 16.0F, p[o + 2] / 16.0F);
 		if (p[o + 3] != 0.0F || p[o + 4] != 0.0F || p[o + 5] != 0.0F) {
-			poses.mulPose(new Quaternionf().rotationZYX(p[o + 5], p[o + 4], p[o + 3]));
+			poses.mulPose(s.rotation.rotationZYX(p[o + 5], p[o + 4], p[o + 3]));
 		}
 		if (p[o + 6] != 1.0F || p[o + 7] != 1.0F || p[o + 8] != 1.0F) {
 			poses.scale(p[o + 6], p[o + 7], p[o + 8]);
 		}
 		if ((job.flags[i] & 2) == 0) {
-			ptr[0] = FastCubes.write(flat.cubes.get(i), poses.last(), ptr[0], job.light, job.overlay, job.abgr, scratch);
+			s.at = FastCubes.write(flat.cubes.get(i), poses.last(), s.at, job.light, job.overlay, job.abgr, s.cubes);
 		}
 		for (int c = i + 1; c < end; ) {
-			c = part(job, poses, c, ptr, scratch);
+			c = part(job, s, c);
 		}
 		poses.popPose();
 		return end;
