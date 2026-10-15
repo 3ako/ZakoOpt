@@ -3,14 +3,13 @@ package zako.opt.feature.items;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Range;
 import zako.opt.feature.Setting;
 
 @FeatureData(
 	key = "entity_lod",
+	visual = true,
 	group = FeatureGroup.ITEMS,
-	impact = Impact.HIGH,
 	mixins = {"entity.LivingEntityLodMixin", "entity.AvatarLodMixin", "entity.PlayerLodMixin"}
 )
 public class EntityLodFeature extends Feature {

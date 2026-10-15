@@ -5,7 +5,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureGroup;
 import zako.opt.feature.Features;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Range;
 import zako.opt.feature.Setting;
 
@@ -33,7 +32,7 @@ public class ZakoOptions {
 		}
 	}
 
-	public record Toggle(String key, Impact impact, Consumer<Boolean> set, Supplier<Boolean> get, String... requires) implements Option {
+	public record Toggle(String key, Consumer<Boolean> set, Supplier<Boolean> get, String... requires) implements Option {
 	}
 
 	public record Distance(String key, int min, int max, String unit, Consumer<Integer> set, Supplier<Integer> get, String... requires) implements Option {
@@ -59,7 +58,7 @@ public class ZakoOptions {
 				continue;
 			}
 			String[] requires = f.data().mixins();
-			options.add(new Toggle(f.key(), f.data().impact(), b -> f.value = b, () -> f.value, requires));
+			options.add(new Toggle(f.key(), b -> f.value = b, () -> f.value, requires));
 			for (Field s : f.settings()) {
 				options.add(setting(f, s, requires));
 			}
@@ -71,7 +70,7 @@ public class ZakoOptions {
 	private Option setting(Feature f, Field s, String[] requires) {
 		String key = s.getAnnotation(Setting.class).key();
 		if (s.getType() == boolean.class) {
-			return new Toggle(key, f.data().impact(), b -> f.set(s, b), () -> (Boolean) f.get(s), requires);
+			return new Toggle(key, b -> f.set(s, b), () -> (Boolean) f.get(s), requires);
 		}
 		Range range = s.getAnnotation(Range.class);
 		if (s.getType() == int.class && range != null) {

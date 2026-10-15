@@ -3,14 +3,13 @@ package zako.opt.feature.spawners;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Range;
 import zako.opt.feature.Setting;
 
 @FeatureData(
 	key = "spawner_cull",
+	visual = true,
 	group = FeatureGroup.SPAWNERS,
-	impact = Impact.HIGH,
 	mixins = "block.SpawnerRendererMixin"
 )
 public class SpawnerCullFeature extends Feature {

@@ -23,6 +23,9 @@ public class ZakoOptScreen extends Panel {
 	List<Section> sections = new ArrayList<>();
 	@NonFinal
 	int selected;
+	// what the "changes visuals" label under the mouse says; shown in the hint line
+	@NonFinal
+	Component visualHint;
 
 	private record Item(Feature feature, ZakoOptions.Toggle toggle, List<ZakoOptions.Option> settings) {
 	}
@@ -58,6 +61,7 @@ public class ZakoOptScreen extends Panel {
 	protected void paint(Canvas c) {
 		int w = Math.min(width - 2 * PAD, 520), x0 = (width - w) / 2, x1 = x0 + w, y0 = PAD, y1 = height - PAD;
 		frame(c, x0, y0, x1, y1);
+		visualHint = null;
 
 		c.text(Component.literal("ZakoOpt"), x0 + 8, y0 + 7, STRONG);
 		int vx = x0 + 8 + font.width("ZakoOpt") + 5;
@@ -118,7 +122,7 @@ public class ZakoOptScreen extends Panel {
 		Component defaults = Component.translatable("zakoopt.screen.defaults");
 		int defaultsX = dx - 6 - buttonWidth(defaults);
 		button(c, defaultsX, by, defaults, () -> Features.restore(Features.defaults()));
-		Component hint = overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
+		Component hint = visualHint != null ? visualHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
@@ -136,7 +140,12 @@ public class ZakoOptScreen extends Panel {
 		boolean on = f.value && blocked == null;
 		Component text = blocked != null ? blocked : Component.translatable("zakoopt.option." + f.key() + ".tooltip");
 		List<ZakoOptions.Option> settings = on ? item.settings() : List.of();
-		int height = 4 + 9 + 3 + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
+		Component title = Component.translatable("zakoopt.option." + f.key());
+		Component visual = f.data().visual() ? Component.translatable("zakoopt.screen.visual") : null;
+		int vw = visual == null ? 0 : font.width(visual);
+		// the label sits right of the title; a title too long for both pushes it onto its own line
+		boolean ownLine = visual != null && x0 + 34 + font.width(title) + 8 > x1 - 10 - vw;
+		int height = 4 + 9 + 3 + (ownLine ? 10 : 0) + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
 		if (y + height <= top || y >= bottom) {
 			return y + height;
 		}
@@ -144,16 +153,22 @@ public class ZakoOptScreen extends Panel {
 			c.fill(x0, y, x1, y + height, HOVER);
 		}
 		toggle(c, x0 + 10, y + 5, on, blocked != null);
-		c.text(Component.translatable("zakoopt.option." + f.key()), x0 + 34, y + 4, blocked != null ? DIM : STRONG);
-		int pips = f.data().impact().ordinal() + 1;
-		for (int i = 0; i < 3; i++) {
-			int px = x1 - 10 - (3 - i) * 5;
-			c.fill(px, y + 4, px + 3, y + 12, blocked == null && i < pips ? PIP : OFF);
+		c.text(title, x0 + 34, y + 4, blocked != null ? DIM : STRONG);
+		int ty = y + 16;
+		if (visual != null) {
+			int vx = ownLine ? x0 + 34 : x1 - 10 - vw, vy = ownLine ? ty : y + 4;
+			c.text(visual, vx, vy, blocked != null ? DIM : PIP);
+			if (over(vx - 2, vy - 2, vx + vw + 2, vy + 10)) {
+				visualHint = Component.translatable("zakoopt.visual." + f.key());
+			}
+			if (ownLine) {
+				ty += 10;
+			}
 		}
 		if (blocked == null) {
 			hit(x0, y, x1, y + 14, () -> f.value = !f.value, null);
 		}
-		int ly = lines(c, text, x0 + 34, y + 16, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
+		int ly = lines(c, text, x0 + 34, ty, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
 		for (ZakoOptions.Option s : settings) {
 			setting(c, s, x0 + 34, x1 - 12, ly + 2);
 			ly += 14;

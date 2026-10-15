@@ -5,12 +5,10 @@ import zako.opt.cpu.CorePin;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 
 @FeatureData(
 	key = "core_pin",
 	group = FeatureGroup.RENDER,
-	impact = Impact.HIGH,
 	enabled = false,
 	bench = BenchView.CROWD
 )

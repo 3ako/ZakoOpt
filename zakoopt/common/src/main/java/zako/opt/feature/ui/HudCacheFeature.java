@@ -6,13 +6,11 @@ import zako.opt.bench.BenchView;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 import zako.opt.hud.HudWorth;
 
 @FeatureData(
 	key = "hud_cache",
 	group = FeatureGroup.INTERFACE,
-	impact = Impact.HIGH,
 	mixins = {"hud.GuiRendererMixin", "hud.GuiRendererTargetMixin", "hud.GuiHudMixin"},
 	bench = BenchView.OVERVIEW
 )

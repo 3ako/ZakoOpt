@@ -4,15 +4,14 @@ import zako.opt.feature.Feature;
 import zako.opt.feature.Features;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Range;
 import zako.opt.feature.Setting;
 
 // switching it on or off needs the chunks meshed again; a new distance is picked up as the camera moves
 @FeatureData(
 	key = "far_leaves",
+	visual = true,
 	group = FeatureGroup.BLOCKS,
-	impact = Impact.HIGH,
 	enabled = false,
 	mixins = "block.SodiumFarLeavesMixin"
 )
