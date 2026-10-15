@@ -157,7 +157,7 @@ public class ZakoOptScreen extends Panel {
 		int ty = y + 16;
 		if (visual != null) {
 			int vx = ownLine ? x0 + 34 : x1 - 10 - vw, vy = ownLine ? ty : y + 4;
-			c.text(visual, vx, vy, blocked != null ? DIM : PIP);
+			c.text(visual, vx, vy, blocked != null ? DIM : VISUAL);
 			if (over(vx - 2, vy - 2, vx + vw + 2, vy + 10)) {
 				visualHint = Component.translatable("zakoopt.visual." + f.key());
 			}
