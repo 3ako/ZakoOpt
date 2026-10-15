@@ -67,6 +67,8 @@
   "zakoopt.option.spawner_replay.tooltip": "A far spawner's mob is drawn once a tick and replayed from a cache.",
   "zakoopt.option.micro_opts": "Micro optimizations",
   "zakoopt.option.micro_opts.tooltip": "Small speedups: fewer repeated checks and calculations.",
+  "zakoopt.option.fewer_allocations": "Less garbage",
+  "zakoopt.option.fewer_allocations.tooltip": "The game makes fewer throwaway objects every frame, so garbage collection pauses come less often. Turns off with Iris shaders.",
   "zakoopt.option.hud_cache": "HUD at monitor rate",
   "zakoopt.option.hud_cache.tooltip": "The interface is redrawn at the monitor's rate; other frames reuse the finished picture.",
   "zakoopt.blocked": "Unavailable because of %s",

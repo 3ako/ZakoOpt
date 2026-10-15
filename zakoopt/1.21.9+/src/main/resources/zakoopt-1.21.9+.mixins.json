@@ -6,6 +6,7 @@
 	"client": [
 		"block.BlockEntityRenderDispatcherCullMixin",
 		"block.BlockEntityRenderDispatcherMixin",
+		"block.BlockEntityRenderStatePoolMixin",
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",
 		"entity.EntityRenderStatePoolMixin",

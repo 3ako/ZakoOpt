@@ -67,6 +67,8 @@
   "zakoopt.option.spawner_replay.tooltip": "Дальний моб в спавнере рисуется раз в тик и повторяется из кэша.",
   "zakoopt.option.micro_opts": "Мелкие ускорения",
   "zakoopt.option.micro_opts.tooltip": "Мелкие ускорения: меньше повторных проверок и вычислений.",
+  "zakoopt.option.fewer_allocations": "Меньше мусора",
+  "zakoopt.option.fewer_allocations.tooltip": "Игра реже создаёт временные объекты каждый кадр: реже паузы на сборку мусора. С шейдерами Iris выключается.",
   "zakoopt.option.hud_cache": "HUD с частотой монитора",
   "zakoopt.option.hud_cache.tooltip": "Интерфейс перерисовывается с частотой монитора, в остальных кадрах берётся готовая картинка.",
   "zakoopt.blocked": "Недоступно из-за %s",

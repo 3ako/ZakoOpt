@@ -9,11 +9,16 @@ import org.spongepowered.asm.mixin.Unique;
 import zako.opt.block.CachedLight;
 import zako.opt.block.CachedValidity;
 import zako.opt.block.TickCached;
+import zako.opt.entity.PooledState;
 
 @Getter
 @Accessors(fluent = true, chain = false)
 @Mixin(BlockEntity.class)
-public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity {
+public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity, PooledState {
+	@Unique
+	private Object zakoopt$state;
+	@Unique
+	private Object zakoopt$stateOwner;
 	@Unique
 	private Object zakoopt$cached;
 	@Unique
@@ -34,6 +39,12 @@ public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity
 	private int zakoopt$pairLight;
 	@Unique
 	private long zakoopt$pairLightTick = Long.MIN_VALUE;
+
+	@Override
+	public void zakoopt$setState(Object state, Object owner) {
+		zakoopt$state = state;
+		zakoopt$stateOwner = owner;
+	}
 
 	@Override
 	public void zakoopt$setCached(Object value, long tick) {
