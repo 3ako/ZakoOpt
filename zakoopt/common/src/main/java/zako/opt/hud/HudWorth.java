@@ -20,7 +20,7 @@ public class HudWorth {
 	private boolean worth = true;
 	@Getter
 	private boolean mainSwapped;
-	// the mod that swapped it, when the target's class or the call stack gives it away; null: unknown
+	// the mod that swapped it, when the target's class gives it away; null: unknown
 	@Getter
 	private String swappedBy;
 
@@ -43,11 +43,15 @@ public class HudWorth {
 		if (!mainSwapped) {
 			mainSwapped = true;
 			swappedBy = Mods.owner(target.getClass());
-			if (swappedBy == null) {
-				swappedBy = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+			if (swappedBy != null) {
+				log.warn("HUD cache turned off: {} swaps the main render target while the HUD draws", swappedBy);
+			} else {
+				// the stack holds whatever draws the HUD (minimaps and the like), not necessarily the mod that swapped the target, so it only
+				// goes to the log as a lead
+				String suspect = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
 						.walk(frames -> frames.map(Mods::owner).filter(Objects::nonNull).findFirst().orElse(null));
+				log.warn("HUD cache turned off: another mod swaps the main render target while the HUD draws{}", suspect == null ? "" : " (possibly " + suspect + ")");
 			}
-			log.warn("HUD cache turned off: {} swaps the main render target while the HUD draws", swappedBy == null ? "another mod" : swappedBy);
 		}
 	}
 }
