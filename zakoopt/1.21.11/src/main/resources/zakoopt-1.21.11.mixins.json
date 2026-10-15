@@ -10,6 +10,7 @@
 		"gl.BatchableBufferSourceSetPoolMixin",
 		"gl.ByteBufferBuilderPoolMixin",
 		"gl.DynamicTransformMixin",
+		"gl.DynamicUniformStorageAccessor",
 		"gl.GameRendererScaleMixin",
 		"gl.GlBufferInvoker",
 		"gl.GlTextureViewMixin",

@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 // every draw copied its four transform values into new matrices and vectors wrapped in a new Transform, written to the
-// uniform buffer at once. The storage keeps the last one written to skip a repeat with equals, so two Transforms take
-// turns: the one it keeps is never the one being refilled, and equals still compares the values
+// uniform buffer at once. The storage keeps the last one written to skip a repeat with equals, and on a repeat it keeps the
+// older one: so of two reused Transforms the one refilled is always the one it is not keeping
 @Mixin(DynamicUniforms.class)
 public class DynamicTransformMixin {
 	@Shadow
@@ -36,15 +36,13 @@ public class DynamicTransformMixin {
 	private final Matrix4f[] zakoopt$texture = {new Matrix4f(), new Matrix4f()};
 	@Unique
 	private final DynamicUniforms.Transform[] zakoopt$transform = new DynamicUniforms.Transform[2];
-	@Unique
-	private int zakoopt$turn;
 
 	@Overwrite
 	public GpuBufferSlice writeTransform(Matrix4fc modelView, Vector4fc color, Vector3fc offset, Matrix4fc texture) {
 		if (!Features.FEWER_ALLOCATIONS.on || !RenderSystem.isOnRenderThread()) {
 			return transforms.writeUniform(new DynamicUniforms.Transform(new Matrix4f(modelView), new Vector4f(color), new Vector3f(offset), new Matrix4f(texture)));
 		}
-		int i = zakoopt$turn ^= 1;
+		int i = zakoopt$transform[0] != null && zakoopt$transform[0] == ((DynamicUniformStorageAccessor) transforms).zakoopt$lastUniform() ? 1 : 0;
 		if (zakoopt$transform[i] == null) {
 			zakoopt$transform[i] = new DynamicUniforms.Transform(zakoopt$modelView[i], zakoopt$color[i], zakoopt$offset[i], zakoopt$texture[i]);
 		}
