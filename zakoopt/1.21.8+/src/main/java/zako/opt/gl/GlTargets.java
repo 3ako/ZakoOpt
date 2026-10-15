@@ -10,13 +10,6 @@ public class GlTargets {
 	// blaze3d binds sampler objects to the texture units: a pass that samples on its own takes them off and puts them back
 	public final boolean SAMPLERS = true;
 
-	// blaze3d leaves no render target bound between passes: a GL pass binds its own framebuffer
-	public final boolean UNBOUND = true;
-
-	public int color(RenderTarget target) {
-		return target.getColorTexture() instanceof GlTexture t ? t.glId() : -1;
-	}
-
 	public int depth(RenderTarget target) {
 		return target.getDepthTexture() instanceof GlTexture t ? t.glId() : -1;
 	}
