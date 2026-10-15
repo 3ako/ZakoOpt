@@ -3,6 +3,7 @@ package zako.opt.block;
 import zako.opt.feature.Features;
 
 import lombok.experimental.UtilityClass;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -21,5 +22,15 @@ public class BlockEntityDistance {
 			cache.zakoopt$setInDistance(renderer.shouldRender(blockEntity, camera), tick);
 		}
 		return cache.zakoopt$inDistance();
+	}
+
+	// the early cull's whole test, kept out of its mixin handler: a tiny handler is inlined and its CallbackInfoReturnable never allocated
+	@SuppressWarnings("rawtypes")
+	public boolean culledEarly(BlockEntityRenderDispatcher dispatcher, BlockEntity blockEntity, Vec3 camera) {
+		if (!Features.BLOCK_ENTITY_EARLY_CULL.on || camera == null) {
+			return false;
+		}
+		BlockEntityRenderer renderer = dispatcher.getRenderer(blockEntity);
+		return renderer != null && !inDistance(renderer, blockEntity, camera);
 	}
 }
