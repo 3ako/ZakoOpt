@@ -6,6 +6,7 @@
 	"client": [
 		"entity.LivingEntityRendererSkinMixin",
 		"gl.BatchableBufferSourceMixin",
+		"gl.BatchableBufferSourceSetPoolMixin",
 		"gl.ByteBufferBuilderPoolMixin",
 		"gl.GameRendererScaleMixin",
 		"gl.GlBufferInvoker",

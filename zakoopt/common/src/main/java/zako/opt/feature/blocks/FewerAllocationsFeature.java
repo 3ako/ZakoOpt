@@ -13,7 +13,7 @@ import zako.opt.feature.Impact;
 	key = "fewer_allocations",
 	group = FeatureGroup.MEMORY,
 	impact = Impact.LOW,
-	mixins = {"block.BlockEntityRenderStatePoolMixin", "entity.SubmitPosePoolMixin"},
+	mixins = {"block.BlockEntityRenderStatePoolMixin", "entity.SubmitPosePoolMixin", "gl.BatchableBufferSourceSetPoolMixin"},
 	bench = BenchView.OVERVIEW
 )
 public class FewerAllocationsFeature extends Feature {
