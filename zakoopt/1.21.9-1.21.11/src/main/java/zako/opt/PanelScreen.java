@@ -58,6 +58,14 @@ public abstract class PanelScreen extends Screen {
 			}
 
 			@Override
+			public void text(Component text, int x, int y, int argb, float scale) {
+				graphics.pose().pushMatrix();
+				graphics.pose().translate(x, y).scale(scale);
+				graphics.drawString(font, text, 0, 0, argb, false);
+				graphics.pose().popMatrix();
+			}
+
+			@Override
 			public void clip(int x0, int y0, int x1, int y1) {
 				graphics.enableScissor(x0, y0, x1, y1);
 			}

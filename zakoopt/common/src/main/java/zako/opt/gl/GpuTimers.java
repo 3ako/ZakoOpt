@@ -3,6 +3,7 @@ package zako.opt.gl;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import lombok.experimental.UtilityClass;
 import zako.opt.DebugToggle;
+import zako.opt.bench.ProgressScreen;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL33C;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// GPU time between named points of the frame, while F3 is open: each mark ends the running segment and starts one under its
+// GPU time between named points of the frame, while F3 is open (the tuning panel alone gets one query over the whole frame): each mark ends the running segment and starts one under its
 // name. Elapsed-time queries, not timestamps: AMD gives a 3.2 context, and its glQueryCounter crashed the driver. Read three
 // frames later, so nothing waits on the GPU
 @UtilityClass
@@ -28,7 +29,7 @@ public class GpuTimers {
 
 	private final Object2LongLinkedOpenHashMap<String> totals = new Object2LongLinkedOpenHashMap<>();
 	private long frameTotal, frames, windowStart, lastFrameNs, cpuFrameNs, cpuFrames;
-	private double utilization;
+	private double utilization = -1;
 	private List<String> lines = List.of();
 
 	static {
@@ -45,8 +46,9 @@ public class GpuTimers {
 	}
 
 	public void beginFrame() {
-		active = DebugToggle.visible() && supported();
-		shown = active;
+		boolean f3 = DebugToggle.visible();
+		active = (f3 || ProgressScreen.open()) && supported();
+		shown = active && f3;
 		if (!active) {
 			lastFrameNs = 0;
 			return;
@@ -64,7 +66,7 @@ public class GpuTimers {
 	}
 
 	public void mark(String name) {
-		if (!active || counts[slot] == MARKS) {
+		if (!active || counts[slot] == (shown ? MARKS : 1)) {
 			return;
 		}
 		if (counts[slot] > 0) {
@@ -86,6 +88,11 @@ public class GpuTimers {
 		// a mark after the end of the frame would start a query nothing ends
 		active = false;
 		window();
+	}
+
+	// 26.x without a GL context (its Vulkan backend): vanilla's own timer query measures the frame
+	public void vanilla(double gpuUtilization) {
+		utilization = gpuUtilization;
 	}
 
 	public boolean supported() {
@@ -128,9 +135,19 @@ public class GpuTimers {
 		if (windowStart == 0) {
 			windowStart = now;
 		}
-		if (now - windowStart < 1_000_000_000L || frames == 0) {
+		if (now - windowStart < 500_000_000L || frames == 0) {
 			return;
 		}
+		utilization = cpuFrames == 0 ? 0 : Math.min(100, (double) frameTotal / frames * 100 / ((double) cpuFrameNs / cpuFrames));
+		if (shown) {
+			formatLines();
+		}
+		totals.clear();
+		frameTotal = frames = cpuFrameNs = cpuFrames = 0;
+		windowStart = now;
+	}
+
+	private void formatLines() {
 		List<Map.Entry<String, Long>> sorted = new ArrayList<>(totals.entrySet());
 		sorted.sort(Map.Entry.<String, Long>comparingByValue().reversed());
 		List<String> parts = new ArrayList<>();
@@ -151,9 +168,5 @@ public class GpuTimers {
 		}
 		out.add(line.substring(0, line.length() - 1));
 		lines = out;
-		utilization = cpuFrames == 0 ? 0 : Math.min(100, (double) frameTotal / frames * 100 / ((double) cpuFrameNs / cpuFrames));
-		totals.clear();
-		frameTotal = frames = cpuFrameNs = cpuFrames = 0;
-		windowStart = now;
 	}
 }

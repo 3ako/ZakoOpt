@@ -45,9 +45,9 @@ public class Bench {
 	private volatile boolean running;
 	private volatile boolean joined;
 	private volatile boolean cancelled;
-	private volatile Status status = new Status(Component.empty(), 0);
+	private volatile Status status = new Status(Component.empty(), Component.empty(), 0);
 
-	public record Status(Component stage, int percent) {
+	public record Status(Component stage, Component note, int percent) {
 	}
 
 	private static final class Aborted extends RuntimeException {
@@ -110,7 +110,7 @@ public class Bench {
 		running = true;
 		joined = false;
 		cancelled = false;
-		status = new Status(Component.empty(), 0);
+		status = new Status(Component.empty(), Component.empty(), 0);
 		MemoryGraph.reset();
 		Minecraft mc = Minecraft.getInstance();
 		boolean pause = mc.options.pauseOnLostFocus;
@@ -196,7 +196,7 @@ public class Bench {
 		double fps = base;
 		while (true) {
 			step++;
-			progress(mc, Component.translatable("zakoopt.bench.ramp", step, Math.round(fps), Math.round(target)), step * 10 / (step + 1));
+			progress(mc, Component.translatable("zakoopt.bench.ramp", step), Component.translatable("zakoopt.bench.target", Math.round(target)), step * 10 / (step + 1));
 			List<String> add = new ArrayList<>();
 			for (int lv = level; lv < next; lv++) {
 				add.addAll(Scene.level(lv));
@@ -490,7 +490,11 @@ public class Bench {
 	}
 
 	private void progress(Minecraft mc, Component what, int percent) {
-		status = new Status(what, percent);
+		progress(mc, what, Component.empty(), percent);
+	}
+
+	private void progress(Minecraft mc, Component what, Component note, int percent) {
+		status = new Status(what, note, percent);
 	}
 
 	// the last second of frames, for the live readout over the pick controls
