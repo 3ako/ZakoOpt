@@ -1,5 +1,6 @@
 package zako.opt;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -20,6 +21,18 @@ public abstract class PanelScreen extends Screen {
 	protected abstract void drag(double x, double y);
 
 	protected abstract void release();
+
+	protected boolean escape() {
+		return false;
+	}
+
+	protected boolean erase(boolean all) {
+		return false;
+	}
+
+	protected boolean typed(int codepoint) {
+		return false;
+	}
 
 	// over the running benchmark: no blur or dimming, the player has to see the scene through it
 	protected boolean overScene() {
@@ -93,6 +106,14 @@ public abstract class PanelScreen extends Screen {
 			DebugToggle.toggle();
 			return true;
 		}
+		if (event.isEscape() && escape() || event.key() == InputConstants.KEY_BACKSPACE && erase(event.hasControlDown())) {
+			return true;
+		}
 		return super.keyPressed(event);
+	}
+
+	@Override
+	public boolean charTyped(net.minecraft.client.input.CharacterEvent event) {
+		return typed(event.codepoint()) || super.charTyped(event);
 	}
 }
