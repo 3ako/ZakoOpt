@@ -45,9 +45,9 @@ public class Bench {
 	private volatile boolean running;
 	private volatile boolean joined;
 	private volatile boolean cancelled;
-	private volatile Status status = new Status(Component.empty(), 0);
+	private volatile Status status = new Status(Component.empty(), Component.empty(), 0);
 
-	public record Status(Component stage, int percent) {
+	public record Status(Component stage, Component note, int percent) {
 	}
 
 	private static final class Aborted extends RuntimeException {
@@ -106,11 +106,20 @@ public class Bench {
 				Component.translatable("zakoopt.welcome.start"), Component.translatable("zakoopt.welcome.later")));
 	}
 
+	// straight to the end scene with the player's own settings: the load is still sized to the device, nothing is measured or applied
+	public void compare(Screen parent) {
+		start(parent, true);
+	}
+
 	private void start(Screen parent) {
+		start(parent, false);
+	}
+
+	private void start(Screen parent, boolean compareOnly) {
 		running = true;
 		joined = false;
 		cancelled = false;
-		status = new Status(Component.empty(), 0);
+		status = new Status(Component.empty(), Component.empty(), 0);
 		MemoryGraph.reset();
 		Minecraft mc = Minecraft.getInstance();
 		boolean pause = mc.options.pauseOnLostFocus;
@@ -120,7 +129,7 @@ public class Bench {
 		Thread thread = new Thread(() -> {
 			Result result = null;
 			try {
-				result = run(mc, parent, saved);
+				result = run(mc, parent, saved, compareOnly);
 			} catch (Aborted e) {
 				log.info("Benchmark cancelled");
 			} catch (Exception e) {
@@ -146,7 +155,7 @@ public class Bench {
 		thread.start();
 	}
 
-	private Result run(Minecraft mc, Screen parent, Map<String, Object> saved) {
+	private Result run(Minecraft mc, Screen parent, Map<String, Object> saved, boolean compareOnly) {
 		main(mc, () -> {
 			delete(mc);
 			mc.createWorldOpenFlows().createFreshLevel(WORLD, BenchWorld.settings(WORLD), new WorldOptions(7L, false, false),
@@ -170,12 +179,14 @@ public class Bench {
 		List<Test> tests = Features.all().stream().filter(f -> f.data().bench() != BenchView.NONE && toggle(f.key()) != null)
 				.sorted(Comparator.comparing(f -> f.data().bench())).map(f -> new Test(f.key(), f.data().bench().key())).toList();
 		// measured from the defaults; the ring is held where it is set so its own auto-tune does not flip it mid-measurement
-		main(mc, () -> {
-			Features.restore(Features.defaults());
-			ZakoOptConfig.enabled = true;
-			Features.IMMEDIATE_RING.force = true;
-			return null;
-		});
+		if (!compareOnly) {
+			main(mc, () -> {
+				Features.restore(Features.defaults());
+				ZakoOptConfig.enabled = true;
+				Features.IMMEDIATE_RING.force = true;
+				return null;
+			});
+		}
 
 		// over the scene first: a fill into a chunk the player has not loaded yet fails as a whole, and quietly
 		Scene.View o = Scene.OVERVIEW;
@@ -196,7 +207,7 @@ public class Bench {
 		double fps = base;
 		while (true) {
 			step++;
-			progress(mc, Component.translatable("zakoopt.bench.ramp", step, Math.round(fps), Math.round(target)), step * 10 / (step + 1));
+			progress(mc, Component.translatable("zakoopt.bench.ramp", step), Component.translatable("zakoopt.bench.target", Math.round(target)), step * 10 / (step + 1));
 			List<String> add = new ArrayList<>();
 			for (int lv = level; lv < next; lv++) {
 				add.addAll(Scene.level(lv));
@@ -212,6 +223,11 @@ public class Bench {
 			}
 			double k = Math.max((t - t0) / level, 1e-6);
 			next = Math.min(Scene.LEVELS, Math.min(2 * level, Math.max(level + 1, (int) Math.round(0.8 * (targetMs - t0) / k))));
+		}
+		if (compareOnly) {
+			server(mc, tp(o));
+			compare(mc);
+			return null;
 		}
 
 		// one switch at a time on the view it shows on, on-off-off-on so a drifting frame rate cancels out; a switch goes off only
@@ -316,13 +332,17 @@ public class Bench {
 		double modGain = (with1 + with2) / (without1 + without2) - 1;
 		log.info("Benchmark: level {}, mod {}%, off {}", level, Math.round(modGain * 100), off);
 
+		compare(mc);
+		return new Result(level, modGain, off, chosen, picks);
+	}
+
+	private void compare(Minecraft mc) {
 		CompletableFuture<Void> compared = new CompletableFuture<>();
 		main(mc, () -> {
 			UpdateUi.setScreen(new CompareScreen(compared));
 			return null;
 		});
 		waitWhile(() -> !compared.isDone());
-		return new Result(level, modGain, off, chosen, picks);
 	}
 
 	// starts from the player's own values; false when none of the settings exists on this version
@@ -490,7 +510,11 @@ public class Bench {
 	}
 
 	private void progress(Minecraft mc, Component what, int percent) {
-		status = new Status(what, percent);
+		progress(mc, what, Component.empty(), percent);
+	}
+
+	private void progress(Minecraft mc, Component what, Component note, int percent) {
+		status = new Status(what, note, percent);
 	}
 
 	// the last second of frames, for the live readout over the pick controls

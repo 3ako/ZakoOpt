@@ -1,5 +1,6 @@
 package zako.opt.mixin.gl;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.systems.TimerQuery;
@@ -9,6 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import zako.opt.bench.ProgressScreen;
 import zako.opt.gl.GpuTimers;
 
 // the frame's own elapsed-time query would overlap ours, and two of them cannot run at once; F3's GPU share comes from ours
@@ -37,6 +39,14 @@ public class MinecraftTimerMixin {
 	private void zakoopt$utilization(CallbackInfo ci) {
 		if (GpuTimers.supported()) {
 			gpuUtilization = GpuTimers.utilization();
+		} else if (ProgressScreen.open()) {
+			GpuTimers.vanilla(Math.min(100, gpuUtilization));
 		}
+	}
+
+	// the tuning panel shows the GPU share; with no GL context (Vulkan) only vanilla's query can measure it
+	@ModifyExpressionValue(method = "renderFrame", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/debug/DebugScreenEntryList;isCurrentlyEnabled(Lnet/minecraft/resources/Identifier;)Z"))
+	private boolean zakoopt$benchGpu(boolean enabled) {
+		return enabled || ProgressScreen.open();
 	}
 }
