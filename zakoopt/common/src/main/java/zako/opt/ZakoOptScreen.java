@@ -18,7 +18,7 @@ import java.util.Locale;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ZakoOptScreen extends Panel {
-	static int BAR = 22, ROW = 16, PAD = 6, FIELD = 0xFFF5EEDF;
+	static int BAR = 22, ROW = 16, PAD = 6, FIELD = 0xFFF5EEDF, FIELD_FOCUSED = 0xFFFDFAF3;
 
 	Screen parent;
 	List<Section> sections = new ArrayList<>();
@@ -32,6 +32,10 @@ public class ZakoOptScreen extends Panel {
 	Component visualHint;
 	@NonFinal
 	String query = "";
+	@NonFinal
+	boolean focused;
+	@NonFinal
+	int fieldX0, fieldX1, fieldY;
 	// where each group's header sits in the search results, for the group list to scroll to
 	int[] heads;
 
@@ -228,24 +232,31 @@ public class ZakoOptScreen extends Panel {
 
 	private void searchField(Canvas c, int left, int right, int y) {
 		int w = Math.min(120, right - left);
+		fieldX0 = right - w;
+		fieldX1 = w < 40 ? fieldX0 : right;
+		fieldY = y;
 		if (w < 40) {
 			return;
 		}
-		int x = right - w, tx = x + 6 + LENS[0].length();
-		c.fill(x, y, right, y + BUTTON_HEIGHT, BUTTON_FRAME);
-		c.fill(x + 1, y + 1, right - 1, y + BUTTON_HEIGHT - 1, FIELD);
+		int x = fieldX0, tx = x + 6 + LENS[0].length();
+		c.fill(x, y, right, y + BUTTON_HEIGHT, focused ? STRONG : over(x, y, right, y + BUTTON_HEIGHT) ? BUTTON_HOVER : BUTTON_FRAME);
+		c.fill(x + 1, y + 1, right - 1, y + BUTTON_HEIGHT - 1, focused ? FIELD_FOCUSED : FIELD);
 		pixels(c, LENS, x + 4, y + 3, MUTED);
-		if (query.isEmpty()) {
-			c.text(Component.translatable("zakoopt.search"), tx, y + 3, DIM);
-			return;
-		}
 		String shown = query;
 		while (font.width(shown) > right - tx - 4) {
 			shown = shown.substring(1);
 		}
-		c.text(Component.literal(shown), tx, y + 3, STRONG);
-		if (System.currentTimeMillis() / 500 % 2 == 0) {
-			int cx = tx + font.width(shown);
+		int cx = tx + font.width(shown);
+		if (query.isEmpty()) {
+			Component placeholder = Component.translatable("zakoopt.search.focused");
+			if (!focused || font.width(placeholder) > right - tx - 6) {
+				placeholder = Component.translatable("zakoopt.search");
+			}
+			c.text(placeholder, tx + (focused ? 2 : 0), y + 3, DIM);
+		} else {
+			c.text(Component.literal(shown), tx, y + 3, STRONG);
+		}
+		if (focused && System.currentTimeMillis() / 500 % 2 == 0) {
 			c.fill(cx, y + 2, cx + 1, y + 12, STRONG);
 		}
 	}
@@ -285,11 +296,22 @@ public class ZakoOptScreen extends Panel {
 	}
 
 	@Override
+	protected boolean click(double x, double y, int button) {
+		focused = button == 0 && x >= fieldX0 && x < fieldX1 && y >= fieldY && y < fieldY + BUTTON_HEIGHT;
+		return super.click(x, y, button) || focused;
+	}
+
+	@Override
 	protected boolean escape() {
 		if (query.isEmpty()) {
-			return false;
+			if (!focused) {
+				return false;
+			}
+			focused = false;
+			return true;
 		}
 		search("");
+		focused = false;
 		return true;
 	}
 
@@ -315,6 +337,7 @@ public class ZakoOptScreen extends Panel {
 
 	private void search(String query) {
 		this.query = query;
+		focused = true;
 		resetScroll();
 	}
 

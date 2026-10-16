@@ -171,6 +171,7 @@
   "zakoopt.screen.open": "Открыть настройки ZakoOpt",
   "zakoopt.screen.open.tooltip": "Все функции мода с описаниями и дистанциями.",
   "zakoopt.search": "Поиск",
+  "zakoopt.search.focused": "Введите название…",
   "zakoopt.search.none": "Ничего не нашлось по «%s»",
   "zakoopt.search.none.hint": "Попробуйте часть слова. Esc очищает поиск.",
   "zakoopt.search.esc": "Esc очищает поиск, второй Esc закрывает экран.",

@@ -171,6 +171,7 @@
   "zakoopt.screen.open": "Open ZakoOpt settings",
   "zakoopt.screen.open.tooltip": "Every feature of the mod with descriptions and distances.",
   "zakoopt.search": "Search",
+  "zakoopt.search.focused": "Type a feature name…",
   "zakoopt.search.none": "Nothing found for “%s”",
   "zakoopt.search.none.hint": "Try part of a word. Esc clears the search.",
   "zakoopt.search.esc": "Esc clears the search, a second Esc closes the screen.",
