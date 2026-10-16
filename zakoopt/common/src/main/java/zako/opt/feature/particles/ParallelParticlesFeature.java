@@ -6,13 +6,11 @@ import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
 import zako.opt.feature.Features;
-import zako.opt.feature.Impact;
 
 // -Dzakoopt.parallelparticles=true forces it below 4 CPU threads, =auto follows the thread count like the switch does
 @FeatureData(
 	key = "parallel_particles",
 	group = FeatureGroup.PARTICLES,
-	impact = Impact.HIGH,
 	mixins = {"particle.QuadParticleGroupMixin", "particle.ParticleEngineParallelMixin"},
 	bench = BenchView.HOLOGRAMS
 )

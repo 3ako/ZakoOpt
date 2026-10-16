@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import zako.opt.bench.Bench;
@@ -23,6 +24,12 @@ public class ZakoOptScreen extends Panel {
 	List<Section> sections = new ArrayList<>();
 	@NonFinal
 	int selected;
+	// the tooltip of the setting under the mouse; shown in the hint line
+	@NonFinal
+	Component settingHint;
+	// what the "changes visuals" eye under the mouse says; shown in the hint line
+	@NonFinal
+	Component visualHint;
 
 	private record Item(Feature feature, ZakoOptions.Toggle toggle, List<ZakoOptions.Option> settings) {
 	}
@@ -56,8 +63,10 @@ public class ZakoOptScreen extends Panel {
 
 	@Override
 	protected void paint(Canvas c) {
+		settingHint = null;
 		int w = Math.min(width - 2 * PAD, 520), x0 = (width - w) / 2, x1 = x0 + w, y0 = PAD, y1 = height - PAD;
 		frame(c, x0, y0, x1, y1);
+		visualHint = null;
 
 		c.text(Component.literal("ZakoOpt"), x0 + 8, y0 + 7, STRONG);
 		int vx = x0 + 8 + font.width("ZakoOpt") + 5;
@@ -117,8 +126,8 @@ public class ZakoOptScreen extends Panel {
 		button(c, dx, by, done, this::onClose);
 		Component defaults = Component.translatable("zakoopt.screen.defaults");
 		int defaultsX = dx - 6 - buttonWidth(defaults);
-		button(c, defaultsX, by, defaults, () -> Features.restore(Features.defaults()));
-		Component hint = overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
+		button(c, defaultsX, by, defaults, this::confirmDefaults);
+		Component hint = settingHint != null ? settingHint : visualHint != null ? visualHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
@@ -136,6 +145,7 @@ public class ZakoOptScreen extends Panel {
 		boolean on = f.value && blocked == null;
 		Component text = blocked != null ? blocked : Component.translatable("zakoopt.option." + f.key() + ".tooltip");
 		List<ZakoOptions.Option> settings = on ? item.settings() : List.of();
+		Component title = Component.translatable("zakoopt.option." + f.key());
 		int height = 4 + 9 + 3 + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
 		if (y + height <= top || y >= bottom) {
 			return y + height;
@@ -144,22 +154,66 @@ public class ZakoOptScreen extends Panel {
 			c.fill(x0, y, x1, y + height, HOVER);
 		}
 		toggle(c, x0 + 10, y + 5, on, blocked != null);
-		c.text(Component.translatable("zakoopt.option." + f.key()), x0 + 34, y + 4, blocked != null ? DIM : STRONG);
-		int pips = f.data().impact().ordinal() + 1;
-		for (int i = 0; i < 3; i++) {
-			int px = x1 - 10 - (3 - i) * 5;
-			c.fill(px, y + 4, px + 3, y + 12, blocked == null && i < pips ? PIP : OFF);
-		}
-		if (blocked == null) {
-			hit(x0, y, x1, y + 14, () -> f.value = !f.value, null);
+		c.text(title, x0 + 34, y + 4, blocked != null ? DIM : STRONG);
+		if (f.data().visual()) {
+			int ex = x1 - 10 - EYE[0].length(), ey = y + 5;
+			eye(c, ex, ey, blocked != null ? DIM : VISUAL);
+			if (over(ex - 2, ey - 2, ex + EYE[0].length() + 2, ey + EYE.length + 2)) {
+				visualHint = Component.translatable("zakoopt.visual." + f.key());
+			}
 		}
 		int ly = lines(c, text, x0 + 34, y + 16, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
+		// the title and the description toggle; the settings rows below stay out so a near miss on a slider does not switch the feature off
+		if (blocked == null) {
+			hit(x0, y, x1, ly, () -> f.value = !f.value, null);
+		}
 		for (ZakoOptions.Option s : settings) {
-			setting(c, s, x0 + 34, x1 - 12, ly + 2);
+			String tooltip = "zakoopt.option." + s.key() + ".tooltip";
+			if (setting(c, s, x0 + 34, x1 - 12, ly + 2) && Language.getInstance().has(tooltip)) {
+				settingHint = Component.translatable(tooltip);
+			}
 			ly += 14;
 		}
 		c.fill(x0 + 6, y + height - 1, x1 - 6, y + height, LINE);
 		return y + height;
+	}
+
+	private void confirmDefaults() {
+		UpdateUi.setScreen(new ConfirmPanel(yes -> {
+			if (yes) {
+				Features.restore(Features.defaults());
+				changed();
+			}
+			UpdateUi.setScreen(this);
+		}, Component.translatable("zakoopt.screen.defaults.title"), Component.translatable("zakoopt.screen.defaults.confirm"),
+				Component.translatable("zakoopt.screen.defaults.yes"), Component.translatable("gui.cancel")));
+	}
+
+	// marks a feature that changes the picture
+	private static final String[] EYE = {
+			"....###....",
+			"..##...##..",
+			".#..###..#.",
+			"#..#####..#",
+			".#..###..#.",
+			"..##...##..",
+			"....###....",
+	};
+
+	private static void eye(Canvas c, int x, int y, int color) {
+		for (int row = 0; row < EYE.length; row++) {
+			String line = EYE[row];
+			for (int i = 0; i < line.length(); i++) {
+				if (line.charAt(i) != '#') {
+					continue;
+				}
+				int start = i;
+				while (i < line.length() && line.charAt(i) == '#') {
+					i++;
+				}
+				c.fill(x + start, y + row, x + i, y + row + 1, color);
+			}
+		}
 	}
 
 	@Override

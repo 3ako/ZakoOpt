@@ -61,7 +61,7 @@ public class HudCache {
 		}
 		// Xaero's minimap draws into its own small target; a window-sized one is the main target swapped by another mod
 		if (requested != target && requested.width == main.width && requested.height == main.height) {
-			HudWorth.mainSwapped();
+			HudWorth.mainSwapped(requested);
 		}
 		return null;
 	}
@@ -81,13 +81,10 @@ public class HudCache {
 		} finally {
 			drawing = false;
 		}
-		HudTiles.mark(target);
 	}
 
 	public void composite() {
 		RenderTarget main = HudGpu.mainTarget(Minecraft.getInstance());
-		if (!HudTiles.blend(target, main)) {
-			HudGpu.composite(target, main);
-		}
+		HudGpu.composite(target, main);
 	}
 }

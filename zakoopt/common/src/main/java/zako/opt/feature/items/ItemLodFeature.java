@@ -3,14 +3,13 @@ package zako.opt.feature.items;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Range;
 import zako.opt.feature.Setting;
 
 @FeatureData(
 	key = "item_lod",
+	visual = true,
 	group = FeatureGroup.ITEMS,
-	impact = Impact.HIGH,
 	mixins = {"entity.ItemRendererMixin", "entity.ItemFeatureRendererMixin"}
 )
 public class ItemLodFeature extends Feature {
