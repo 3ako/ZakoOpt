@@ -9,6 +9,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import zako.opt.bench.Bench;
+import zako.opt.bench.MonitorScreen;
 import zako.opt.feature.Feature;
 import zako.opt.feature.Features;
 import zako.opt.update.UpdateUi;
@@ -83,7 +84,14 @@ public class ZakoOptScreen extends Panel {
 		boolean overBench = button(c, bx, y0 + 4, buttonWidth(bench), bench, BUTTON, BUTTON_FRAME, benchOk, () -> Bench.confirm(this));
 		Component compare = Component.translatable("zakoopt.bench.compare.button");
 		bx -= 6 + buttonWidth(compare);
-		boolean overCompare = button(c, bx, y0 + 4, buttonWidth(compare), compare, BUTTON, BUTTON_FRAME, benchOk, () -> Bench.compare(this));
+		boolean overCompare = button(c, bx, y0 + 4, buttonWidth(compare), compare, BUTTON, BUTTON_FRAME, !Bench.running(),
+				() -> {
+					if (inWorld) {
+						UpdateUi.setScreen(new MonitorScreen());
+					} else {
+						Bench.compare(this);
+					}
+				});
 		Component master = Component.translatable(ZakoOptConfig.enabled ? "zakoopt.screen.on" : "zakoopt.screen.off");
 		int masterWidth = Math.max(buttonWidth(master), buttonWidth(Component.translatable("zakoopt.screen.on")));
 		boolean overMaster = button(c, bx - 6 - masterWidth, y0 + 4, masterWidth, master, ZakoOptConfig.enabled ? ON : MASTER_OFF, ZakoOptConfig.enabled ? ACCENT : MASTER_OFF_FRAME, true,
@@ -131,8 +139,8 @@ public class ZakoOptScreen extends Panel {
 		int defaultsX = dx - 6 - buttonWidth(defaults);
 		button(c, defaultsX, by, defaults, this::confirmDefaults);
 		Component hint = settingHint != null ? settingHint : visualHint != null ? visualHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
-				: !overBench && !overCompare ? null : Component.translatable(!benchOk ? inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running"
-				: overCompare ? "zakoopt.bench.compare.button.tooltip" : "zakoopt.bench.button.tooltip");
+				: overCompare ? Component.translatable(Bench.running() ? "zakoopt.bench.running" : inWorld ? "zakoopt.monitor.tooltip" : "zakoopt.bench.compare.button.tooltip")
+				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
 			int hy = lines.size() > 1 ? bottom + 4 : bottom + 9;

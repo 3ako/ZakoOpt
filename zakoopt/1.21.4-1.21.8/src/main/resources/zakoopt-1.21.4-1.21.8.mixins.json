@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"KeyMappingCategoryAccessor",
 		"entity.LivingEntityRendererSkinMixin",
 		"entity.LivingEntityAnimFreezeMixin",
 		"entity.LivingEntityLodMixin",

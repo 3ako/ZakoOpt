@@ -42,9 +42,7 @@ public class CompareScreen extends ProgressScreen {
 		super.paint(c);
 		int w = 240, x0 = width / 2 - w / 2, x1 = x0 + w, y0 = height - 8 - 66, inner = w - 16;
 		frame(c, x0, y0, x1, y0 + 66);
-		boolean on = ZakoOptConfig.enabled;
-		Component toggle = Component.translatable(on ? "zakoopt.bench.compare.toggle.on" : "zakoopt.bench.compare.toggle.off");
-		button(c, x0 + 8, y0 + 8, inner, toggle, on ? ON : MASTER_OFF, on ? ACCENT : MASTER_OFF_FRAME, true, () -> ZakoOptConfig.enabled = !ZakoOptConfig.enabled);
+		modToggle(c, x0 + 8, y0 + 8, inner);
 
 		int ry = y0 + 26;
 		button(c, x0 + 8, ry, 20, Component.literal("◀"), BUTTON, BUTTON_FRAME, true, () -> move(Scene.views().size() - 1));
