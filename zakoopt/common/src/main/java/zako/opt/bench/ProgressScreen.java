@@ -5,6 +5,7 @@ import net.minecraft.util.FormattedCharSequence;
 import zako.opt.Canvas;
 import zako.opt.DebugToggle;
 import zako.opt.Panel;
+import zako.opt.ZakoOptConfig;
 import zako.opt.gl.GpuTimers;
 
 // what the benchmark is doing, how far along and how the frames go, in a panel at the left over the scene; Esc cancels
@@ -162,6 +163,12 @@ public class ProgressScreen extends Panel {
 			at += item + 6;
 		}
 		return y + 8;
+	}
+
+	protected void modToggle(Canvas c, int x, int y, int width) {
+		boolean on = ZakoOptConfig.enabled;
+		Component toggle = Component.translatable(on ? "zakoopt.bench.compare.toggle.on" : "zakoopt.bench.compare.toggle.off");
+		button(c, x, y, width, toggle, on ? ON : MASTER_OFF, on ? ACCENT : MASTER_OFF_FRAME, true, () -> ZakoOptConfig.enabled = !ZakoOptConfig.enabled);
 	}
 
 	protected void closed() {
