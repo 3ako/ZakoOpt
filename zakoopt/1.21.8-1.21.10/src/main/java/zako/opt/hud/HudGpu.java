@@ -1,5 +1,6 @@
 package zako.opt.hud;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -22,7 +23,7 @@ public class HudGpu {
 	// the HUD texture holds premultiplied colour: GUI blending onto transparent black leaves colour * alpha
 	private final RenderPipeline COMPOSITE = RenderPipeline.builder()
 			.withLocation(ResourceLocation.fromNamespaceAndPath("zakoopt", "pipeline/hud_composite"))
-			.withVertexShader("core/screenquad")
+			.withVertexShader(ResourceLocation.fromNamespaceAndPath("zakoopt", "core/render_scale"))
 			.withFragmentShader("core/blit_screen")
 			.withSampler("InSampler")
 			.withBlend(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA)
@@ -31,6 +32,8 @@ public class HudGpu {
 			.withColorWrite(true, false)
 			.withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES)
 			.build();
+	// 1.21.8 has no core/screenquad and draws only with a vertex buffer bound, though the shader reads none of it
+	private GpuBuffer vertices;
 
 	public boolean noScreen(Minecraft mc) {
 		return mc.screen == null && mc.getOverlay() == null;
@@ -53,7 +56,11 @@ public class HudGpu {
 		try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder()
 				.createRenderPass(() -> "zakoopt hud composite", main.getColorTextureView(), OptionalInt.empty(),
 						main.useDepth ? main.getDepthTextureView() : null, OptionalDouble.empty())) {
+			if (vertices == null) {
+				vertices = RenderSystem.getDevice().createBuffer(() -> "zakoopt hud composite", GpuBuffer.USAGE_VERTEX, 16);
+			}
 			pass.setPipeline(COMPOSITE);
+			pass.setVertexBuffer(0, vertices);
 			RenderSystem.bindDefaultUniforms(pass);
 			pass.bindSampler("InSampler", hud.getColorTextureView());
 			pass.draw(0, 3);

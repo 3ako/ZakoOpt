@@ -20,7 +20,13 @@ public class RenderTargetBlitMixin {
 		if (!Features.FAST_BLIT.on || self.width != width || self.height != height) {
 			return;
 		}
-		int prevRead = GL11C.glGetInteger(GL30C.GL_READ_FRAMEBUFFER_BINDING), prevDraw = GL11C.glGetInteger(GL30C.GL_DRAW_FRAMEBUFFER_BINDING);
+		int prevDraw = GL11C.glGetInteger(GL30C.GL_DRAW_FRAMEBUFFER_BINDING);
+		// on 1.21.4 this draws into whatever is bound, not always the window: Resolution Control copies its own target into the
+		// game's main one through it, and a blit to the window there left the world black
+		if (prevDraw != 0) {
+			return;
+		}
+		int prevRead = GL11C.glGetInteger(GL30C.GL_READ_FRAMEBUFFER_BINDING);
 		boolean scissor = GL11C.glIsEnabled(GL11C.GL_SCISSOR_TEST);
 		GL11C.glDisable(GL11C.GL_SCISSOR_TEST);
 		GL30C.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, self.frameBufferId);
