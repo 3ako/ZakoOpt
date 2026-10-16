@@ -4,13 +4,11 @@ import zako.opt.bench.BenchView;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
-import zako.opt.feature.Impact;
 
 // one switch for the player; each part keeps its own -Dzakoopt.micro_opts.<part> switch for finding a culprit
 @FeatureData(
 	key = "micro_opts",
 	group = FeatureGroup.BLOCKS,
-	impact = Impact.LOW,
 	bench = BenchView.OVERVIEW
 )
 public class MicroOptsFeature extends Feature {

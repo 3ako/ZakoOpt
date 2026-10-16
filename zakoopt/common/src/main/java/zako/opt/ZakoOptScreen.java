@@ -27,6 +27,9 @@ public class ZakoOptScreen extends Panel {
 	// the tooltip of the setting under the mouse; shown in the hint line
 	@NonFinal
 	Component settingHint;
+	// what the "changes visuals" eye under the mouse says; shown in the hint line
+	@NonFinal
+	Component visualHint;
 
 	private record Item(Feature feature, ZakoOptions.Toggle toggle, List<ZakoOptions.Option> settings) {
 	}
@@ -63,6 +66,7 @@ public class ZakoOptScreen extends Panel {
 		settingHint = null;
 		int w = Math.min(width - 2 * PAD, 520), x0 = (width - w) / 2, x1 = x0 + w, y0 = PAD, y1 = height - PAD;
 		frame(c, x0, y0, x1, y1);
+		visualHint = null;
 
 		c.text(Component.literal("ZakoOpt"), x0 + 8, y0 + 7, STRONG);
 		int vx = x0 + 8 + font.width("ZakoOpt") + 5;
@@ -123,7 +127,7 @@ public class ZakoOptScreen extends Panel {
 		Component defaults = Component.translatable("zakoopt.screen.defaults");
 		int defaultsX = dx - 6 - buttonWidth(defaults);
 		button(c, defaultsX, by, defaults, this::confirmDefaults);
-		Component hint = settingHint != null ? settingHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
+		Component hint = settingHint != null ? settingHint : visualHint != null ? visualHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
@@ -141,6 +145,7 @@ public class ZakoOptScreen extends Panel {
 		boolean on = f.value && blocked == null;
 		Component text = blocked != null ? blocked : Component.translatable("zakoopt.option." + f.key() + ".tooltip");
 		List<ZakoOptions.Option> settings = on ? item.settings() : List.of();
+		Component title = Component.translatable("zakoopt.option." + f.key());
 		int height = 4 + 9 + 3 + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
 		if (y + height <= top || y >= bottom) {
 			return y + height;
@@ -149,11 +154,13 @@ public class ZakoOptScreen extends Panel {
 			c.fill(x0, y, x1, y + height, HOVER);
 		}
 		toggle(c, x0 + 10, y + 5, on, blocked != null);
-		c.text(Component.translatable("zakoopt.option." + f.key()), x0 + 34, y + 4, blocked != null ? DIM : STRONG);
-		int pips = f.data().impact().ordinal() + 1;
-		for (int i = 0; i < 3; i++) {
-			int px = x1 - 10 - (3 - i) * 5;
-			c.fill(px, y + 4, px + 3, y + 12, blocked == null && i < pips ? PIP : OFF);
+		c.text(title, x0 + 34, y + 4, blocked != null ? DIM : STRONG);
+		if (f.data().visual()) {
+			int ex = x1 - 10 - EYE[0].length(), ey = y + 5;
+			eye(c, ex, ey, blocked != null ? DIM : VISUAL);
+			if (over(ex - 2, ey - 2, ex + EYE[0].length() + 2, ey + EYE.length + 2)) {
+				visualHint = Component.translatable("zakoopt.visual." + f.key());
+			}
 		}
 		int ly = lines(c, text, x0 + 34, y + 16, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
 		// the title and the description toggle; the settings rows below stay out so a near miss on a slider does not switch the feature off
@@ -180,6 +187,33 @@ public class ZakoOptScreen extends Panel {
 			UpdateUi.setScreen(this);
 		}, Component.translatable("zakoopt.screen.defaults.title"), Component.translatable("zakoopt.screen.defaults.confirm"),
 				Component.translatable("zakoopt.screen.defaults.yes"), Component.translatable("gui.cancel")));
+	}
+
+	// marks a feature that changes the picture
+	private static final String[] EYE = {
+			"....###....",
+			"..##...##..",
+			".#..###..#.",
+			"#..#####..#",
+			".#..###..#.",
+			"..##...##..",
+			"....###....",
+	};
+
+	private static void eye(Canvas c, int x, int y, int color) {
+		for (int row = 0; row < EYE.length; row++) {
+			String line = EYE[row];
+			for (int i = 0; i < line.length(); i++) {
+				if (line.charAt(i) != '#') {
+					continue;
+				}
+				int start = i;
+				while (i < line.length() && line.charAt(i) == '#') {
+					i++;
+				}
+				c.fill(x + start, y + row, x + i, y + row + 1, color);
+			}
+		}
 	}
 
 	@Override

@@ -16,7 +16,8 @@ public @interface FeatureData {
 
 	FeatureGroup group();
 
-	Impact impact() default Impact.MEDIUM;
+	// changes what the player sees: the settings screen marks it, zakoopt.visual.<key> says what changes
+	boolean visual() default false;
 
 	boolean enabled() default true;
 

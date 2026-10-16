@@ -6,7 +6,6 @@ import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
 import zako.opt.feature.Features;
-import zako.opt.feature.Impact;
 import zako.opt.feature.Setting;
 import zako.opt.gl.RingAutoTune;
 
@@ -14,7 +13,6 @@ import zako.opt.gl.RingAutoTune;
 @FeatureData(
 	key = "immediate_ring",
 	group = FeatureGroup.RENDER,
-	impact = Impact.MEDIUM,
 	mixins = {"gl.BatchableBufferSourceMixin", "gl.BufferUploaderMixin"},
 	bench = BenchView.OVERVIEW
 )
