@@ -87,8 +87,8 @@ public class MemoryGraph {
 		if (now - lastGarbage >= GARBAGE_NS) {
 			long bytes = allocatedBytes();
 			// garbage made per second: with the mod on and off the difference shows as a number, not only as a steeper saw
-			String rate = allocated < 0 || bytes < 0 ? "?" : String.valueOf(Math.round((bytes - allocated) / 1048576.0 / ((now - lastGarbage) / 1e9)));
-			Component gcs = gcAtGarbage < 0 ? Component.literal("?") : times(count - gcAtGarbage);
+			String rate = allocated < 0 || bytes < 0 ? "—" : String.valueOf(Math.round((bytes - allocated) / 1048576.0 / ((now - lastGarbage) / 1e9)));
+			Component gcs = gcAtGarbage < 0 ? Component.literal("—") : times(count - gcAtGarbage);
 			allocated = bytes;
 			gcAtGarbage = count;
 			lastGarbage = now;
@@ -136,7 +136,7 @@ public class MemoryGraph {
 
 	// Russian has three plural forms: 1, 2-4 and 5+ times, with 11-14 among the 5+
 	private Component times(long n) {
-		String form = n % 10 == 1 && n % 100 != 11 ? "one" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "few" : "many";
+		String form = n == 1 ? "once" : n % 10 == 1 && n % 100 != 11 ? "one" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "few" : "many";
 		return Component.translatable("zakoopt.bench.times." + form, n);
 	}
 }
