@@ -52,8 +52,8 @@ public class ByteBufferBuilderMixin implements RingBuilders.Backed {
 		writeOffset = 0;
 		nextResultOffset = 0;
 		resultCount = 0;
-		// a result left from the builder's last use must not pass as current
-		generation = ++zakoopt$generation;
+		// a result left from the builder's last use must not pass as current; kept positive, as -1 marks a freed buffer
+		generation = zakoopt$generation = zakoopt$generation + 1 & Integer.MAX_VALUE;
 		zakoopt$type = type;
 		zakoopt$state = 1;
 	}

@@ -47,7 +47,8 @@ public class RingBuilders {
 			return false;
 		}
 		builder.close();
-		if (RenderSystem.isOnRenderThread() && FREE.size() < 256) {
+		// a builder handed back twice must not be leased twice: two leases would write into the same native memory
+		if (RenderSystem.isOnRenderThread() && FREE.size() < 256 && !FREE.contains(builder)) {
 			FREE.push(builder);
 		}
 		return true;
