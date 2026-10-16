@@ -17,7 +17,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	private static final List<String> LUNAR_MIXINS = List.of("gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin", "block.BlockEntityRenderDispatcherCullMixin");
 	private static final List<String> NO_LUNAR_MIXINS = List.of("block.BlockEntityRenderDispatcherCullWrapMixin");
 	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin",
-			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin");
+			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin", "gl.SodiumCubicSamplerMixin");
 	// Sodium writes model cubes its own fast way; ours stands in where it is missing
 	private static final List<String> NO_SODIUM_MIXINS = List.of("entity.ModelPartFastMixin");
 	// the immediate ring lives in OpenGL buffers; VulkanMod draws without them and rewrites RenderType.draw

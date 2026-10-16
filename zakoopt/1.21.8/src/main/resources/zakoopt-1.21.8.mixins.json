@@ -9,6 +9,7 @@
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.ChestRendererMixin",
 		"block.SpawnerRendererMixin",
+		"entity.EntitySortMixin",
 		"entity.LevelRendererOutlineMixin",
 		"gl.RenderSystemMixin",
 		"hud.GameRendererHudMixin",
