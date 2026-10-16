@@ -68,6 +68,15 @@ public class ChestRendererMixin {
 		return cache.zakoopt$pairLight();
 	}
 
+	// the lid angle goes to the model boxed, per chest per frame; nearly every chest is shut
+	@Unique
+	private static final Float ZAKOOPT$SHUT = 0.0F;
+
+	@WrapOperation(method = "submit", at = @At(value = "INVOKE", target = "Ljava/lang/Float;valueOf(F)Ljava/lang/Float;"))
+	private Float zakoopt$lid(float value, Operation<Float> original) {
+		return value == 0.0F && Features.FEWER_ALLOCATIONS.on ? ZAKOOPT$SHUT : original.call(value);
+	}
+
 	// render thread only; mulPose multiplies it into the pose at once and keeps nothing
 	@Unique
 	private static final Quaternionf ZAKOOPT$TURN = new Quaternionf();

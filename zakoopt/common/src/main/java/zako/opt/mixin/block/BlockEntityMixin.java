@@ -9,13 +9,18 @@ import org.spongepowered.asm.mixin.Unique;
 import zako.opt.block.CachedLight;
 import zako.opt.block.CachedValidity;
 import zako.opt.block.ChestFunctions;
+import zako.opt.block.MovingSlots;
 import zako.opt.block.TickCached;
 import zako.opt.entity.PooledState;
 
 @Getter
 @Accessors(fluent = true, chain = false)
 @Mixin(BlockEntity.class)
-public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity, PooledState, ChestFunctions {
+public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity, PooledState, ChestFunctions, MovingSlots {
+	@Unique
+	private Object zakoopt$moving0;
+	@Unique
+	private Object zakoopt$moving1;
 	@Unique
 	private Object zakoopt$chestOpen;
 	@Unique
@@ -46,6 +51,20 @@ public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity
 	private int zakoopt$pairLight;
 	@Unique
 	private long zakoopt$pairLightTick = Long.MIN_VALUE;
+
+	@Override
+	public Object zakoopt$moving(int slot) {
+		return slot == 0 ? zakoopt$moving0 : zakoopt$moving1;
+	}
+
+	@Override
+	public void zakoopt$setMoving(int slot, Object state) {
+		if (slot == 0) {
+			zakoopt$moving0 = state;
+		} else {
+			zakoopt$moving1 = state;
+		}
+	}
 
 	@Override
 	public Object zakoopt$openFn(long tick) {

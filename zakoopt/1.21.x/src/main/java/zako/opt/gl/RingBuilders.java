@@ -4,14 +4,15 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.RenderType;
 
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+
 import java.util.ArrayDeque;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 @UtilityClass
 public class RingBuilders {
 	private final int DEFAULT_SIZE = 64 << 10;
-	private final Map<RenderType, Integer> SIZES = new IdentityHashMap<>();
+	// primitive values: the lookup ran per lease and boxed its default every time
+	private final Reference2IntOpenHashMap<RenderType> SIZES = new Reference2IntOpenHashMap<>();
 	// closed ring builders handed back on the render thread, attached again instead of making a new one per lease
 	private final ArrayDeque<ByteBufferBuilder> FREE = new ArrayDeque<>();
 	public RenderType current;

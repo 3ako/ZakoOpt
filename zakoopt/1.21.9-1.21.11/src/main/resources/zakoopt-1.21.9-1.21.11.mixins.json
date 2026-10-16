@@ -8,6 +8,7 @@
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
 		"block.PistonHeadRendererMixin",
+		"block.PistonMovingStateMixin",
 		"entity.ItemLayerAccessor",
 		"entity.ItemStackRenderStateMixin",
 		"entity.LevelRendererOutlineMixin",

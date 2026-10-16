@@ -11,6 +11,7 @@
 		"block.ChestRendererMixin",
 		"entity.AvatarLodMixin",
 		"entity.EntityRenderStatePoolMixin",
+		"entity.CrossbowChargeMixin",
 		"entity.EntityTurnsMixin",
 		"entity.HeldItemTurnsMixin",
 		"entity.ModelResetPoseMixin",
