@@ -1,5 +1,6 @@
 package zako.opt.gl;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.RenderType;
@@ -40,11 +41,16 @@ public class RingBuilders {
 		return builder;
 	}
 
-	// after close(), on the render thread
-	public void recycle(ByteBufferBuilder builder) {
-		if (FREE.size() < 256) {
+	// true: a ring-backed builder, now closed and kept for the next lease when handed back on the render thread
+	public boolean release(ByteBufferBuilder builder) {
+		if (!((Backed) builder).zakoopt$ringBacked()) {
+			return false;
+		}
+		builder.close();
+		if (RenderSystem.isOnRenderThread() && FREE.size() < 256) {
 			FREE.push(builder);
 		}
+		return true;
 	}
 
 	public void remember(RenderType type, long size) {

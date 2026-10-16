@@ -1,6 +1,5 @@
 package zako.opt.mixin.gl;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import net.raphimc.immediatelyfast.feature.core.ByteBufferBuilderPool;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,14 +10,11 @@ import zako.opt.gl.RingBuilders;
 
 @Mixin(value = ByteBufferBuilderPool.class, remap = false)
 public class ByteBufferBuilderPoolMixin {
-	// ring-backed builders never came from the pool; they are released instead of pooled
+	// ring-backed builders never came from the pool; they are released instead of pooled. One call, so the handler inlines
+	// and its CallbackInfo, made per returned builder, is dropped
 	@Inject(method = "returnBufferBuilderSafe", at = @At("HEAD"), cancellable = true)
 	private static void zakoopt$release(ByteBufferBuilder builder, CallbackInfo ci) {
-		if (((RingBuilders.Backed) builder).zakoopt$ringBacked()) {
-			builder.close();
-			if (RenderSystem.isOnRenderThread()) {
-				RingBuilders.recycle(builder);
-			}
+		if (RingBuilders.release(builder)) {
 			ci.cancel();
 		}
 	}
