@@ -171,13 +171,13 @@ public class ZakoOptScreen extends Panel {
 
 	// marks a feature that changes the picture
 	private static final String[] EYE = {
-			"..#####..",
-			".#.....#.",
-			"#..###..#",
-			"#..###..#",
-			"#..###..#",
-			".#.....#.",
-			"..#####..",
+			"....###....",
+			"..##...##..",
+			".#..###..#.",
+			"#..#####..#",
+			".#..###..#.",
+			"..##...##..",
+			"....###....",
 	};
 
 	private static void eye(Canvas c, int x, int y, int color) {
