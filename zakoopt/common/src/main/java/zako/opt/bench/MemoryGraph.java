@@ -9,31 +9,32 @@ import zako.opt.Panel;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.List;
-import java.util.Locale;
 
 // heap and native memory during the test, a column per quarter second, newest on the right: heap in use as a filled saw
-// that drops at every GC, the committed heap and native memory as lines, a GC as a faint full-height tick
+// that drops at every GC, native memory as a line, a GC as a full-height tick
 @UtilityClass
 public class MemoryGraph {
 	// the process size is a system call: no more than four samples a second
 	private final long SAMPLE_NS = 250_000_000L;
 	private final long LABEL_NS = 500_000_000L;
+	private final long GARBAGE_NS = 1_000_000_000L;
 	private final int HISTORY = 512;
-	public final int HEAP = Panel.LINK, COMMITTED = Panel.FRAME, NATIVE = Panel.PIP, GC = 0x40000000;
+	public final int HEAP = Panel.LINK, NATIVE = Panel.PIP, GC = 0xFFA89880;
 	private final float[] used = new float[HISTORY];
 	private final float[] committed = new float[HISTORY];
 	private final float[] process = new float[HISTORY];
 	private final boolean[] gc = new boolean[HISTORY];
 	private final List<GarbageCollectorMXBean> GCS = ManagementFactory.getGarbageCollectorMXBeans();
-	private final com.sun.management.OperatingSystemMXBean OS =
+	final com.sun.management.OperatingSystemMXBean OS =
 			ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os ? os : null;
 	private int samples;
 	private long lastSample;
 	private long lastLabel;
+	private long lastGarbage;
 	private long gcCount = -1;
+	private long gcAtGarbage = -1;
 	private long allocated = -1;
-	private long renderAllocated = -1;
-	private int labelFrames;
+	private int garbageFrames;
 	private final com.sun.management.ThreadMXBean THREADS =
 			ManagementFactory.getThreadMXBean() instanceof com.sun.management.ThreadMXBean t ? t : null;
 	private Component label = Component.empty();
@@ -42,10 +43,11 @@ public class MemoryGraph {
 	public void reset() {
 		samples = 0;
 		lastSample = 0;
+		lastGarbage = 0;
 		gcCount = -1;
+		gcAtGarbage = -1;
 		allocated = -1;
-		renderAllocated = -1;
-		labelFrames = 0;
+		garbageFrames = 0;
 		label = Component.empty();
 		garbage = Component.empty();
 	}
@@ -53,7 +55,7 @@ public class MemoryGraph {
 	// every thread of the process since the JVM started, ended ones included: -1 where the JVM cannot tell
 	private long allocatedBytes() {
 		try {
-			return THREADS == null ? -1 : THREADS.getTotalThreadAllocatedBytes();
+			return THREADS == null ? -1 : THREADS.getCurrentThreadAllocatedBytes();
 		} catch (UnsupportedOperationException e) {
 			return -1;
 		}
@@ -61,7 +63,7 @@ public class MemoryGraph {
 
 	// every frame of the test; values in MB, Runtime because MemoryMXBean makes a MemoryUsage per call
 	public void frame(long now) {
-		labelFrames++;
+		garbageFrames++;
 		if (now - lastSample < SAMPLE_NS) {
 			return;
 		}
@@ -80,20 +82,21 @@ public class MemoryGraph {
 		gcCount = count;
 		samples++;
 		if (now - lastLabel >= LABEL_NS) {
-			long bytes = allocatedBytes();
-			// garbage made per second: with the mod on and off the difference shows as a number, not only as a steeper saw
-			String rate = allocated < 0 || bytes < 0 ? "?" : String.valueOf(Math.round((bytes - allocated) / 1048576.0 / ((now - lastLabel) / 1e9)));
-			allocated = bytes;
-			// the render thread's own garbage per frame: per second the mod on and off differ little, per frame several times
-			long render = THREADS == null ? -1 : THREADS.getCurrentThreadAllocatedBytes();
-			String perFrame = renderAllocated < 0 || render < 0 || labelFrames == 0 ? "?" : String.valueOf(Math.round((render - renderAllocated) / 1024.0 / labelFrames));
-			renderAllocated = render;
-			labelFrames = 0;
 			lastLabel = now;
 			label = Component.translatable("zakoopt.bench.memory",
 					Component.literal(String.valueOf((int) used[i])).withColor(HEAP), String.valueOf(rt.maxMemory() >> 20),
 					OS == null ? Component.literal("?") : size(Math.max(0, process[i] - committed[i])).withColor(NATIVE));
-			garbage = Component.translatable("zakoopt.bench.garbage", rate, perFrame);
+		}
+		if (now - lastGarbage >= GARBAGE_NS) {
+			long bytes = allocatedBytes();
+			// the render thread's own garbage per frame: per second the mod on and off differ little, per frame several times
+			String rate = allocated < 0 || bytes < 0 || garbageFrames == 0 ? "—" : String.valueOf(Math.round((bytes - allocated) / 1024.0 / garbageFrames));
+			Component gcs = gcAtGarbage < 0 ? Component.literal("—") : times(count - gcAtGarbage);
+			allocated = bytes;
+			garbageFrames = 0;
+			gcAtGarbage = count;
+			lastGarbage = now;
+			garbage = Component.translatable("zakoopt.bench.garbage", rate, gcs);
 		}
 	}
 
@@ -119,8 +122,6 @@ public class MemoryGraph {
 				c.fill(cx, bottom - height, cx + 1, bottom, GC);
 			}
 			c.fill(cx, y(bottom, height, used[i], scale), cx + 1, bottom, HEAP);
-			int cy = y(bottom, height, committed[i], scale);
-			c.fill(cx, cy, cx + 1, cy + 1, COMMITTED);
 			if (OS != null) {
 				int ny = y(bottom, height, process[i] - committed[i], scale);
 				c.fill(cx, ny, cx + 1, ny + 1, NATIVE);
@@ -133,7 +134,13 @@ public class MemoryGraph {
 	}
 
 	private MutableComponent size(float mb) {
-		return mb < 1024 ? Component.translatable("zakoopt.bench.mb", (int) mb)
-				: Component.translatable("zakoopt.bench.gb", String.format(Locale.ROOT, "%.1f", mb / 1024));
+		long tenths = Math.round(mb / 102.4);
+		return mb < 1024 ? Component.translatable("zakoopt.bench.mb", (int) mb) : Component.translatable("zakoopt.bench.gb", tenths / 10, tenths % 10);
+	}
+
+	// Russian has three plural forms: 1, 2-4 and 5+ times, with 11-14 among the 5+
+	private Component times(long n) {
+		String form = n == 1 ? "once" : n % 10 == 1 && n % 100 != 11 ? "one" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "few" : "many";
+		return Component.translatable("zakoopt.bench.times." + form, n);
 	}
 }

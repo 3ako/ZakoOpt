@@ -1,6 +1,5 @@
 package zako.opt;
 
-import java.net.URI;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -20,7 +19,6 @@ import java.nio.file.StandardCopyOption;
 @UtilityClass
 @Slf4j(topic = "zakoopt")
 public class ZakoOptConfig {
-	public final URI CHANNEL = URI.create("https://t.me/StarikZako");
 	public final boolean IRIS = FabricLoader.getInstance().isModLoaded("iris");
 	// mods that draw the HUD their own way; Soup Visual renders the extracted HUD itself mid-extraction, so the cache's texture
 	// stayed empty and the HUD blinked

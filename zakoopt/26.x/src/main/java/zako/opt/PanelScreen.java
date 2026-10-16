@@ -22,6 +22,18 @@ public abstract class PanelScreen extends Screen {
 
 	protected abstract void release();
 
+	protected boolean escape() {
+		return false;
+	}
+
+	protected boolean erase(boolean all) {
+		return false;
+	}
+
+	protected boolean typed(int codepoint) {
+		return false;
+	}
+
 	// over the running benchmark: no blur or dimming, the player has to see the scene through it
 	protected boolean overScene() {
 		return false;
@@ -56,6 +68,14 @@ public abstract class PanelScreen extends Screen {
 			@Override
 			public void text(FormattedCharSequence text, int x, int y, int argb) {
 				graphics.text(font, text, x, y, argb, false);
+			}
+
+			@Override
+			public void text(Component text, int x, int y, int argb, float scale) {
+				graphics.pose().pushMatrix();
+				graphics.pose().translate(x, y).scale(scale);
+				graphics.text(font, text, 0, 0, argb, false);
+				graphics.pose().popMatrix();
 			}
 
 			@Override
@@ -95,6 +115,14 @@ public abstract class PanelScreen extends Screen {
 			DebugToggle.toggle();
 			return true;
 		}
+		if (event.isEscape() && escape() || event.key() == InputConstants.KEY_BACKSPACE && erase(event.hasControlDown())) {
+			return true;
+		}
 		return super.keyPressed(event);
+	}
+
+	@Override
+	public boolean charTyped(net.minecraft.client.input.CharacterEvent event) {
+		return typed(event.codepoint()) || super.charTyped(event);
 	}
 }
