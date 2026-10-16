@@ -81,7 +81,8 @@ public class ChestRendererMixin {
 	@Unique
 	private static final Quaternionf ZAKOOPT$TURN = new Quaternionf();
 
-	@WrapOperation(method = "submit", at = @At(value = "INVOKE", target = "Lcom/mojang/math/Axis;rotationDegrees(F)Lorg/joml/Quaternionf;"))
+	// 26.1 turns the chest with a cached transformation and has no such call
+	@WrapOperation(method = "submit", require = 0, at = @At(value = "INVOKE", target = "Lcom/mojang/math/Axis;rotationDegrees(F)Lorg/joml/Quaternionf;"))
 	private Quaternionf zakoopt$turn(Axis axis, float degrees, Operation<Quaternionf> original) {
 		return Features.FEWER_ALLOCATIONS.on && axis == Axis.YP ? ZAKOOPT$TURN.rotationY(degrees * Mth.DEG_TO_RAD) : original.call(axis, degrees);
 	}
