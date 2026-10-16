@@ -102,7 +102,8 @@ public abstract class Panel extends PanelScreen {
 		return over;
 	}
 
-	protected void setting(Canvas c, ZakoOptions.Option option, int x0, int x1, int y) {
+	// true while the mouse is over the setting's row
+	protected boolean setting(Canvas c, ZakoOptions.Option option, int x0, int x1, int y) {
 		Component name = Component.translatable("zakoopt.option." + option.key());
 		switch (option) {
 			case ZakoOptions.Toggle t -> {
@@ -125,6 +126,7 @@ public abstract class Panel extends PanelScreen {
 				hit(tx0 - 4, y - 3, tx1 + 4, y + 11, null, d);
 			}
 		}
+		return over(x0, y - 2, x1, y + 12);
 	}
 
 	protected int beginScroll(Canvas c, int x0, int top, int x1, int bottom) {

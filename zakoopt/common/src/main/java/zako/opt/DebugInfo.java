@@ -8,6 +8,7 @@ import zako.opt.hud.HudWorth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
@@ -34,7 +35,7 @@ public class DebugInfo {
 		long on = available.stream().filter(t -> t.get().get()).count();
 		String ring = !Features.IMMEDIATE_RING.value ? "off" : Features.IMMEDIATE_RING.forced() ? (Features.IMMEDIATE_RING.on ? "on" : "off") + " (forced)"
 				: ZakoOptConfig.RING_PRESENT ? RingAutoTune.status() : "n/a";
-		String hud = MixinPlugin.VULKAN ? "off (VulkanMod)" : ZakoOptConfig.FOREIGN_HUD ? "off (" + ZakoOptConfig.FOREIGN_HUD_MOD + ")" : HudWorth.isMainSwapped() ? "off (main target swapped by another mod)" : !Features.HUD_CACHE.value ? "off" : HudWorth.isWorth() ? "on" : "idle (FPS too close to monitor rate)";
+		String hud = MixinPlugin.VULKAN ? "off (VulkanMod)" : ZakoOptConfig.FOREIGN_HUD ? "off (" + ZakoOptConfig.FOREIGN_HUD_MOD + ")" : HudWorth.isMainSwapped() ? "off (main target swapped by " + Objects.requireNonNullElse(HudWorth.getSwappedBy(), "another mod") + ")" : !Features.HUD_CACHE.value ? "off" : HudWorth.isWorth() ? "on" : "idle (FPS too close to monitor rate)";
 		if (!ZakoOptConfig.enabled) {
 			return "ZakoOpt " + ZakoOptions.VERSION + ": off";
 		}

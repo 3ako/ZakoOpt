@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import zako.opt.bench.Bench;
@@ -23,6 +24,9 @@ public class ZakoOptScreen extends Panel {
 	List<Section> sections = new ArrayList<>();
 	@NonFinal
 	int selected;
+	// the tooltip of the setting under the mouse; shown in the hint line
+	@NonFinal
+	Component settingHint;
 
 	private record Item(Feature feature, ZakoOptions.Toggle toggle, List<ZakoOptions.Option> settings) {
 	}
@@ -56,6 +60,7 @@ public class ZakoOptScreen extends Panel {
 
 	@Override
 	protected void paint(Canvas c) {
+		settingHint = null;
 		int w = Math.min(width - 2 * PAD, 520), x0 = (width - w) / 2, x1 = x0 + w, y0 = PAD, y1 = height - PAD;
 		frame(c, x0, y0, x1, y1);
 
@@ -118,7 +123,7 @@ public class ZakoOptScreen extends Panel {
 		Component defaults = Component.translatable("zakoopt.screen.defaults");
 		int defaultsX = dx - 6 - buttonWidth(defaults);
 		button(c, defaultsX, by, defaults, this::confirmDefaults);
-		Component hint = overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
+		Component hint = settingHint != null ? settingHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
@@ -150,12 +155,16 @@ public class ZakoOptScreen extends Panel {
 			int px = x1 - 10 - (3 - i) * 5;
 			c.fill(px, y + 4, px + 3, y + 12, blocked == null && i < pips ? PIP : OFF);
 		}
-		if (blocked == null) {
-			hit(x0, y, x1, y + 14, () -> f.value = !f.value, null);
-		}
 		int ly = lines(c, text, x0 + 34, y + 16, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
+		// the title and the description toggle; the settings rows below stay out so a near miss on a slider does not switch the feature off
+		if (blocked == null) {
+			hit(x0, y, x1, ly, () -> f.value = !f.value, null);
+		}
 		for (ZakoOptions.Option s : settings) {
-			setting(c, s, x0 + 34, x1 - 12, ly + 2);
+			String tooltip = "zakoopt.option." + s.key() + ".tooltip";
+			if (setting(c, s, x0 + 34, x1 - 12, ly + 2) && Language.getInstance().has(tooltip)) {
+				settingHint = Component.translatable(tooltip);
+			}
 			ly += 14;
 		}
 		c.fill(x0 + 6, y + height - 1, x1 - 6, y + height, LINE);
