@@ -29,7 +29,7 @@ public class SpawnerRendererMixin {
 	private void zakoopt$skipFarDisplayEntity(SpawnerRenderState state, float partialTick, Entity entity, EntityRenderDispatcher dispatcher, double oSpin, double spin,
 											  Operation<Void> original, SpawnerBlockEntity spawner, SpawnerRenderState state2, float f, Vec3 camera,
 											  ModelFeatureRenderer.CrumblingOverlay crumbling) {
-		double distSq = Vec3.atCenterOf(spawner.getBlockPos()).distanceToSqr(camera);
+		double distSq = SpawnerReplay.distanceSq(spawner.getBlockPos(), camera);
 		if (Features.SPAWNER_CULL.on) {
 			double d = Features.SPAWNER_CULL.distance;
 			if (distSq > d * d) {
@@ -69,11 +69,14 @@ public class SpawnerRendererMixin {
 								   CameraRenderState camera, Operation<Void> original, SpawnerRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
 		if (!Features.SPAWNER_REPLAY.on || !SpawnerCache.enabled() || mc.level == null
-				|| Vec3.atCenterOf(state.blockPos).distanceToSqr(camera.pos) <= SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
+				|| SpawnerReplay.distanceSq(state.blockPos, camera.pos) <= SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
 			original.call(pose, collector, entity, dispatcher, spin, scale, camera);
 			return;
 		}
-		SpawnerReplay.submit(entity, mc.level.getGameTime(), camera.pos, collector,
-				c -> original.call(pose, c, entity, dispatcher, spin, scale, camera));
+		// most frames replay: the capturing lambda is only made for the frame that records
+		if (!SpawnerReplay.replay(entity, mc.level.getGameTime(), camera.pos, collector)) {
+			SpawnerReplay.submit(entity, mc.level.getGameTime(), camera.pos, collector,
+					c -> original.call(pose, c, entity, dispatcher, spin, scale, camera));
+		}
 	}
 }

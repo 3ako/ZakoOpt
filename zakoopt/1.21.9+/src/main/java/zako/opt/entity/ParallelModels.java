@@ -38,8 +38,9 @@ public class ParallelModels {
 
 	private final Map<ModelPart, Flat> FLATS = new WeakHashMap<>();
 	private final List<Job> BUILT = new ArrayList<>();
-	private final ThreadLocal<PoseStack> STACKS = ThreadLocal.withInitial(PoseStack::new);
-	private final ThreadLocal<float[]> CORNERS = ThreadLocal.withInitial(() -> new float[24]);
+	// jobs outlive the frame and are handed out again by index: a job is only read until the hook's emit, before the next begin
+	private final List<Job> POOL = new ArrayList<>();
+	private final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
 	// vertex memory handed out while models are still being posed, so the total is not known up front; reused every frame
 	private final List<Long> PAGES = new ArrayList<>();
 	private final List<Integer> PAGE_SIZES = new ArrayList<>();
@@ -66,7 +67,23 @@ public class ParallelModels {
 		ModelPart root = model.root();
 		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
 		int n = flat.parts.length;
-		Job job = new Job(flat, pose, light, overlay, Integer.reverseBytes(Integer.rotateLeft(color, 8)), sprite, new float[n * FIELDS], new byte[n]);
+		Job job;
+		if (BUILT.size() < POOL.size()) {
+			job = POOL.get(BUILT.size());
+		} else {
+			job = new Job();
+			POOL.add(job);
+		}
+		job.flat = flat;
+		job.matrix = pose;
+		job.light = light;
+		job.overlay = overlay;
+		job.color = Integer.reverseBytes(Integer.rotateLeft(color, 8));
+		job.sprite = sprite;
+		if (job.flags.length < n) {
+			job.pose = new float[n * FIELDS];
+			job.flags = new byte[n];
+		}
 		int vertices = 0;
 		for (int i = 0; i < n; i++) {
 			ModelPart p = i == 0 ? root : flat.parts[i];
@@ -145,11 +162,11 @@ public class ParallelModels {
 	}
 
 	private void build(Job job) {
-		PoseStack poses = STACKS.get();
-		poses.last().set(job.matrix);
-		long[] ptr = {job.address};
+		Scratch s = SCRATCH.get();
+		s.poses.last().set(job.matrix);
+		s.at = job.address;
 		for (int i = 0; i < job.flat.parts.length; ) {
-			i = part(job, poses, i, ptr);
+			i = part(job, s, i);
 		}
 	}
 
@@ -158,7 +175,8 @@ public class ParallelModels {
 	}
 
 	// mirrors ModelPart.render / translateAndRotate / Cube.compile, reading the snapshot instead of the shared part
-	private int part(Job job, PoseStack poses, int i, long[] ptr) {
+	private int part(Job job, Scratch s, int i) {
+		PoseStack poses = s.poses;
 		Flat flat = job.flat;
 		int end = flat.end[i];
 		if ((job.flags[i] & 1) == 0 || flat.empty[i]) {
@@ -170,7 +188,7 @@ public class ParallelModels {
 		poses.translate(p[o] / 16.0F, p[o + 1] / 16.0F, p[o + 2] / 16.0F);
 		if (p[o + 3] != 0.0F || p[o + 4] != 0.0F || p[o + 5] != 0.0F) {
 			// what PoseStack.mulPose (rotate on 26.3) does; spelled out because that method's name differs between versions
-			Quaternionf rotation = new Quaternionf().rotationZYX(p[o + 5], p[o + 4], p[o + 3]);
+			Quaternionf rotation = s.rotation.rotationZYX(p[o + 5], p[o + 4], p[o + 3]);
 			poses.last().pose().rotate(rotation);
 			poses.last().normal().rotate(rotation);
 		}
@@ -180,15 +198,14 @@ public class ParallelModels {
 		if ((job.flags[i] & 2) == 0) {
 			PoseStack.Pose pose = poses.last();
 			Matrix4f matrix = pose.pose();
-			Vector3f v = new Vector3f();
+			Vector3f v = s.v;
 			// what SpriteCoordinateExpander does to every vertex; the sprite's bounds are final, safe to read here
 			TextureAtlasSprite sprite = job.sprite;
 			for (Cube cube : flat.cubes[i]) {
 				// a cube's 24 vertices share 8 corners: transform the corners once, as Sodium's cuboid renderer does
-				float[] at = CORNERS.get();
+				float[] at = s.corners;
 				if (at.length < cube.corners.length) {
-					at = new float[cube.corners.length];
-					CORNERS.set(at);
+					at = s.corners = new float[cube.corners.length];
 				}
 				for (int c = 0; c < cube.corners.length; c += 3) {
 					matrix.transformPosition(cube.corners[c], cube.corners[c + 1], cube.corners[c + 2], v);
@@ -207,7 +224,7 @@ public class ParallelModels {
 							u = sprite.getU(u);
 							w = sprite.getV(w);
 						}
-						long v0 = ptr[0];
+						long v0 = s.at;
 						MemoryUtil.memPutFloat(v0, at[c]);
 						MemoryUtil.memPutFloat(v0 + 4, at[c + 1]);
 						MemoryUtil.memPutFloat(v0 + 8, at[c + 2]);
@@ -217,40 +234,38 @@ public class ParallelModels {
 						MemoryUtil.memPutInt(v0 + 24, job.overlay);
 						MemoryUtil.memPutInt(v0 + 28, job.light);
 						MemoryUtil.memPutInt(v0 + 32, normal);
-						ptr[0] += STRIDE;
+						s.at += STRIDE;
 					}
 				}
 			}
 		}
 		for (int c = i + 1; c < end; ) {
-			c = part(job, poses, c, ptr);
+			c = part(job, s, c);
 		}
 		poses.popPose();
 		return end;
 	}
 
 	public final class Job {
-		final Flat flat;
-		final PoseStack.Pose matrix;
-		final int light;
-		final int overlay;
-		final int color;
-		final TextureAtlasSprite sprite;
-		final float[] pose;
-		final byte[] flags;
+		Flat flat;
+		PoseStack.Pose matrix;
+		int light;
+		int overlay;
+		int color;
+		TextureAtlasSprite sprite;
+		float[] pose = new float[0];
+		byte[] flags = new byte[0];
 		int vertices;
 		long address;
+	}
 
-		Job(Flat flat, PoseStack.Pose matrix, int light, int overlay, int color, TextureAtlasSprite sprite, float[] pose, byte[] flags) {
-			this.flat = flat;
-			this.matrix = matrix;
-			this.light = light;
-			this.overlay = overlay;
-			this.color = color;
-			this.sprite = sprite;
-			this.pose = pose;
-			this.flags = flags;
-		}
+	// per thread: part() recurses, but each level is done with these before it descends
+	private final class Scratch {
+		final PoseStack poses = new PoseStack();
+		final Quaternionf rotation = new Quaternionf();
+		final Vector3f v = new Vector3f();
+		float[] corners = new float[24];
+		long at;
 	}
 
 	// one cube in vanilla's polygon and vertex order, its vertices folded onto the distinct corners they sit on

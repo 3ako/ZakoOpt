@@ -65,6 +65,7 @@ public class Features {
 	public final SignCacheFeature SIGN_CACHE = add(new SignCacheFeature());
 	public final LookupCachesFeature LOOKUP_CACHES = add(new LookupCachesFeature());
 	public final MicroOptsFeature MICRO_OPTS = add(new MicroOptsFeature());
+	public final FewerAllocationsFeature FEWER_ALLOCATIONS = add(new FewerAllocationsFeature());
 
 	public final ParticleLightFeature PARTICLE_LIGHT = add(new ParticleLightFeature());
 	public final ParticlePhysicsFeature PARTICLE_PHYSICS = add(new ParticlePhysicsFeature());

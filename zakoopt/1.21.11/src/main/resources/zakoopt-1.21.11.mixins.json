@@ -5,8 +5,12 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"entity.LivingEntityRendererSkinMixin",
+		"entity.MaterialHashMixin",
 		"gl.BatchableBufferSourceMixin",
+		"gl.BatchableBufferSourceSetPoolMixin",
 		"gl.ByteBufferBuilderPoolMixin",
+		"gl.DynamicTransformMixin",
+		"gl.DynamicUniformStorageAccessor",
 		"gl.GameRendererScaleMixin",
 		"gl.GlBufferInvoker",
 		"gl.GlTextureViewMixin",

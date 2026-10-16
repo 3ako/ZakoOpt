@@ -8,7 +8,7 @@ import zako.opt.feature.FeatureGroup;
 @FeatureData(
 	key = "block_entity_early_cull",
 	group = FeatureGroup.BLOCKS,
-	mixins = "block.BlockEntityRenderDispatcherCullMixin",
+	mixins = {"block.BlockEntityRenderDispatcherCullMixin", "block.BlockEntityRenderDispatcherCullWrapMixin"},
 	bench = BenchView.BLOCKS
 )
 public class BlockEntityEarlyCullFeature extends Feature {

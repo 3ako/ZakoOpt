@@ -15,7 +15,8 @@ public enum FeatureGroup {
 	SPAWNERS("spawners"),
 	BLOCKS("blocks"),
 	PARTICLES("particles"),
-	INTERFACE("interface");
+	INTERFACE("interface"),
+	MEMORY("memory");
 
 	private final String key;
 
