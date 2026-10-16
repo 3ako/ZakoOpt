@@ -105,8 +105,6 @@
   "zakoopt.option.player_lod.tooltip": "Упрощать вдали и игроков, а не только мобов.",
   "zakoopt.visual.player_lod": "Меняет картинку: дальние игроки без брони, предметов, плаща и второго слоя скина.",
   "zakoopt.option.enabled.tooltip": "Выключает весь мод разом, чтобы сравнить FPS. Настройки не меняются.",
-  "zakoopt.option.channel": "§bTelegram автора",
-  "zakoopt.option.channel.tooltip": "Новости мода, замеры и новые версии первыми. Подпишись на автора: t.me/StarikZako",
   "zakoopt.option.entity_anim_freeze": "Анимация дальних раз в тик",
   "zakoopt.option.entity_anim_freeze.tooltip": "Дальние мобы и игроки меняют позу 20 раз в секунду, а не каждый кадр. Вдали движения рывками.",
   "zakoopt.visual.entity_anim_freeze": "Меняет картинку: дальние мобы и игроки двигаются рывками.",

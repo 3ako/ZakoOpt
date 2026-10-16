@@ -105,8 +105,6 @@
   "zakoopt.option.player_lod.tooltip": "Simplify far players too, not only mobs.",
   "zakoopt.visual.player_lod": "Changes visuals: distant players lose armor, held items, cape and the outer skin layer.",
   "zakoopt.option.enabled.tooltip": "Turns the whole mod off at once to compare FPS. Your settings stay as they are.",
-  "zakoopt.option.channel": "§bAuthor's Telegram",
-  "zakoopt.option.channel.tooltip": "Mod news, benchmarks and new builds first. Subscribe to the author: t.me/StarikZako",
   "zakoopt.option.entity_anim_freeze": "Far animation per tick",
   "zakoopt.option.entity_anim_freeze.tooltip": "Far mobs and players change pose 20 times a second, not every frame. Far movement looks jerky.",
   "zakoopt.visual.entity_anim_freeze": "Changes visuals: distant mobs and players move choppily.",
