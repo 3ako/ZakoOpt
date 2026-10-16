@@ -3,7 +3,6 @@ package zako.opt;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -77,10 +76,6 @@ public class ZakoOptScreen extends Panel {
 		c.text(Component.literal("ZakoOpt"), x0 + 8, y0 + 7, STRONG);
 		int vx = x0 + 8 + font.width("ZakoOpt") + 5;
 		c.text(Component.literal(ZakoOptions.VERSION), vx, y0 + 7, DIM);
-		int lx = vx + font.width(ZakoOptions.VERSION) + 8;
-		Component author = Component.literal("@StarikZako");
-		c.text(author, lx, y0 + 7, over(lx, y0 + 5, lx + font.width(author), y0 + 17) ? STRONG : LINK);
-		hit(lx, y0 + 5, lx + font.width(author), y0 + 17, () -> ConfirmLinkScreen.confirmLinkNow(this, ZakoOptConfig.CHANNEL), null);
 
 		boolean inWorld = minecraft.level != null;
 		boolean benchOk = !inWorld && !Bench.running();
@@ -92,7 +87,7 @@ public class ZakoOptScreen extends Panel {
 		int masterX = bx - 6 - masterWidth;
 		boolean overMaster = button(c, masterX, y0 + 4, masterWidth, master, ZakoOptConfig.enabled ? ON : MASTER_OFF, ZakoOptConfig.enabled ? ACCENT : MASTER_OFF_FRAME, true,
 				() -> ZakoOptConfig.enabled = !ZakoOptConfig.enabled);
-		searchField(c, lx + font.width(author) + 8, masterX - 6, y0 + 4);
+		searchField(c, vx + font.width(ZakoOptions.VERSION) + 8, masterX - 6, y0 + 4);
 		c.fill(x0, y0 + BAR, x1, y0 + BAR + 2, LINE);
 
 		String needle = norm(query.strip());
