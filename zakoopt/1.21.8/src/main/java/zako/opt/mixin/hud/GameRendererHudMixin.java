@@ -40,7 +40,7 @@ public class GameRendererHudMixin {
 		} else if (!HudCache.skipExtraction()) {
 			HudCache.suppressLiveParts = true;
 			try {
-				original.call(gui, graphics, deltaTracker);
+				HudCache.extractIntoTexture(() -> original.call(gui, graphics, deltaTracker));
 			} finally {
 				HudCache.suppressLiveParts = false;
 			}

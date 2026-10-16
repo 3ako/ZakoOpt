@@ -17,6 +17,7 @@ public class HudCache {
 	private boolean active;
 	private boolean refresh;
 	private boolean drawing;
+	private boolean extracted;
 	private long lastRefresh;
 	public boolean suppressLiveParts;
 
@@ -73,8 +74,23 @@ public class HudCache {
 		return drawing && !pipPrepare && requested != target && requested == main ? target : null;
 	}
 
-	public void drawIntoTexture(Runnable draw) {
+	// Xaero's in-world waypoints are drawn straight to the main target from Gui.render, not through the GUI render state
+	public void extractIntoTexture(Runnable extract) {
 		HudGpu.clear(target);
+		extracted = true;
+		drawing = true;
+		try {
+			extract.run();
+		} finally {
+			drawing = false;
+		}
+	}
+
+	public void drawIntoTexture(Runnable draw) {
+		if (!extracted) {
+			HudGpu.clear(target);
+		}
+		extracted = false;
 		drawing = true;
 		try {
 			draw.run();
