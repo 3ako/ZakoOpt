@@ -141,7 +141,7 @@
   "zakoopt.bench.lod.hint": "Двигайте ползунки: дальние мобы и игроки рисуются упрощённо. Найдите дальность, где разница не бросается в глаза.",
   "zakoopt.bench.hands": "Не трогайте мышь и клавиатуру · Esc — отменить",
   "zakoopt.bench.memory": "Занято %s из %s МБ · вне Java %s",
-  "zakoopt.bench.garbage": "Мусор %s МБ/с, уборка %s в секунду",
+  "zakoopt.bench.garbage": "Мусор %s КБ на кадр, уборка %s в секунду",
   "zakoopt.bench.mb": "%s МБ",
   "zakoopt.bench.gb": "%s,%s ГБ",
   "zakoopt.bench.target": "цель %s FPS",

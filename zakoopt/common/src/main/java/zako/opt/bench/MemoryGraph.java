@@ -34,6 +34,7 @@ public class MemoryGraph {
 	private long gcCount = -1;
 	private long gcAtGarbage = -1;
 	private long allocated = -1;
+	private int garbageFrames;
 	private final com.sun.management.ThreadMXBean THREADS =
 			ManagementFactory.getThreadMXBean() instanceof com.sun.management.ThreadMXBean t ? t : null;
 	private Component label = Component.empty();
@@ -46,6 +47,7 @@ public class MemoryGraph {
 		gcCount = -1;
 		gcAtGarbage = -1;
 		allocated = -1;
+		garbageFrames = 0;
 		label = Component.empty();
 		garbage = Component.empty();
 	}
@@ -53,7 +55,7 @@ public class MemoryGraph {
 	// every thread of the process since the JVM started, ended ones included: -1 where the JVM cannot tell
 	private long allocatedBytes() {
 		try {
-			return THREADS == null ? -1 : THREADS.getTotalThreadAllocatedBytes();
+			return THREADS == null ? -1 : THREADS.getCurrentThreadAllocatedBytes();
 		} catch (UnsupportedOperationException e) {
 			return -1;
 		}
@@ -61,6 +63,7 @@ public class MemoryGraph {
 
 	// every frame of the test; values in MB, Runtime because MemoryMXBean makes a MemoryUsage per call
 	public void frame(long now) {
+		garbageFrames++;
 		if (now - lastSample < SAMPLE_NS) {
 			return;
 		}
@@ -86,10 +89,11 @@ public class MemoryGraph {
 		}
 		if (now - lastGarbage >= GARBAGE_NS) {
 			long bytes = allocatedBytes();
-			// garbage made per second: with the mod on and off the difference shows as a number, not only as a steeper saw
-			String rate = allocated < 0 || bytes < 0 ? "—" : String.valueOf(Math.round((bytes - allocated) / 1048576.0 / ((now - lastGarbage) / 1e9)));
+			// the render thread's own garbage per frame: per second the mod on and off differ little, per frame several times
+			String rate = allocated < 0 || bytes < 0 || garbageFrames == 0 ? "—" : String.valueOf(Math.round((bytes - allocated) / 1024.0 / garbageFrames));
 			Component gcs = gcAtGarbage < 0 ? Component.literal("—") : times(count - gcAtGarbage);
 			allocated = bytes;
+			garbageFrames = 0;
 			gcAtGarbage = count;
 			lastGarbage = now;
 			garbage = Component.translatable("zakoopt.bench.garbage", rate, gcs);
