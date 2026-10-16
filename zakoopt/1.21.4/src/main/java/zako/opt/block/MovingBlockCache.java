@@ -7,6 +7,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -44,21 +46,37 @@ public class MovingBlockCache {
 
 	// tint: grass, leaves, vines... take their colour from the biome where they are tesselated, so a mesh is only good
 	// for blocks of the same colour
-	private record Key(BlockState state, long seed, boolean checkSides, int overlay, int tint) {
+	@AllArgsConstructor
+	@EqualsAndHashCode
+	private static final class Key {
+		BlockState state;
+		long seed;
+		boolean checkSides;
+		int overlay;
+		int tint;
 	}
 
 	private record Mesh(BakedModel model, RenderType type, ByteBuffer vertices, int count) {
 	}
 
+	// render thread only: the key a moving block is looked up with, copied only when a new entry is stored
+	private final Key LOOKUP = new Key(null, 0, false, 0, 0);
+	private final Vector3f TMP = new Vector3f();
+
 	// false: draw this block the vanilla way
 	public boolean render(BlockRenderDispatcher dispatcher, BlockPos pos, BlockState state, PoseStack poseStack, MultiBufferSource buffers,
 						  Level level, boolean checkSides, int overlay) {
 		BakedModel model = dispatcher.getBlockModel(state);
-		Key key = new Key(state, state.getSeed(pos), checkSides, overlay, Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 0));
+		Key key = LOOKUP;
+		key.state = state;
+		key.seed = state.getSeed(pos);
+		key.checkSides = checkSides;
+		key.overlay = overlay;
+		key.tint = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 0);
 		Mesh entry = CACHE.get(key);
 		if (entry == null || entry.model != model) {
 			entry = capture(dispatcher, model, pos, state, level, key);
-			CACHE.put(key, entry);
+			CACHE.put(new Key(key.state, key.seed, key.checkSides, key.overlay, key.tint), entry);
 		}
 		VertexConsumer target = buffers.getBuffer(entry.type);
 		if (entry.count == 0) {
@@ -92,7 +110,7 @@ public class MovingBlockCache {
 		int pos = format.getOffset(VertexFormatElement.POSITION);
 		int uv2 = format.contains(VertexFormatElement.UV2) ? format.getOffset(VertexFormatElement.UV2) : -1;
 		int size = entry.count * stride;
-		Vector3f tmp = new Vector3f();
+		Vector3f tmp = TMP;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			long dst = stack.nmalloc(16, size);
 			MemoryUtil.memCopy(MemoryUtil.memAddress(entry.vertices), dst, size);

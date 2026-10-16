@@ -33,6 +33,7 @@
 		"gl.MinecraftTargetAccessor",
 		"gl.RenderSystemMixin",
 		"gl.RenderTypeStatsMixin",
+		"gl.ShaderSamplerNamesMixin",
 		"hud.ChatComponentBatchMixin",
 		"hud.GameRendererHudMixin",
 		"hud.GlStateManagerHudMixin",

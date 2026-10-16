@@ -1,7 +1,6 @@
 package zako.opt.mixin.particle;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -25,14 +24,13 @@ public class ParticleEngineLodMixin {
 		ParticleLod.tick = level.getGameTime();
 	}
 
-	@WrapOperation(method = "renderParticleType", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/client/Camera;F)V"))
-	private static void zakoopt$lod(Particle particle, VertexConsumer consumer, Camera camera, float partialTick, Operation<Void> original) {
+	// a condition, not a wrap: Operation.call boxed the partial tick into an array for every particle of every frame
+	@WrapWithCondition(method = "renderParticleType", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/client/Camera;F)V"))
+	private static boolean zakoopt$lod(Particle particle, VertexConsumer consumer, Camera camera, float partialTick) {
 		if (particle instanceof SingleQuadParticle quad) {
 			ParticleAccessor pos = (ParticleAccessor) particle;
-			if (!ParticleLod.keep(quad, pos.zakoopt$x(), pos.zakoopt$y(), pos.zakoopt$z(), camera.getPosition())) {
-				return;
-			}
+			return ParticleLod.keep(quad, pos.zakoopt$x(), pos.zakoopt$y(), pos.zakoopt$z(), camera.getPosition());
 		}
-		original.call(particle, consumer, camera, partialTick);
+		return true;
 	}
 }

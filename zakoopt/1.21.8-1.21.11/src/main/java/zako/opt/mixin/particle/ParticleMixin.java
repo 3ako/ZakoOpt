@@ -38,7 +38,8 @@ public class ParticleMixin {
 	@Unique
 	private long zakoopt$lightTick = Long.MIN_VALUE;
 	@Unique
-	private int zakoopt$light;
+	// kept boxed: the value is far outside Integer's cache, and setReturnValue would box it anew on every hit
+	private Integer zakoopt$light;
 
 	// vanilla reads the non-interpolated x/y/z, which only change in tick(), so the value is constant within a tick
 	@Inject(method = "getLightColor", at = @At("HEAD"), cancellable = true)
@@ -50,7 +51,7 @@ public class ParticleMixin {
 
 	@Inject(method = "getLightColor", at = @At("RETURN"))
 	private void zakoopt$storeLight(float partialTick, CallbackInfoReturnable<Integer> cir) {
-		zakoopt$light = cir.getReturnValueI();
+		zakoopt$light = cir.getReturnValue();
 		zakoopt$lightTick = level.getGameTime();
 	}
 
