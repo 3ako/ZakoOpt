@@ -21,6 +21,7 @@
 		"DebugScreenEntriesMixin",
 		"block.SpawnerRendererMixin",
 		"entity.LivingEntityLodMixin",
+		"particle.ParticleRotationMixin",
 		"particle.QuadParticleGroupMixin",
 		"particle.QuadParticleRenderStateAccessor"
 	],
