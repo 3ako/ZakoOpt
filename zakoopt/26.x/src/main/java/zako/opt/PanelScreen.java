@@ -8,8 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 public abstract class PanelScreen extends Screen {
-	private static final int GLFW_KEY_F3 = 292;
-
 	protected PanelScreen(Component title) {
 		super(title);
 	}
@@ -111,7 +109,7 @@ public abstract class PanelScreen extends Screen {
 	// the benchmark's screens stay up over the scene, and F3 is how to see what the frame costs
 	@Override
 	public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
-		if (event.key() == GLFW_KEY_F3) {
+		if (event.key() == InputConstants.KEY_F3) {
 			DebugToggle.toggle();
 			return true;
 		}
