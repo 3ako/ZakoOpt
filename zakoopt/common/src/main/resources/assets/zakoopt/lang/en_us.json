@@ -120,6 +120,8 @@
   "zakoopt.bench.button": "Tune for this device",
   "zakoopt.bench.button.tooltip": "A test on your device: the mod checks what actually speeds the game up for you.",
   "zakoopt.bench.button.in_world": "Starts from the main menu: leave the world first.",
+  "zakoopt.bench.compare.button": "Compare",
+  "zakoopt.bench.compare.button.tooltip": "Straight to the comparison scene with your settings: the load is sized to the device, features are not tested.",
   "zakoopt.bench.title": "ZakoOpt tuning",
   "zakoopt.bench.start": "Start",
   "zakoopt.bench.ramp": "Finding the load · step %s",

@@ -120,6 +120,8 @@
   "zakoopt.bench.button": "Подобрать настройки",
   "zakoopt.bench.button.tooltip": "Тест на вашем устройстве: мод сам проверит, что ускоряет игру именно у вас.",
   "zakoopt.bench.button.in_world": "Запускается из главного меню: выйдите из мира.",
+  "zakoopt.bench.compare.button": "Сравнение",
+  "zakoopt.bench.compare.button.tooltip": "Сразу к сцене сравнения с вашими настройками: нагрузка подберётся под устройство, функции проверяться не будут.",
   "zakoopt.bench.title": "Подбор настроек ZakoOpt",
   "zakoopt.bench.start": "Начать",
   "zakoopt.bench.ramp": "Подбор нагрузки · шаг %s",
