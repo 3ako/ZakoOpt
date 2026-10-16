@@ -224,6 +224,7 @@ public class Bench {
 			double k = Math.max((t - t0) / level, 1e-6);
 			next = Math.min(Scene.LEVELS, Math.min(2 * level, Math.max(level + 1, (int) Math.round(0.8 * (targetMs - t0) / k))));
 		}
+		progress(mc, status.stage(), status.percent());
 		if (compareOnly) {
 			server(mc, tp(o));
 			compare(mc);

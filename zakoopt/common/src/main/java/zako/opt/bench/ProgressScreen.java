@@ -12,6 +12,7 @@ public class ProgressScreen extends Panel {
 	static final int WIDTH = 300;
 	static final int FRAMES = 24, MEMORY = 16;
 	static final int TRACK = 0xFFD2C4A6;
+	static final float LEGEND = 0.75f;
 	private static final long LOAD_NS = 500_000_000L;
 	private static final int[] FRAME_COLORS = {FrameGraph.SMOOTH, FrameGraph.STUTTER, FrameGraph.BIG_STUTTER};
 	private static final Component[] FRAME_LEGEND = {Component.translatable("zakoopt.bench.legend.smooth"),
@@ -67,7 +68,7 @@ public class ProgressScreen extends Panel {
 		load();
 		int w = Math.min(WIDTH, width - 16), inner = w - 16;
 		int frameRows = legendRows(FRAME_LEGEND, inner), memoryRows = legendRows(MEMORY_LEGEND, inner);
-		int h = 113 + FRAMES + MEMORY + 10 * (frameRows + memoryRows);
+		int h = 113 + FRAMES + MEMORY + 8 * (frameRows + memoryRows);
 		// above the comparison panel at the bottom when the screen is short
 		int x = 8, y = Math.max(8, Math.min(height / 2 - h / 2, height - 78 - h)), l = x + 8;
 		frame(c, x, y, x + w, y + h);
@@ -137,12 +138,12 @@ public class ProgressScreen extends Panel {
 	private int legendRows(Component[] names, int width) {
 		int rows = 1, at = 0;
 		for (Component name : names) {
-			int item = 9 + font.width(name);
+			int item = 6 + (int) Math.ceil(font.width(name) * LEGEND);
 			if (at > 0 && at + item > width) {
 				rows++;
 				at = 0;
 			}
-			at += item + 8;
+			at += item + 6;
 		}
 		return rows;
 	}
@@ -151,16 +152,16 @@ public class ProgressScreen extends Panel {
 	private int legend(Canvas c, int x, int y, int width, Component[] names, int[] colors) {
 		int at = 0;
 		for (int i = 0; i < names.length; i++) {
-			int item = 9 + font.width(names[i]);
+			int item = 6 + (int) Math.ceil(font.width(names[i]) * LEGEND);
 			if (at > 0 && at + item > width) {
-				y += 10;
+				y += 8;
 				at = 0;
 			}
-			c.fill(x + at, y + 1, x + at + 6, y + 7, colors[i]);
-			c.text(names[i], x + at + 9, y, MUTED);
-			at += item + 8;
+			c.fill(x + at, y + 1, x + at + 4, y + 5, colors[i]);
+			c.text(names[i], x + at + 6, y, MUTED, LEGEND);
+			at += item + 6;
 		}
-		return y + 10;
+		return y + 8;
 	}
 
 	protected void closed() {
