@@ -1,6 +1,5 @@
 package zako.opt.feature.blocks;
 
-import zako.opt.bench.BenchView;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
@@ -11,8 +10,7 @@ import zako.opt.feature.Features;
 @FeatureData(
 	key = "fewer_allocations",
 	group = FeatureGroup.MEMORY,
-	mixins = {"block.BlockEntityRenderStatePoolMixin", "entity.SubmitPosePoolMixin", "gl.BatchableBufferSourceSetPoolMixin", "entity.ModelPartChildrenMixin"},
-	bench = BenchView.OVERVIEW
+	mixins = {"block.BlockEntityRenderStatePoolMixin", "entity.SubmitPosePoolMixin", "gl.BatchableBufferSourceSetPoolMixin", "entity.ModelPartChildrenMixin"}
 )
 public class FewerAllocationsFeature extends Feature {
 	@Override
