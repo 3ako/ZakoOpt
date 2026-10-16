@@ -38,6 +38,8 @@ public class Bench {
 	private final double MIN_GAIN = 0.03;
 	// switches whose worth depends on the device and that leave the picture as it is; LODs and the like stay the player's call
 	private final long[] FRAME_NS = new long[1 << 16];
+	// render thread only: recentFps runs in the panels' paint
+	private final long[] RECENT = new long[1 << 16];
 	private volatile int frames;
 	private long lastFrame;
 	private volatile boolean running;
@@ -77,6 +79,7 @@ public class Bench {
 		if (running && lastFrame != 0) {
 			FRAME_NS[frames & FRAME_NS.length - 1] = now - lastFrame;
 			frames++;
+			MemoryGraph.frame(now);
 		}
 		lastFrame = now;
 	}
@@ -108,6 +111,7 @@ public class Bench {
 		joined = false;
 		cancelled = false;
 		status = new Status(Component.empty(), 0);
+		MemoryGraph.reset();
 		Minecraft mc = Minecraft.getInstance();
 		boolean pause = mc.options.pauseOnLostFocus;
 		mc.options.pauseOnLostFocus = false;
@@ -493,8 +497,9 @@ public class Bench {
 	public double recentFps() {
 		int n = 0, last = frames;
 		long sum = 0;
-		long[] times = new long[Math.min(last, FRAME_NS.length)];
-		while (n < times.length && sum < 1_000_000_000L) {
+		long[] times = RECENT;
+		int max = Math.min(last, FRAME_NS.length);
+		while (n < max && sum < 1_000_000_000L) {
 			times[n] = FRAME_NS[last - 1 - n & FRAME_NS.length - 1];
 			sum += times[n++];
 		}
@@ -515,14 +520,13 @@ public class Bench {
 		}
 	}
 
-	// the last n frame times, oldest first
-	public long[] lastFrames(int n) {
-		int last = frames;
-		long[] times = new long[Math.min(n, Math.min(last, FRAME_NS.length))];
-		for (int i = 0; i < times.length; i++) {
-			times[i] = FRAME_NS[last - times.length + i & FRAME_NS.length - 1];
+	// the last n frame times into out, oldest first; how many there were
+	public int lastFrames(long[] out, int n) {
+		int last = frames, count = Math.min(n, Math.min(last, FRAME_NS.length));
+		for (int i = 0; i < count; i++) {
+			out[i] = FRAME_NS[last - count + i & FRAME_NS.length - 1];
 		}
-		return times;
+		return count;
 	}
 
 	// from the median frame time: a GC pause or a chunk upload is one long frame and barely moves it
