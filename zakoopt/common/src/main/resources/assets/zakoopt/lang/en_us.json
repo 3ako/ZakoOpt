@@ -143,7 +143,7 @@
   "zakoopt.bench.lod.hint": "Move the sliders: distant mobs and players are drawn simplified. Find the distance where the difference doesn't catch the eye.",
   "zakoopt.bench.hands": "Don't touch the mouse or keyboard · Esc to cancel",
   "zakoopt.bench.memory": "Used %s of %s MB · outside Java %s",
-  "zakoopt.bench.garbage": "Garbage %s MB/s, collected %s a second",
+  "zakoopt.bench.garbage": "Garbage %s KB a frame, collected %s a second",
   "zakoopt.bench.mb": "%s MB",
   "zakoopt.bench.gb": "%s.%s GB",
   "zakoopt.bench.target": "target %s FPS",
