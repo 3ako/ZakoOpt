@@ -23,7 +23,7 @@ public class ZakoOptScreen extends Panel {
 	List<Section> sections = new ArrayList<>();
 	@NonFinal
 	int selected;
-	// what the "changes visuals" label under the mouse says; shown in the hint line
+	// what the "changes visuals" eye under the mouse says; shown in the hint line
 	@NonFinal
 	Component visualHint;
 
@@ -141,11 +141,7 @@ public class ZakoOptScreen extends Panel {
 		Component text = blocked != null ? blocked : Component.translatable("zakoopt.option." + f.key() + ".tooltip");
 		List<ZakoOptions.Option> settings = on ? item.settings() : List.of();
 		Component title = Component.translatable("zakoopt.option." + f.key());
-		Component visual = f.data().visual() ? Component.translatable("zakoopt.screen.visual") : null;
-		int vw = visual == null ? 0 : font.width(visual);
-		// the label sits right of the title; a title too long for both pushes it onto its own line
-		boolean ownLine = visual != null && x0 + 34 + font.width(title) + 8 > x1 - 10 - vw;
-		int height = 4 + 9 + 3 + (ownLine ? 10 : 0) + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
+		int height = 4 + 9 + 3 + lineCount(text, x1 - x0 - 48) * 10 + settings.size() * 14 + 5;
 		if (y + height <= top || y >= bottom) {
 			return y + height;
 		}
@@ -154,27 +150,50 @@ public class ZakoOptScreen extends Panel {
 		}
 		toggle(c, x0 + 10, y + 5, on, blocked != null);
 		c.text(title, x0 + 34, y + 4, blocked != null ? DIM : STRONG);
-		int ty = y + 16;
-		if (visual != null) {
-			int vx = ownLine ? x0 + 34 : x1 - 10 - vw, vy = ownLine ? ty : y + 4;
-			c.text(visual, vx, vy, blocked != null ? DIM : VISUAL);
-			if (over(vx - 2, vy - 2, vx + vw + 2, vy + 10)) {
+		if (f.data().visual()) {
+			int ex = x1 - 10 - EYE[0].length(), ey = y + 5;
+			eye(c, ex, ey, blocked != null ? DIM : VISUAL);
+			if (over(ex - 2, ey - 2, ex + EYE[0].length() + 2, ey + EYE.length + 2)) {
 				visualHint = Component.translatable("zakoopt.visual." + f.key());
-			}
-			if (ownLine) {
-				ty += 10;
 			}
 		}
 		if (blocked == null) {
 			hit(x0, y, x1, y + 14, () -> f.value = !f.value, null);
 		}
-		int ly = lines(c, text, x0 + 34, ty, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
+		int ly = lines(c, text, x0 + 34, y + 16, x1 - x0 - 48, blocked != null ? BLOCKED : MUTED);
 		for (ZakoOptions.Option s : settings) {
 			setting(c, s, x0 + 34, x1 - 12, ly + 2);
 			ly += 14;
 		}
 		c.fill(x0 + 6, y + height - 1, x1 - 6, y + height, LINE);
 		return y + height;
+	}
+
+	// marks a feature that changes the picture
+	private static final String[] EYE = {
+			"..#####..",
+			".#.....#.",
+			"#..###..#",
+			"#..###..#",
+			"#..###..#",
+			".#.....#.",
+			"..#####..",
+	};
+
+	private static void eye(Canvas c, int x, int y, int color) {
+		for (int row = 0; row < EYE.length; row++) {
+			String line = EYE[row];
+			for (int i = 0; i < line.length(); i++) {
+				if (line.charAt(i) != '#') {
+					continue;
+				}
+				int start = i;
+				while (i < line.length() && line.charAt(i) == '#') {
+					i++;
+				}
+				c.fill(x + start, y + row, x + i, y + row + 1, color);
+			}
+		}
 	}
 
 	@Override
