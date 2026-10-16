@@ -7,8 +7,12 @@
 		"KeyMappingCategoryAccessor",
 		"entity.LivingEntityRendererSkinMixin",
 		"entity.LivingEntityAnimFreezeMixin",
+		"entity.EntityLightProbeMixin",
+		"entity.EntityTurnsMixin",
 		"entity.LivingEntityLodMixin",
+		"entity.ModelPartChildrenMixin",
 		"entity.PlayerLodMixin",
+		"gl.BatchableBufferSourceSetPoolMixin",
 		"gl.MinecraftTimerMixin",
 		"particle.ParticleEngineParallelMixin"
 	],

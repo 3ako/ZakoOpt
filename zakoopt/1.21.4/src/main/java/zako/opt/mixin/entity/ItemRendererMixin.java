@@ -1,10 +1,6 @@
 package zako.opt.mixin.entity;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
@@ -20,23 +16,19 @@ import zako.opt.entity.ItemLod;
 
 @Mixin(ItemRenderer.class)
 public class ItemRendererMixin {
+	// set at the head of every renderItem, the only way into renderQuadList, so a stale value is never read
 	@Unique
 	private static boolean zakoopt$flat;
 
-	@WrapOperation(method = "renderItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderModelLists(Lnet/minecraft/client/resources/model/BakedModel;[IIILcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V"))
-	private static void zakoopt$lod(BakedModel model, int[] tints, int light, int overlay, PoseStack poseStack, VertexConsumer buffer, Operation<Void> original,
-									@Local(argsOnly = true) ItemDisplayContext context) {
+	@ModifyVariable(method = "renderItem", at = @At("HEAD"), argsOnly = true)
+	private static BakedModel zakoopt$lod(BakedModel model, ItemDisplayContext context, PoseStack poseStack) {
 		if (context.firstPerson() || context == ItemDisplayContext.GUI || !ItemLod.enabled()) {
-			original.call(model, tints, light, overlay, poseStack, buffer);
-			return;
+			zakoopt$flat = false;
+			return model;
 		}
 		Matrix4f m = poseStack.last().pose();
 		zakoopt$flat = m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32() > ItemLod.distanceSq();
-		try {
-			original.call(model, tints, light, overlay, poseStack, buffer);
-		} finally {
-			zakoopt$flat = false;
-		}
+		return model;
 	}
 
 	@ModifyVariable(method = "renderQuadList", at = @At("HEAD"), argsOnly = true)
