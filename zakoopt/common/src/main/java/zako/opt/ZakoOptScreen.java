@@ -82,7 +82,7 @@ public class ZakoOptScreen extends Panel {
 		Component bench = Component.translatable("zakoopt.bench.button");
 		int bx = x1 - 6 - buttonWidth(bench);
 		boolean overBench = button(c, bx, y0 + 4, buttonWidth(bench), bench, BUTTON, BUTTON_FRAME, benchOk, () -> Bench.confirm(this));
-		Component compare = Component.translatable("zakoopt.bench.compare.button");
+		Component compare = Component.translatable(inWorld ? "zakoopt.monitor.button" : "zakoopt.bench.compare.button");
 		bx -= 6 + buttonWidth(compare);
 		boolean overCompare = button(c, bx, y0 + 4, buttonWidth(compare), compare, BUTTON, BUTTON_FRAME, !Bench.running(),
 				() -> {
@@ -139,7 +139,7 @@ public class ZakoOptScreen extends Panel {
 		int defaultsX = dx - 6 - buttonWidth(defaults);
 		button(c, defaultsX, by, defaults, this::confirmDefaults);
 		Component hint = settingHint != null ? settingHint : visualHint != null ? visualHint : overMaster ? Component.translatable("zakoopt.option.enabled.tooltip")
-				: overCompare ? Component.translatable(Bench.running() ? "zakoopt.bench.running" : inWorld ? "zakoopt.monitor.tooltip" : "zakoopt.bench.compare.button.tooltip")
+				: overCompare ? Component.translatable(Bench.running() ? "zakoopt.bench.running" : inWorld ? "zakoopt.monitor.tooltip" : "zakoopt.bench.compare.button.tooltip", ZakoKey.MONITOR.getTranslatedKeyMessage())
 				: !overBench ? null : Component.translatable(benchOk ? "zakoopt.bench.button.tooltip" : inWorld ? "zakoopt.bench.button.in_world" : "zakoopt.bench.running");
 		if (hint != null) {
 			List<FormattedCharSequence> lines = font.split(hint, defaultsX - x0 - 16);
