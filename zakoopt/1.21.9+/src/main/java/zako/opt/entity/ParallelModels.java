@@ -2,6 +2,7 @@ package zako.opt.entity;
 
 import zako.opt.feature.Features;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -31,8 +32,10 @@ import zako.opt.particle.Workers;
 @UtilityClass
 public class ParallelModels {
 	public final VertexFormat FORMAT = EntityFormat.FORMAT;
+	// the enchantment glint pass draws the same model again with position and texture only; armour glint is a second submit
+	// of every enchanted piece, so without it a crowd in enchanted armour kept half its armour on the render thread
+	public final VertexFormat GLINT_FORMAT = DefaultVertexFormat.POSITION_TEX;
 	public final int MIN_SUBMITS = 24;
-	private final int STRIDE = FORMAT.getVertexSize();
 	private final int FIELDS = 9;
 	private final int PAGE = 1 << 20;
 
@@ -61,8 +64,16 @@ public class ParallelModels {
 
 	// render thread: poses the model and queues its vertices; the caller checks the vertex format and that nothing
 	// else (outline, block cracks) has to see the same model
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	public boolean supports(VertexFormat format) {
+		return format == FORMAT || format == GLINT_FORMAT;
+	}
+
 	public Job add(Model model, Object state, PoseStack.Pose pose, int light, int overlay, int color, TextureAtlasSprite sprite) {
+		return add(model, state, pose, light, overlay, color, sprite, FORMAT);
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public Job add(Model model, Object state, PoseStack.Pose pose, int light, int overlay, int color, TextureAtlasSprite sprite, VertexFormat format) {
 		model.setupAnim(state);
 		ModelPart root = model.root();
 		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
@@ -80,6 +91,8 @@ public class ParallelModels {
 		job.overlay = overlay;
 		job.color = Integer.reverseBytes(Integer.rotateLeft(color, 8));
 		job.sprite = sprite;
+		job.format = format;
+		job.stride = format.getVertexSize();
 		if (job.flags.length < n) {
 			job.pose = new float[n * FIELDS];
 			job.flags = new byte[n];
@@ -110,7 +123,7 @@ public class ParallelModels {
 			i++;
 		}
 		job.vertices = vertices;
-		job.address = reserve(vertices * STRIDE);
+		job.address = reserve(vertices * job.stride);
 		BUILT.add(job);
 		stream.publish(BUILT.size());
 		return job;
@@ -130,12 +143,12 @@ public class ParallelModels {
 		if (job.vertices == 0) {
 			return true;
 		}
-		if (!RawVertices.accepts(consumer, FORMAT)) {
+		if (!RawVertices.accepts(consumer, job.format)) {
 			return false;
 		}
 		stack.push();
 		try {
-			RawVertices.push(consumer, stack, job.address, job.vertices, FORMAT);
+			RawVertices.push(consumer, stack, job.address, job.vertices, job.format);
 		} finally {
 			stack.pop();
 		}
@@ -201,6 +214,7 @@ public class ParallelModels {
 			Vector3f v = s.v;
 			// what SpriteCoordinateExpander does to every vertex; the sprite's bounds are final, safe to read here
 			TextureAtlasSprite sprite = job.sprite;
+			boolean glint = job.format == GLINT_FORMAT;
 			for (Cube cube : flat.cubes[i]) {
 				// a cube's 24 vertices share 8 corners: transform the corners once, as Sodium's cuboid renderer does
 				float[] at = s.corners;
@@ -214,6 +228,25 @@ public class ParallelModels {
 					at[c + 2] = v.z();
 				}
 				int k = 0;
+				if (glint) {
+					// POSITION_TEX: what the glint pass keeps of Cube.compile's vertices; its scrolling is a texture matrix, not in them
+					for (; k < cube.index.length; k++) {
+						int c = cube.index[k] * 3;
+						float u = cube.uv[k * 2], w = cube.uv[k * 2 + 1];
+						if (sprite != null) {
+							u = sprite.getU(u);
+							w = sprite.getV(w);
+						}
+						long v0 = s.at;
+						MemoryUtil.memPutFloat(v0, at[c]);
+						MemoryUtil.memPutFloat(v0 + 4, at[c + 1]);
+						MemoryUtil.memPutFloat(v0 + 8, at[c + 2]);
+						MemoryUtil.memPutFloat(v0 + 12, u);
+						MemoryUtil.memPutFloat(v0 + 16, w);
+						s.at += job.stride;
+					}
+					continue;
+				}
 				for (int q = 0; q < cube.sizes.length; q++) {
 					Vector3f n = pose.transformNormal(cube.normals[q * 3], cube.normals[q * 3 + 1], cube.normals[q * 3 + 2], v);
 					int normal = normal(n.x()) | normal(n.y()) << 8 | normal(n.z()) << 16;
@@ -234,7 +267,7 @@ public class ParallelModels {
 						MemoryUtil.memPutInt(v0 + 24, job.overlay);
 						MemoryUtil.memPutInt(v0 + 28, job.light);
 						MemoryUtil.memPutInt(v0 + 32, normal);
-						s.at += STRIDE;
+						s.at += job.stride;
 					}
 				}
 			}
@@ -253,6 +286,8 @@ public class ParallelModels {
 		int overlay;
 		int color;
 		TextureAtlasSprite sprite;
+		VertexFormat format = FORMAT;
+		int stride = FORMAT.getVertexSize();
 		float[] pose = new float[0];
 		byte[] flags = new byte[0];
 		int vertices;

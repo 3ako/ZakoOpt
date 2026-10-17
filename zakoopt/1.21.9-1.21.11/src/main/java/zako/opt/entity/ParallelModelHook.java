@@ -72,10 +72,10 @@ public class ParallelModelHook {
 	// outlines and block cracks render the model a second time into other buffers, and far entities replay their frozen
 	// animation: those go the vanilla way
 	private ParallelModels.Job add(SubmitNodeStorage.ModelSubmit<?> s, RenderType type) {
-		if (s.outlineColor() != 0 || s.crumblingOverlay() != null || type.format() != ParallelModels.FORMAT || AnimFreeze.freezes(s.state(), s.pose().pose())) {
+		if (s.outlineColor() != 0 || s.crumblingOverlay() != null || !ParallelModels.supports(type.format()) || AnimFreeze.freezes(s.state(), s.pose().pose())) {
 			return null;
 		}
-		return ParallelModels.add(s.model(), s.state(), s.pose(), s.lightCoords(), s.overlayCoords(), s.tintedColor(), s.sprite());
+		return ParallelModels.add(s.model(), s.state(), s.pose(), s.lightCoords(), s.overlayCoords(), s.tintedColor(), s.sprite(), type.format());
 	}
 
 	private void emit(ParallelModels.Job job, SubmitNodeStorage.ModelSubmit<?> s, RenderType type, VertexConsumer consumer, MemoryStack stack,
