@@ -4,6 +4,9 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"entity.TextDisplayStableMixin",
+		"text.FontManagerMeshMixin",
+		"text.FontMeshMixin",
 		"entity.ItemRendererMixin",
 		"gl.RenderTargetBlitMixin",
 		"gl.GlBufferCloseMixin",

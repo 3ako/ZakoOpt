@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.SignTextStableMixin",
 		"gl.MinecraftTimerMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
@@ -15,6 +16,7 @@
 		"entity.SubmitNodeStorageMixin",
 		"entity.CustomSubmitPosePoolMixin",
 		"entity.ItemQuadListMixin",
+		"entity.NameTagSortMixin",
 		"particle.QuadParticleRenderStateMixin",
 		"particle.QuadParticleStorageInvoker",
 		"block.AbstractSignRendererMixin",

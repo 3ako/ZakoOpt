@@ -18,6 +18,7 @@
 		"entity.EntityRendererStateMixin",
 		"entity.ItemClusterRenderStateMixin",
 		"entity.ItemEntityRestMixin",
+		"entity.ModelPartChildrenMixin",
 		"gl.BufferBuilderRawMixin",
 		"hud.DeltaTrackerHudMixin",
 		"particle.BubbleColumnUpParticleMixin",

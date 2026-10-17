@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.SignTextStableMixin",
 		"DebugScreenOverlayMixin",
 		"block.AbstractSignRendererMixin",
 		"block.BlockEntityRenderDispatcherMixin",
