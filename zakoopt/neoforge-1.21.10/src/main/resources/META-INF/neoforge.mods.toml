@@ -1,0 +1,68 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "LGPL-3.0-only"
+issueTrackerURL = "https://github.com/3ako/ZakoOpt/issues"
+
+[[mods]]
+modId = "zakoopt"
+version = "${version}"
+displayName = "ZakoOpt"
+description = "Оптимизация клиента поверх Sodium."
+authors = "Zako"
+displayURL = "https://github.com/3ako/ZakoOpt"
+logoFile = "assets/zakoopt/icon.png"
+
+[[mixins]]
+config = "zakoopt-1.21.10.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.4-1.21.10.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.8-1.21.10.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.8-1.21.11.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.8+.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.9-1.21.11.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.9+.mixins.json"
+
+[[mixins]]
+config = "zakoopt-1.21.x.mixins.json"
+
+[[mixins]]
+config = "zakoopt.mixins.json"
+
+[[dependencies.zakoopt]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neoforge_range}"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.zakoopt]]
+modId = "minecraft"
+type = "required"
+versionRange = "${minecraft_range}"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.zakoopt]]
+modId = "immediatelyfast"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.zakoopt]]
+modId = "sodium"
+type = "optional"
+versionRange = "${sodium_range}"
+ordering = "NONE"
+side = "CLIENT"

@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.BatchableBufferSourceMixin",
+		"gl.ByteBufferBuilderPoolMixin",
+		"gl.RenderTypeAccessor",
+		"gl.RenderTypesMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

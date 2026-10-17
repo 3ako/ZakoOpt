@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"DebugScreenEntryListMixin",
+		"entity.LivingEntityRendererSkinMixin",
+		"gl.RenderSystemMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

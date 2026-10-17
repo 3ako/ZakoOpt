@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.BufferSourceMixin",
+		"gl.GameRendererTimerMixin",
+		"gl.LevelTimerMixin",
+		"gl.LightTextureTimerMixin",
+		"hud.GuiHudMixin",
+		"hud.GuiInvoker"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

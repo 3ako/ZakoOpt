@@ -1,0 +1,102 @@
+package remodik.opt.mixin.gl;
+
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.jtracy.MemoryPool;
+import net.minecraft.client.renderer.RenderType;
+import org.lwjgl.system.MemoryUtil;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import remodik.opt.gl.ImmediateRing;
+import remodik.opt.gl.RingBuilders;
+
+@Mixin(ByteBufferBuilder.class)
+public class ByteBufferBuilderMixin implements RingBuilders.Backed {
+	@Shadow
+	@Final
+	private static MemoryPool MEMORY_POOL;
+	@Shadow
+	long pointer;
+	@Shadow
+	private long capacity;
+	@Shadow
+	private long writeOffset;
+	@Shadow
+	private int generation;
+	@Shadow
+	private long nextResultOffset;
+	@Shadow
+	private int resultCount;
+	@Unique
+	private static int zakoopt$generation = 1 << 24;
+	@Unique
+	private RenderType zakoopt$type;
+	// 0 = vanilla memory, 1 = inside the immediate ring, 2 = ours but moved to malloc memory
+	@Unique
+	private int zakoopt$state;
+
+	@Override
+	public void zakoopt$attach(RenderType type, long address, int size) {
+		// a recycled builder was closed and owns no memory; a new one frees its own small block first
+		if (pointer != 0) {
+			// untrack before freeing: with --tracy the allocator may hand this address out again, and a still-tracked address aborts the capture
+			MEMORY_POOL.free(pointer);
+			MemoryUtil.getAllocator(false).free(pointer);
+		}
+		pointer = address;
+		capacity = size;
+		writeOffset = 0;
+		nextResultOffset = 0;
+		resultCount = 0;
+		// a result left from the builder's last use must not pass as current; kept positive, as -1 marks a freed buffer
+		generation = zakoopt$generation = zakoopt$generation + 1 & Integer.MAX_VALUE;
+		zakoopt$type = type;
+		zakoopt$state = 1;
+	}
+
+	@Override
+	public boolean zakoopt$ringBacked() {
+		return zakoopt$state != 0;
+	}
+
+	@Inject(method = "resize", at = @At("HEAD"), cancellable = true)
+	private void zakoopt$grow(long size, CallbackInfo ci) {
+		if (zakoopt$state != 1) {
+			return;
+		}
+		long address = ImmediateRing.reserveBuilder(zakoopt$type.format(), (int) size);
+		// the old region stays reserved until the segment comes round again; only the live count changes
+		ImmediateRing.builderReleased();
+		if (address == 0) {
+			address = MemoryUtil.nmemAlloc(size);
+			zakoopt$state = 2;
+		}
+		MemoryUtil.memCopy(pointer, address, writeOffset);
+		pointer = address;
+		capacity = size;
+		ci.cancel();
+	}
+
+	@Inject(method = "close", at = @At("HEAD"), cancellable = true)
+	private void zakoopt$close(CallbackInfo ci) {
+		if (zakoopt$state == 0 || pointer == 0) {
+			return;
+		}
+		RingBuilders.remember(zakoopt$type, capacity);
+		if (zakoopt$state == 1) {
+			ImmediateRing.builderReleased();
+			pointer = 0;
+			generation = -1;
+			ci.cancel();
+		} else {
+			MemoryUtil.nmemFree(pointer);
+			pointer = 0;
+			generation = -1;
+			ci.cancel();
+		}
+	}
+}
