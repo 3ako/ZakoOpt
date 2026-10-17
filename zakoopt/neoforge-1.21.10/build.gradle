@@ -1,0 +1,85 @@
+plugins {
+	id 'java-library'
+	id 'net.neoforged.moddev' version "${moddev_version}"
+}
+
+base.archivesName = 'zakoopt'
+version = "${project.version}+${minecraft_version}-neoforge"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+	maven { url = 'https://api.modrinth.com/maven' }
+	mavenCentral()
+}
+
+neoForge {
+	version = neoforge_version
+	runs {
+		client {
+			client()
+			// -Pjvm="..." adds JVM flags, -Pworld=<save> joins a singleplayer world
+			if (project.hasProperty('jvm')) {
+				jvmArguments.addAll(project.jvm.split(' '))
+			}
+			if (project.hasProperty('world')) {
+				programArguments.addAll('--quickPlaySingleplayer', project.world)
+			}
+		}
+	}
+	mods {
+		zakoopt {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+// Sodium's NeoForge jar carries the mod itself as a nested jar: compiling needs that inner one
+configurations {
+	sodiumOuter
+}
+
+def sodiumInner = tasks.register('extractSodium', Sync) {
+	from({ configurations.sodiumOuter.collect { zipTree(it) } }) {
+		include 'META-INF/jarjar/net.caffeinemc.sodium-*.jar'
+		eachFile { it.path = it.name }
+	}
+	into layout.buildDirectory.dir('sodium')
+	includeEmptyDirs = false
+}
+
+dependencies {
+	sodiumOuter("maven.modrinth:sodium:${sodium_version}") { transitive = false }
+	compileOnly files(sodiumInner).asFileTree
+	compileOnly "org.projectlombok:lombok:${lombok_version}"
+	annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+
+	compileOnly "maven.modrinth:immediatelyfast:${immediatelyfast_version}"
+	compileOnly "maven.modrinth:iris:${iris_version}"
+	runtimeOnly "maven.modrinth:sodium:${sodium_version}"
+	runtimeOnly "maven.modrinth:immediatelyfast:${immediatelyfast_version}"
+	// -Piris: dev runs with Iris (no shader pack)
+	if (project.hasProperty('iris')) {
+		runtimeOnly "maven.modrinth:iris:${iris_version}"
+	}
+	// -Pnosodium: dev runs without Sodium
+	if (project.hasProperty('nosodium')) {
+		configurations.runtimeClasspath.exclude group: 'maven.modrinth', module: 'sodium'
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = 21
+}
+
+processResources {
+	def props = [version: version, minecraft_range: minecraft_range, neoforge_range: neoforge_range, sodium_range: sodium_range]
+	inputs.properties props
+	filesMatching('META-INF/neoforge.mods.toml') { expand props }
+}
+
+jar {
+	// the license files live at the repository root, next to the other modules' shared ones
+	from(rootProject.file('../../COPYING'), rootProject.file('../../COPYING.LESSER'), rootProject.file('../../NOTICE'))
+}

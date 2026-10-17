@@ -1,0 +1,29 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.MinecraftTimerMixin",
+		"block.BlockEntityRenderStateMixin",
+		"block.BlockFeatureRendererMixin",
+		"block.PistonHeadRendererMixin",
+		"block.PistonMovingStateMixin",
+		"entity.ItemLayerAccessor",
+		"entity.ItemStackRenderStateMixin",
+		"entity.LevelRendererOutlineMixin",
+		"entity.SubmitNodeStorageMixin",
+		"entity.CustomSubmitPosePoolMixin",
+		"entity.ItemQuadListMixin",
+		"particle.QuadParticleRenderStateMixin",
+		"particle.QuadParticleStorageInvoker",
+		"block.AbstractSignRendererMixin",
+		"entity.ModelFeatureRendererInvoker",
+		"entity.ModelFeatureRendererMixin",
+		"entity.ModelStorageAccessor",
+		"hud.GameRendererHudMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

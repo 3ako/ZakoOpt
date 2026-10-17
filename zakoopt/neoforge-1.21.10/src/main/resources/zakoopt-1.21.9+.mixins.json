@@ -1,0 +1,31 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"block.BlockEntityRenderDispatcherCullMixin",
+		"block.BlockEntityRenderDispatcherCullWrapMixin",
+		"block.BlockEntityRenderDispatcherMixin",
+		"block.BlockEntityRenderStatePoolMixin",
+		"block.ChestRendererMixin",
+		"entity.AvatarLodMixin",
+		"entity.EntityRenderStatePoolMixin",
+		"entity.CrossbowChargeMixin",
+		"entity.EntityTurnsMixin",
+		"entity.HeldItemTurnsMixin",
+		"entity.ModelResetPoseMixin",
+		"entity.PosePoolFrameMixin",
+		"entity.SubmitPosePoolMixin",
+		"entity.ModelPartAccessor",
+		"DebugScreenEntriesMixin",
+		"block.SpawnerRendererMixin",
+		"entity.LivingEntityLodMixin",
+		"particle.ParticleRotationMixin",
+		"particle.QuadParticleGroupMixin",
+		"particle.QuadParticleRenderStateAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

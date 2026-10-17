@@ -1,0 +1,14 @@
+package remodik.opt.feature.particles;
+
+import remodik.opt.feature.Feature;
+import remodik.opt.feature.FeatureData;
+import remodik.opt.feature.FeatureGroup;
+
+@FeatureData(
+	key = "particle_physics",
+	visual = true,
+	group = FeatureGroup.PARTICLES,
+	mixins = "particle.ParticleMixin"
+)
+public class ParticlePhysicsFeature extends Feature {
+}

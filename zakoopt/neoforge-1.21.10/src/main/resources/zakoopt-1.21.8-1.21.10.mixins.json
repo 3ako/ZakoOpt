@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "zako.opt.mixin",
+	"plugin": "zako.opt.MixinPlugin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"gl.GameRendererScaleMixin",
+		"gl.GlBufferInvoker",
+		"gl.RenderTypeDrawMixin",
+		"text.FontMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
