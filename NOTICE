@@ -8,3 +8,17 @@ Software Foundation, version 3 of the License (see COPYING.LESSER and COPYING).
 
 Any redistribution or derived work must keep this notice, credit the author
 (Zako, https://t.me/StarikZako) and state what was changed.
+
+NeoForge 1.21.10 port (zakoopt/neoforge-1.21.10) — what was changed:
+- the layered sources of the Fabric 1.21.10 module (common, 1.21.x, 1.21.4-1.21.10, 1.21.8+, 1.21.9+,
+  1.21.8-1.21.11, 1.21.8-1.21.10, 1.21.9-1.21.11, 1.21.10) are copied into one NeoForge project (ModDevGradle);
+- FabricLoader calls are replaced by zako.opt.Platform (NeoForge's loading mod list, config dir, dev check);
+- zako.opt.Mods looks mods up in NeoForge's mod list;
+- MovingBlockCache renders through NeoForge's RenderTypeHelper.getMovingBlockRenderType instead of the
+  Fabric Renderer API's RenderLayerHelper.movingDelegate;
+- the Mod Menu entry is replaced by NeoForge's IConfigScreenFactory (zako.opt.ZakoOptMod);
+- fabric.mod.json is replaced by META-INF/neoforge.mods.toml;
+- mixins into BlockEntityRenderDispatcher.tryExtractRenderState name the overload NeoForge adds (with Frustum);
+- GuiRendererMixin and LevelRendererOutlineMixin target the lambdas by their NeoForge names
+  (lambda$prepareItemElements$3, lambda$addMainPass$1) instead of Fabric's intermediary method_71055 / method_62214;
+- BatchableBufferSourceMixin no longer lists the intermediary name of getBuffer.
