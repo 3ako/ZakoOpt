@@ -23,6 +23,15 @@ public class HudCache {
 
 	// once per frame, before any GUI extraction
 	public void beginFrame(boolean renderLevel) {
+		beginFrame(renderLevel, true);
+	}
+
+	public void beginFrame(boolean renderLevel, boolean resourcesLoaded) {
+		if (!resourcesLoaded) {
+			reset();
+			HudDelta.idle();
+			return;
+		}
 		Minecraft mc = Minecraft.getInstance();
 		boolean was = active;
 		long now = System.nanoTime();
@@ -45,6 +54,18 @@ public class HudCache {
 		}
 	}
 
+	public void reset() {
+		if (target != null) {
+			target.destroyBuffers();
+			target = null;
+		}
+		active = false;
+		refresh = true;
+		drawing = false;
+		extracted = false;
+		lastRefresh = 0;
+	}
+
 	public boolean active() {
 		return active;
 	}
@@ -54,7 +75,7 @@ public class HudCache {
 	}
 
 	public RenderTarget drawTarget(RenderTarget requested) {
-		if (!drawing) {
+		if (!drawing || target == null) {
 			return null;
 		}
 		if (requested == main) {
@@ -71,11 +92,14 @@ public class HudCache {
 	public boolean pipPrepare;
 
 	public RenderTarget redirect(RenderTarget requested) {
-		return drawing && !pipPrepare && requested != target && requested == main ? target : null;
+		return drawing && !pipPrepare && target != null && requested != target && requested == main ? target : null;
 	}
 
 	// Xaero's in-world waypoints are drawn straight to the main target from Gui.render, not through the GUI render state
 	public void extractIntoTexture(Runnable extract) {
+		if (target == null) {
+			return;
+		}
 		HudGpu.clear(target);
 		extracted = true;
 		drawing = true;
@@ -87,6 +111,9 @@ public class HudCache {
 	}
 
 	public void drawIntoTexture(Runnable draw) {
+		if (target == null) {
+			return;
+		}
 		if (!extracted) {
 			HudGpu.clear(target);
 		}
@@ -100,7 +127,12 @@ public class HudCache {
 	}
 
 	public void composite() {
+		if (target == null) {
+			return;
+		}
 		RenderTarget main = HudGpu.mainTarget(Minecraft.getInstance());
-		HudGpu.composite(target, main);
+		if (main != null) {
+			HudGpu.composite(target, main);
+		}
 	}
 }

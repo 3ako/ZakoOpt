@@ -7,6 +7,8 @@ import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.hud.HudCache;
 
 @Mixin(GuiRenderer.class)
@@ -16,5 +18,10 @@ public class GuiRendererTargetMixin {
 		RenderTarget requested = original.call(gameRenderer);
 		RenderTarget target = HudCache.drawTarget(requested);
 		return target != null ? target : requested;
+	}
+
+	@Inject(method = "close", at = @At("HEAD"))
+	private void zakoopt$resetHudCache(CallbackInfo ci) {
+		HudCache.reset();
 	}
 }

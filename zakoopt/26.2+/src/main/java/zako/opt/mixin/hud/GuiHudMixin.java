@@ -24,7 +24,7 @@ public class GuiHudMixin {
 
 	@Inject(method = "extractRenderState", at = @At("HEAD"))
 	private void zakoopt$hudFrame(DeltaTracker deltaTracker, boolean shouldRenderLevel, boolean resourcesLoaded, CallbackInfo ci) {
-		HudCache.beginFrame(shouldRenderLevel);
+		HudCache.beginFrame(shouldRenderLevel, resourcesLoaded);
 	}
 
 	@WrapOperation(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Hud;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V"))

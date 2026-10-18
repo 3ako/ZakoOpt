@@ -7,10 +7,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import zako.opt.bench.MonitorScreen;
 import zako.opt.hud.HudCache;
 
@@ -45,5 +48,10 @@ public class GameRendererHudMixin {
 			original.call(renderer);
 		}
 		HudCache.composite();
+	}
+
+	@Inject(method = "onResourceManagerReload", at = @At("HEAD"))
+	private void zakoopt$onReload(ResourceManager resourceManager, CallbackInfo ci) {
+		HudCache.reset();
 	}
 }
