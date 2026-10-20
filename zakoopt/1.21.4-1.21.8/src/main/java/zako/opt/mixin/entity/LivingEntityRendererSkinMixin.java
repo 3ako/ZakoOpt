@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -22,7 +23,8 @@ public class LivingEntityRendererSkinMixin {
 	@WrapOperation(method = "render(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
 	private VertexConsumer zakoopt$skinAtlas(MultiBufferSource buffers, RenderType type, Operation<VertexConsumer> original, LivingEntityRenderState state) {
-		if (state instanceof PlayerRenderState player && Features.SKIN_ATLAS.on) {
+		// glowing bodies stay on their own skin: one shared outline type for all players never gets flushed by a type switch
+		if (state instanceof PlayerRenderState player && Features.SKIN_ATLAS.on && !(buffers instanceof OutlineBufferSource)) {
 			ResourceLocation skin = player.skin.texture();
 			// only the normal visible body; invisible / glow-only variants use other render types
 			if (type == RenderType.entityTranslucent(skin)) {

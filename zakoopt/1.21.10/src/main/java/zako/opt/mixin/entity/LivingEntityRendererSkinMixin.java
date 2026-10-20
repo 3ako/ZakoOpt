@@ -24,7 +24,9 @@ public class LivingEntityRendererSkinMixin {
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V"))
 	private void zakoopt$skinAtlas(SubmitNodeCollector collector, Model<?> model, Object state, PoseStack pose, RenderType type, int light, int overlay, int color,
 								   TextureAtlasSprite sprite, int outline, ModelFeatureRenderer.CrumblingOverlay crumbling, Operation<Void> original) {
-		if (sprite == null && state instanceof AvatarRenderState avatar && Features.SKIN_ATLAS.on) {
+		// glowing bodies stay on their own skin: one shared outline type for all players never gets flushed by a type switch,
+		// and the Iris shadow pass keeps writing it until the BufferBuilder overflows
+		if (sprite == null && outline == 0 && state instanceof AvatarRenderState avatar && Features.SKIN_ATLAS.on) {
 			ResourceLocation skin = avatar.skin.body().texturePath();
 			// only the normal visible body; invisible / glow-only variants use other render types
 			if (type == RenderType.entityTranslucent(skin)) {
