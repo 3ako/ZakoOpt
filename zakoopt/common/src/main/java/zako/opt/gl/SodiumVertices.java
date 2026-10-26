@@ -25,6 +25,14 @@ class SodiumVertices {
 	}
 
 	void push(VertexConsumer consumer, MemoryStack stack, long src, int count, VertexFormat format) {
-		(consumer == lastWriter ? (VertexBufferWriter) consumer : VertexBufferWriter.of(consumer)).push(stack, src, count, format);
+		VertexBufferWriter writer = consumer == lastWriter ? (VertexBufferWriter) consumer : VertexBufferWriter.of(consumer);
+		// copyInto mallocs the whole batch on the MemoryStack (64 KB by default): big meshes go in chunks, each in its own frame
+		int stride = format.getVertexSize();
+		int chunk = Math.max(1, 16384 / stride);
+		for (int i = 0; i < count; i += chunk) {
+			try (MemoryStack frame = stack.push()) {
+				writer.push(frame, src + (long) i * stride, Math.min(chunk, count - i), format);
+			}
+		}
 	}
 }
