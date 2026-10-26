@@ -130,7 +130,7 @@ public class TextMeshCache {
 			int uv2 = format.contains(VertexFormatElement.UV2) ? format.getOffset(VertexFormatElement.UV2) : -1;
 			int size = segment.count * stride;
 			try (MemoryStack stack = MemoryStack.stackPush()) {
-				long dst = stack.nmalloc(16, size);
+				long dst = RawVertices.scratch(size);
 				MemoryUtil.memCopy(MemoryUtil.memAddress(segment.vertices), dst, size);
 				for (long v = dst, end = dst + size; v < end; v += stride) {
 					float x = MemoryUtil.memGetFloat(v + pos), y = MemoryUtil.memGetFloat(v + pos + 4), z = MemoryUtil.memGetFloat(v + pos + 8);

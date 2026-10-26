@@ -112,7 +112,7 @@ public class MovingBlockCache {
 		int size = entry.count * stride;
 		Vector3f tmp = TMP;
 		try (MemoryStack stack = MemoryStack.stackPush()) {
-			long dst = stack.nmalloc(16, size);
+			long dst = RawVertices.scratch(size);
 			MemoryUtil.memCopy(MemoryUtil.memAddress(entry.vertices), dst, size);
 			for (long v = dst, end = dst + size; v < end; v += stride) {
 				pose.transformPosition(MemoryUtil.memGetFloat(v + pos), MemoryUtil.memGetFloat(v + pos + 4), MemoryUtil.memGetFloat(v + pos + 8), tmp);

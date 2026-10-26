@@ -100,7 +100,7 @@ public class SpawnerMeshCache {
 				normals[n] = normal(tmp.x) & 0xFF | (normal(tmp.y) & 0xFF) << 8 | (normal(tmp.z) & 0xFF) << 16 | packed & 0xFF000000;
 			}
 			try (MemoryStack stack = MemoryStack.stackPush()) {
-				long dst = stack.nmalloc(16, size);
+				long dst = RawVertices.scratch(size);
 				MemoryUtil.memCopy(MemoryUtil.memAddress(segment.vertices), dst, size);
 				int i = 0;
 				for (long v = dst, end = dst + size; v < end; v += stride, i++) {

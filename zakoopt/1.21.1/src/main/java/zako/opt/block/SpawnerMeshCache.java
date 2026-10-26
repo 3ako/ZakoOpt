@@ -124,7 +124,7 @@ public class SpawnerMeshCache {
 				for (int first = 0; first < segment.count; first += run) {
 					int n = Math.min(run, segment.count - first);
 					try (MemoryStack stack = MemoryStack.stackPush()) {
-						long dst = stack.nmalloc(16, n * stride);
+						long dst = RawVertices.scratch(n * stride);
 						MemoryUtil.memCopy(MemoryUtil.memAddress(segment.vertices) + (long) first * stride, dst, (long) n * stride);
 						for (long v = dst + at, end = dst + (long) n * stride; v < end; v += stride) {
 							MemoryUtil.memPutFloat(v, MemoryUtil.memGetFloat(v) + tx);
@@ -159,7 +159,7 @@ public class SpawnerMeshCache {
 			for (int first = 0; first < segment.count; first += run) {
 				int n = Math.min(run, segment.count - first);
 				try (MemoryStack stack = MemoryStack.stackPush()) {
-					long dst = stack.nmalloc(16, n * stride);
+					long dst = RawVertices.scratch(n * stride);
 					MemoryUtil.memCopy(MemoryUtil.memAddress(segment.vertices) + (long) first * stride, dst, (long) n * stride);
 					int i = first;
 					for (long v = dst, end = dst + (long) n * stride; v < end; v += stride, i++) {
