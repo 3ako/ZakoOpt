@@ -140,6 +140,14 @@ public class TrainCouplings {
 		}
 	}
 
+	void shift(long vertices, int size, int stride, float dx, float dy, float dz) {
+		for (long v = vertices, end = vertices + size; v < end; v += stride) {
+			MemoryUtil.memPutFloat(v, MemoryUtil.memGetFloat(v) + dx);
+			MemoryUtil.memPutFloat(v + 4, MemoryUtil.memGetFloat(v + 4) + dy);
+			MemoryUtil.memPutFloat(v + 8, MemoryUtil.memGetFloat(v + 8) + dz);
+		}
+	}
+
 	private void repeat(VertexConsumer target, ByteBuffer model, int count, int segments, VertexFormat format) {
 		int stride = format.getVertexSize();
 		int size = count * stride;
@@ -152,12 +160,7 @@ public class TrainCouplings {
 			for (int j = 0; j < n; j++) {
 				long to = dst + (long) j * size;
 				MemoryUtil.memCopy(src, to, size);
-				float dx = step.x * (done + j), dy = step.y * (done + j), dz = step.z * (done + j);
-				for (long v = to, end = to + size; v < end; v += stride) {
-					MemoryUtil.memPutFloat(v, MemoryUtil.memGetFloat(v) + dx);
-					MemoryUtil.memPutFloat(v + 4, MemoryUtil.memGetFloat(v + 4) + dy);
-					MemoryUtil.memPutFloat(v + 8, MemoryUtil.memGetFloat(v + 8) + dz);
-				}
+				shift(to, size, stride, step.x * (done + j), step.y * (done + j), step.z * (done + j));
 			}
 			try (MemoryStack stack = MemoryStack.stackPush()) {
 				RawVertices.push(target, stack, dst, n * count, format);
