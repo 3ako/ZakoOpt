@@ -105,6 +105,8 @@
   "zakoopt.option.create_far_tick.tooltip": "Механизмы Create дальше заданного ниже расстояния не обновляют анимацию на клиенте: дальше 64 блоков их и так не рисуют, а настоящее состояние хранит сервер.",
   "zakoopt.option.create_far_tick_distance": "Дальность покоя механизмов",
   "zakoopt.option.create_far_tick_distance.tooltip": "Дальше этого расстояния механизмы Create не тикают на клиенте. Не меньше 64: ближе было бы видно, что механизм стоит.",
+  "zakoopt.option.create_couplings": "Кэш сцепок поездов",
+  "zakoopt.option.create_couplings.tooltip": "Тросы сцепок поездов пишутся копиями одного куска, а сцепки вне поля зрения пропускаются. Игра выглядит так же.",
   "zakoopt.option.crack_cache": "Кэш трещин",
   "zakoopt.option.crack_cache.tooltip": "Трещины на ломаемых блоках (дрели, копка) не собираются заново каждый кадр, а берутся готовыми и рисуются все разом.",
   "zakoopt.option.state_pool": "Одно состояние на сущность",

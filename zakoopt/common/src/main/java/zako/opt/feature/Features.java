@@ -72,6 +72,7 @@ public class Features {
 	public final CreateItemsFeature CREATE_ITEMS = add(new CreateItemsFeature());
 	public final CreateAddressesFeature CREATE_ADDRESSES = add(new CreateAddressesFeature());
 	public final CreateFarTickFeature CREATE_FAR_TICK = add(new CreateFarTickFeature());
+	public final CreateCouplingsFeature CREATE_COUPLINGS = add(new CreateCouplingsFeature());
 	public final FewerAllocationsFeature FEWER_ALLOCATIONS = add(new FewerAllocationsFeature());
 
 	public final ParticleLightFeature PARTICLE_LIGHT = add(new ParticleLightFeature());

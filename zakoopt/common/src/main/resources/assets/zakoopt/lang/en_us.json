@@ -105,6 +105,8 @@
   "zakoopt.option.create_far_tick.tooltip": "Create machines farther than the distance below skip their client-side animation tick; block entities aren't drawn past 64 blocks anyway, and the server keeps their real state.",
   "zakoopt.option.create_far_tick_distance": "Machine rest distance",
   "zakoopt.option.create_far_tick_distance.tooltip": "Past this distance Create machines skip their client-side tick. From 64: nearer, a resting machine would be seen standing still.",
+  "zakoopt.option.create_couplings": "Train coupling cache",
+  "zakoopt.option.create_couplings.tooltip": "Train coupling cables are written as copies of one piece, and couplings out of view are skipped. The game looks the same.",
   "zakoopt.option.crack_cache": "Crack cache",
   "zakoopt.option.crack_cache.tooltip": "Breaking blocks (drills, mining) keep their crack overlay ready-made instead of rebuilding it every frame, and all cracks draw at once.",
   "zakoopt.option.state_pool": "One state per entity",
