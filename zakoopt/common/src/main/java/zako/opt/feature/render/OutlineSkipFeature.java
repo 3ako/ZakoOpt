@@ -4,6 +4,7 @@ import zako.opt.bench.BenchView;
 import zako.opt.feature.Feature;
 import zako.opt.feature.FeatureData;
 import zako.opt.feature.FeatureGroup;
+import zako.opt.feature.Features;
 
 @FeatureData(
 	key = "outline_skip",
@@ -12,4 +13,8 @@ import zako.opt.feature.FeatureGroup;
 	bench = BenchView.CROWD
 )
 public class OutlineSkipFeature extends Feature {
+	@Override
+	public String blocked() {
+		return Features.shaders() ? "Iris" : null;
+	}
 }
