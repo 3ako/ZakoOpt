@@ -44,7 +44,8 @@ public class TextMeshCache {
 	};
 	private boolean recording;
 
-	private record Segment(RenderType type, ByteBuffer vertices, int count) {
+	// recorded under a shader pack, the vertices are in Iris's extended format: never replayed into a vanilla buffer
+	private record Segment(RenderType type, VertexFormat format, ByteBuffer vertices, int count) {
 	}
 
 	private record Mesh(List<Segment> segments, int width) {
@@ -120,10 +121,10 @@ public class TextMeshCache {
 		Vector3f tmp = new Vector3f();
 		for (int s = 0; s < mesh.segments.size(); s++) {
 			Segment segment = mesh.segments.get(s);
-			VertexFormat format = segment.type.format();
+			VertexFormat format = segment.format;
 			VertexConsumer target = buffers.getBuffer(segment.type);
 			// ponytail: only the first buffer is checked, a text's buffers all come from one source
-			if (s == 0 && !RawVertices.accepts(target, format)) {
+			if (s == 0 && (format != segment.type.format() || !RawVertices.accepts(target, format))) {
 				return false;
 			}
 			int stride = format.getVertexSize();
@@ -173,7 +174,7 @@ public class TextMeshCache {
 					ByteBuffer src = mesh.vertexBuffer();
 					ByteBuffer copy = ByteBuffer.allocateDirect(src.remaining());
 					MemoryUtil.memCopy(MemoryUtil.memAddress(src), MemoryUtil.memAddress(copy), src.remaining());
-					segments.add(new Segment(type, copy, mesh.drawState().vertexCount()));
+					segments.add(new Segment(type, mesh.drawState().format(), copy, mesh.drawState().vertexCount()));
 				}
 			}
 			builder = null;

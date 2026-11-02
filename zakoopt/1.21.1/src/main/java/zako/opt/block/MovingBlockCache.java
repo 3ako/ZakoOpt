@@ -56,7 +56,8 @@ public class MovingBlockCache {
 		int tint;
 	}
 
-	private record Mesh(BakedModel model, RenderType type, ByteBuffer vertices, int count) {
+	// recorded under a shader pack, the vertices are in Iris's extended format: never replayed into a vanilla buffer
+	private record Mesh(BakedModel model, RenderType type, VertexFormat format, ByteBuffer vertices, int count) {
 	}
 
 	// render thread only: the key a moving block is looked up with, copied only when a new entry is stored
@@ -82,7 +83,7 @@ public class MovingBlockCache {
 		if (entry.count == 0) {
 			return true;
 		}
-		if (!RawVertices.accepts(target, entry.type.format())) {
+		if (entry.format != entry.type.format() || !RawVertices.accepts(target, entry.format)) {
 			return false;
 		}
 		emit(entry, poseStack.last().pose(), LevelRenderer.getLightColor(level, pos), target);
@@ -95,17 +96,17 @@ public class MovingBlockCache {
 		dispatcher.getModelRenderer().tesselateBlock(level, model, state, pos, new PoseStack(), builder, key.checkSides, RandomSource.create(), key.seed, key.overlay);
 		try (MeshData mesh = builder.build()) {
 			if (mesh == null) {
-				return new Mesh(model, type, null, 0);
+				return new Mesh(model, type, type.format(), null, 0);
 			}
 			ByteBuffer src = mesh.vertexBuffer();
 			ByteBuffer copy = ByteBuffer.allocateDirect(src.remaining());
 			MemoryUtil.memCopy(MemoryUtil.memAddress(src), MemoryUtil.memAddress(copy), src.remaining());
-			return new Mesh(model, type, copy, mesh.drawState().vertexCount());
+			return new Mesh(model, type, mesh.drawState().format(), copy, mesh.drawState().vertexCount());
 		}
 	}
 
 	private void emit(Mesh entry, Matrix4f pose, int light, VertexConsumer target) {
-		VertexFormat format = entry.type.format();
+		VertexFormat format = entry.format;
 		int stride = format.getVertexSize();
 		int pos = format.getOffset(VertexFormatElement.POSITION);
 		int uv2 = format.contains(VertexFormatElement.UV2) ? format.getOffset(VertexFormatElement.UV2) : -1;

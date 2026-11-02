@@ -45,7 +45,8 @@ public class SpawnerMeshCache {
 
 	// positions and normals shared by several vertices (a box's 24 corners are 8, its 4 vertices per face share a normal)
 	// go through the matrices once, as Sodium's cuboid writer does
-	public record Segment(RenderType type, ByteBuffer vertices, int count, float[] positions, int[] positionIndex, int[] normals, int[] normalIndex) {
+	// recorded under a shader pack, the vertices are in Iris's extended format: never replayed into a vanilla buffer
+	public record Segment(RenderType type, VertexFormat format, ByteBuffer vertices, int count, float[] positions, int[] positionIndex, int[] normals, int[] normalIndex) {
 	}
 
 	private record Mesh(Object renderer, List<Segment> segments) {
@@ -91,10 +92,10 @@ public class SpawnerMeshCache {
 		float tx = matrix.m30(), ty = matrix.m31(), tz = matrix.m32();
 		for (int s = 0; s < segments.size(); s++) {
 			Segment segment = segments.get(s);
-			VertexFormat format = segment.type.format();
+			VertexFormat format = segment.format;
 			VertexConsumer target = buffers.getBuffer(segment.type);
 			// ponytail: only the first buffer is checked, an entity's buffers all come from one source
-			if (s == 0 && !RawVertices.accepts(target, format)) {
+			if (s == 0 && (format != segment.type.format() || !RawVertices.accepts(target, format))) {
 				return false;
 			}
 			int stride = format.getVertexSize();
@@ -181,8 +182,7 @@ public class SpawnerMeshCache {
 		return true;
 	}
 
-	private Segment index(RenderType type, ByteBuffer vertices, int count) {
-		VertexFormat format = type.format();
+	private Segment index(RenderType type, VertexFormat format, ByteBuffer vertices, int count) {
 		int stride = format.getVertexSize();
 		int at = format.getOffset(VertexFormatElement.POSITION);
 		int normal = format.contains(VertexFormatElement.NORMAL) ? format.getOffset(VertexFormatElement.NORMAL) : -1;
@@ -211,7 +211,7 @@ public class SpawnerMeshCache {
 		for (int i = 0; i < positions.length; i++) {
 			positions[i] = positionList.get(i);
 		}
-		return new Segment(type, vertices, count, positions, positionIndex, normalList.stream().mapToInt(Integer::intValue).toArray(), normalIndex);
+		return new Segment(type, format, vertices, count, positions, positionIndex, normalList.stream().mapToInt(Integer::intValue).toArray(), normalIndex);
 	}
 
 	private byte normal(float c) {
@@ -251,7 +251,7 @@ public class SpawnerMeshCache {
 					ByteBuffer src = mesh.vertexBuffer();
 					ByteBuffer copy = owned ? MemoryUtil.memAlloc(src.remaining()) : ByteBuffer.allocateDirect(src.remaining());
 					MemoryUtil.memCopy(MemoryUtil.memAddress(src), MemoryUtil.memAddress(copy), src.remaining());
-					segments.add(index(type, copy, mesh.drawState().vertexCount()));
+					segments.add(index(type, mesh.drawState().format(), copy, mesh.drawState().vertexCount()));
 				}
 			}
 			builder = null;

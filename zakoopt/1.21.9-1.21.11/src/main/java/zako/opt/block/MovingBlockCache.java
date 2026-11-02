@@ -59,7 +59,8 @@ public class MovingBlockCache {
 		int tint;
 	}
 
-	private record Layer(RenderType type, ByteBuffer vertices, int count) {
+	// recorded under a shader pack, the vertices are in Iris's extended format: never replayed into a vanilla buffer
+	private record Layer(RenderType type, VertexFormat format, ByteBuffer vertices, int count) {
 	}
 
 	private record Entry(BlockStateModel model, Layer[] layers) {
@@ -92,7 +93,7 @@ public class MovingBlockCache {
 			}
 			Layer[] layers = entry.layers;
 			for (Layer layer : layers) {
-				if (!RawVertices.accepts(buffers.getBuffer(layer.type), layer.type.format())) {
+				if (layer.format != layer.type.format() || !RawVertices.accepts(buffers.getBuffer(layer.type), layer.format)) {
 					return false;
 				}
 			}
@@ -127,7 +128,7 @@ public class MovingBlockCache {
 					ByteBuffer src = mesh.vertexBuffer();
 					ByteBuffer copy = MemoryUtil.memAlloc(src.remaining());
 					MemoryUtil.memCopy(src, copy);
-					layers.add(new Layer(type, copy, mesh.drawState().vertexCount()));
+					layers.add(new Layer(type, mesh.drawState().format(), copy, mesh.drawState().vertexCount()));
 				}
 			}
 		});
@@ -136,7 +137,7 @@ public class MovingBlockCache {
 	}
 
 	private void emit(Layer layer, Matrix4f pose, int light, VertexConsumer target) {
-		VertexFormat format = layer.type.format();
+		VertexFormat format = layer.format;
 		int stride = format.getVertexSize();
 		int pos = format.getOffset(VertexFormatElement.POSITION);
 		int uv2 = format.contains(VertexFormatElement.UV2) ? format.getOffset(VertexFormatElement.UV2) : -1;
