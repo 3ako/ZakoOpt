@@ -1,0 +1,80 @@
+name: Баг / Bug
+description: Что-то сломано, вылетает или выглядит не так / Something is broken
+labels: [bug]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Проверьте / Checklist
+      options:
+        - label: Установлена последняя версия ZakoOpt / Latest ZakoOpt installed
+          required: true
+        - label: Установлен ImmediatelyFast / ImmediatelyFast installed
+          required: true
+        - label: Искал(а) похожие issue / Searched existing issues
+          required: true
+  - type: input
+    id: zakoopt
+    attributes:
+      label: Версия ZakoOpt / ZakoOpt version
+      placeholder: "2.0.4"
+    validations:
+      required: true
+  - type: dropdown
+    id: mc
+    attributes:
+      label: Версия Minecraft / Minecraft version
+      options: ["1.21.1", "1.21.4", "1.21.8", "1.21.10", "1.21.11", "26.1.2", "26.2", "26.3", "other"]
+    validations:
+      required: true
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Загрузчик / Loader
+      options: ["Fabric", "NeoForge"]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Что произошло / What happened
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения / Steps to reproduce
+      placeholder: "1. ...\n2. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: isolate
+    attributes:
+      label: Без ZakoOpt или с отключённой функцией, баг остаётся? / Does it remain without ZakoOpt or with a feature off?
+      description: Какие функции в настройках zakoopt меняют результат / Which zakoopt settings change the result
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Лог или краш-репорт / Log or crash report
+      description: latest.log через https://mclo.gs или файлом / latest.log via mclo.gs or attachment
+    validations:
+      required: true
+  - type: input
+    id: shaders
+    attributes:
+      label: Шейдеры / Shaders (Iris + shader pack)
+  - type: textarea
+    id: mods
+    attributes:
+      label: Другие моды / Other mods
+      description: Sodium, ImmediatelyFast, Create и их версии / and versions
+  - type: input
+    id: hw
+    attributes:
+      label: GPU / OS
+  - type: textarea
+    id: shots
+    attributes:
+      label: Скриншоты / Screenshots

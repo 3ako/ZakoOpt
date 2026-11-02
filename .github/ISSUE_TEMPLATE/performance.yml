@@ -1,0 +1,48 @@
+name: Нет прироста FPS / No FPS gain
+description: ZakoOpt не ускорил игру / ZakoOpt did not help
+labels: [performance]
+body:
+  - type: input
+    id: zakoopt
+    attributes:
+      label: Версия ZakoOpt / ZakoOpt version
+    validations:
+      required: true
+  - type: dropdown
+    id: mc
+    attributes:
+      label: Версия Minecraft / Minecraft version
+      options: ["1.21.1", "1.21.4", "1.21.8", "1.21.10", "1.21.11", "26.1.2", "26.2", "26.3", "other"]
+    validations:
+      required: true
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Загрузчик / Loader
+      options: ["Fabric", "NeoForge"]
+    validations:
+      required: true
+  - type: input
+    id: hw
+    attributes:
+      label: GPU / CPU / OS
+    validations:
+      required: true
+  - type: input
+    id: fps
+    attributes:
+      label: FPS с ZakoOpt и без / FPS with and without
+      placeholder: "с: 120, без: 118"
+    validations:
+      required: true
+  - type: textarea
+    id: scene
+    attributes:
+      label: Сцена / Scene
+      description: Где и что в кадре (Create, мобы, шейдеры, дальность) / Where and what is on screen
+    validations:
+      required: true
+  - type: input
+    id: spark
+    attributes:
+      label: Профиль spark (ссылка) / spark profile link
