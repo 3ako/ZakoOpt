@@ -26,3 +26,21 @@ plan.md
 .idea/
 Сборка*/
 reviews/
+
+# gradle / IDE / fabric
+out/
+classes/
+*.launch
+*.iml
+*.ipr
+*.iws
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+*.DS_Store
+run/
+hs_err_*.log
+replay_*.log
+*.hprof

@@ -166,9 +166,9 @@ configure(subprojects.findAll { !(it.name in layerNames) }) {
 		}
 
 		jar {
-			from(rootProject.file("../COPYING"))
-			from(rootProject.file("../COPYING.LESSER"))
-			from(rootProject.file("../NOTICE"))
+			from(rootProject.file("COPYING"))
+			from(rootProject.file("COPYING.LESSER"))
+			from(rootProject.file("NOTICE"))
 		}
 	}
 }
