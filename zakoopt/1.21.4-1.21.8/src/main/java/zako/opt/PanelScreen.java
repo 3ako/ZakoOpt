@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public abstract class PanelScreen extends Screen {
@@ -78,9 +79,9 @@ public abstract class PanelScreen extends Screen {
 			}
 
 			@Override
-			public void item(ItemStack stack, int x, int y, float scale) {
+			public void item(Item item, int x, int y, float scale) {
 				GuiPose.push(graphics, x, y, scale);
-				graphics.renderItem(stack, 0, 0);
+				graphics.renderItem(new ItemStack(item), 0, 0);
 				GuiPose.pop(graphics);
 			}
 

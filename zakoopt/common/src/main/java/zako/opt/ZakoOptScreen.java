@@ -7,7 +7,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import zako.opt.bench.Bench;
 import zako.opt.bench.MonitorScreen;
@@ -46,7 +45,7 @@ public class ZakoOptScreen extends Panel {
 	private record Item(Feature feature, ZakoOptions.Toggle toggle, List<ZakoOptions.Option> settings) {
 	}
 
-	private record Section(ZakoOptions.Group group, List<Item> items, ItemStack icon) {
+	private record Section(ZakoOptions.Group group, List<Item> items, net.minecraft.world.item.Item icon) {
 	}
 
 	public ZakoOptScreen(Screen parent) {
@@ -63,7 +62,7 @@ public class ZakoOptScreen extends Panel {
 				}
 			}
 			if (!items.isEmpty()) {
-				sections.add(new Section(group, items, new ItemStack(icon(group.type()))));
+				sections.add(new Section(group, items, icon(group.type())));
 			}
 		}
 		heads = new int[sections.size()];

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public abstract class PanelScreen extends Screen {
@@ -78,10 +79,14 @@ public abstract class PanelScreen extends Screen {
 			}
 
 			@Override
-			public void item(ItemStack stack, int x, int y, float scale) {
+			public void item(Item item, int x, int y, float scale) {
+				// components are bound on the first world join, a stack before that throws
+				if (!item.builtInRegistryHolder().areComponentsBound()) {
+					return;
+				}
 				graphics.pose().pushMatrix();
 				graphics.pose().translate(x, y).scale(scale);
-				graphics.item(stack, 0, 0);
+				graphics.item(new ItemStack(item), 0, 0);
 				graphics.pose().popMatrix();
 			}
 
