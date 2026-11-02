@@ -23,7 +23,7 @@ import zako.opt.ZakoOptions;
 @Slf4j(topic = "zakoopt")
 public class UpdateCheck {
 	private final String REPO = "3ako/ZakoOpt";
-	private final URI DOWNLOAD = URI.create("https://www.curseforge.com/minecraft/mc-mods/zakoopt");
+	private final URI DOWNLOAD = URI.create("https://github.com/3ako/ZakoOpt/releases/latest");
 	private boolean started;
 	private volatile String latest;
 	private boolean shown;
