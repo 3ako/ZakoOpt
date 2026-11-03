@@ -19,6 +19,7 @@ import org.lwjgl.system.MemoryUtil;
 import zako.opt.gl.RawVertices;
 import zako.opt.mixin.particle.ParticleAccessor;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,9 +31,30 @@ import java.util.Queue;
 public class ParallelQuadParticles {
 	private final int MIN_PARTICLES = 1024;
 	private final int BLOCK = 256;
+	private final Class<?>[] RENDER_ARGS = {VertexConsumer.class, Camera.class, float.class};
 	private final List<ByteBufferBuilder> LOCAL = new ArrayList<>();
 	private final List<BufferBuilder> BUILDERS = new ArrayList<>();
 	private Particle[] scratch = new Particle[0];
+	// a mod's render may call RenderSystem (Explosion Overhaul's PlasmaParticle does); matched by signature, the name is remapped per loader
+	private final ClassValue<Boolean> SAFE = new ClassValue<>() {
+		@Override
+		protected Boolean computeValue(Class<?> type) {
+			if (!SingleQuadParticle.class.isAssignableFrom(type)) {
+				return false;
+			}
+			for (Class<?> c = type; c != SingleQuadParticle.class; c = c.getSuperclass()) {
+				if (c.getName().startsWith("net.minecraft.")) {
+					continue;
+				}
+				for (Method m : c.getDeclaredMethods()) {
+					if (Arrays.equals(m.getParameterTypes(), RENDER_ARGS)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	};
 
 	// false = let the vanilla single-threaded loop run
 	public boolean render(Queue<Particle> particles, VertexConsumer target, VertexFormat format, Camera camera, float partialTick) {
@@ -48,7 +70,7 @@ public class ParallelQuadParticles {
 		try {
 			for (int i = 0; i < n; i++) {
 				// other particle kinds may draw anything; only plain quads are known to be safe off-thread
-				if (!(arr[i] instanceof SingleQuadParticle)) {
+				if (!SAFE.get(arr[i].getClass())) {
 					return false;
 				}
 			}
