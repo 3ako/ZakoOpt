@@ -8,30 +8,25 @@ import net.caffeinemc.mods.sodium.client.render.chunk.compile.ChunkBuildBuffers;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.DefaultTerrainRenderPasses;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
+import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
-import net.minecraft.world.level.block.entity.LidBlockEntity;
-import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import org.joml.Vector3f;
-import zako.opt.feature.Features;
 import zako.opt.mixin.block.ChestRendererInvoker;
 
 // shut chests baked into Sodium's chunk mesh on the builder threads, from the block atlas copy of the chest textures
@@ -40,26 +35,13 @@ public class ChestMesh {
 	// entity textures have no mipmaps; entityCutout cuts at half alpha
 	private final Material CUTOUT = new Material(DefaultTerrainRenderPasses.CUTOUT, AlphaCutoffParameter.HALF, false);
 
-	private record Models(BlockEntityRenderer<?, ?> owner, boolean xmas, ModelPart single, ModelPart left, ModelPart right) {
+	private record Models(Object owner, boolean xmas, ModelPart single, ModelPart left, ModelPart right) {
 	}
 
 	// own copies at rest: the renderer's models get their lid angle set on the render thread meanwhile
 	private volatile Models models;
 
-	public boolean bake(BlockEntity blockEntity, BlockEntityRenderer<?, ?> renderer, ChunkBuildBuffers buffers, BlockAndTintGetter level) {
-		Class<?> type = blockEntity.getClass();
-		if (type != ChestBlockEntity.class && type != TrappedChestBlockEntity.class && type != EnderChestBlockEntity.class) {
-			return false;
-		}
-		ChestBake bake = (ChestBake) blockEntity;
-		if (!Features.BLOCK_ENTITY_CACHE.chestMesh || renderer.getClass() != ChestRenderer.class) {
-			bake.zakoopt$mesh(ChestBake.NONE);
-			return false;
-		}
-		if (!ChestBake.idle((LidBlockEntity) blockEntity)) {
-			bake.zakoopt$mesh(ChestBake.LIVE);
-			return false;
-		}
+	public boolean bake(BlockEntity blockEntity, Object renderer, ChunkBuildBuffers buffers, LevelSlice level) {
 		Models m = models;
 		if (m == null || m.owner != renderer) {
 			models = m = new Models(renderer, ChestRenderer.xmasTextures(), layer(ModelLayers.CHEST), layer(ModelLayers.DOUBLE_CHEST_LEFT), layer(ModelLayers.DOUBLE_CHEST_RIGHT));
@@ -69,7 +51,6 @@ public class ChestMesh {
 		TextureAtlas atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
 		TextureAtlasSprite sprite = atlas.getSprite(Sheets.chooseMaterial(((ChestRendererInvoker) renderer).zakoopt$material(blockEntity, m.xmas), chest).texture());
 		if (sprite == atlas.missingSprite()) {
-			bake.zakoopt$mesh(ChestBake.NONE);
 			return false;
 		}
 
@@ -94,8 +75,11 @@ public class ChestMesh {
 				}
 			}
 		});
-		bake.zakoopt$mesh(ChestBake.BAKED);
 		return true;
+	}
+
+	public void dirty(BlockPos pos) {
+		Minecraft.getInstance().levelRenderer.setSectionDirty(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getY()), SectionPos.blockToSectionCoord(pos.getZ()));
 	}
 
 	private ModelPart layer(ModelLayerLocation layer) {

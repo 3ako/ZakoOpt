@@ -21,6 +21,8 @@ import zako.opt.block.ChestBake;
 public class EnderChestBlockEntityBakeMixin implements ChestBake {
 	@Unique
 	private volatile byte zakoopt$mesh;
+	@Unique
+	private volatile boolean zakoopt$breaking;
 
 	@Inject(method = "lidAnimateTick", at = @At("TAIL"))
 	private static void zakoopt$bake(Level level, BlockPos pos, BlockState state, EnderChestBlockEntity blockEntity, CallbackInfo ci) {

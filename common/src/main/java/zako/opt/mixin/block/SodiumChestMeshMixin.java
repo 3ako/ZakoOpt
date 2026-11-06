@@ -11,16 +11,17 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import zako.opt.block.ChestMesh;
+import zako.opt.block.ChestBake;
 
 // a chest goes either into the section's mesh or into its block entity list, decided once per build: both are uploaded together
 @Mixin(value = ChunkBuilderMeshingTask.class, remap = false)
 public class SodiumChestMeshMixin {
+	// raw renderer type: it has one type parameter before 1.21.9 and two after
 	@WrapOperation(method = "execute", at = @At(value = "INVOKE",
 			target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/data/BuiltSectionInfo$Builder;addBlockEntity(Lnet/minecraft/world/level/block/entity/BlockEntity;Z)V"))
 	private void zakoopt$bakeChest(BuiltSectionInfo.Builder data, BlockEntity blockEntity, boolean cull, Operation<Void> original,
-								   @Local ChunkBuildBuffers buffers, @Local LevelSlice slice, @Local BlockEntityRenderer<?, ?> renderer) {
-		if (!ChestMesh.bake(blockEntity, renderer, buffers, slice)) {
+								   @Local ChunkBuildBuffers buffers, @Local LevelSlice slice, @Local BlockEntityRenderer renderer) {
+		if (!ChestBake.bake(blockEntity, renderer, buffers, slice)) {
 			original.call(data, blockEntity, cull);
 		}
 	}

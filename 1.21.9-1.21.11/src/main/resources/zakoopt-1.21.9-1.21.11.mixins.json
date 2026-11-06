@@ -8,6 +8,7 @@
 		"gl.MinecraftTimerMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.BlockFeatureRendererMixin",
+		"block.ChestRendererInvoker",
 		"block.PistonHeadRendererMixin",
 		"block.PistonMovingStateMixin",
 		"entity.ItemLayerAccessor",
