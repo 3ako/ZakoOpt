@@ -20,6 +20,7 @@
 		"entity.ModelPartChildrenMixin",
 		"gl.BufferBuilderRawMixin",
 		"hud.DeltaTrackerHudMixin",
+		"hud.ScoreboardListCacheMixin",
 		"particle.BubbleColumnUpParticleMixin",
 		"particle.ParticleAccessor",
 		"text.ClientLanguageMixin"
