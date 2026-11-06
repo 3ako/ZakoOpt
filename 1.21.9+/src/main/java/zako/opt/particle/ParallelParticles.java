@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -44,12 +43,8 @@ public class ParallelParticles {
 			LOCAL.add(new QuadParticleRenderState());
 		}
 		Vec3 cam = camera.position();
-		Throwable error;
-		try {
-			error = Workers.run(blocks, b -> extractRange(arr, b * BLOCK, Math.min(n, (b + 1) * BLOCK), LOCAL.get(b), frustum, camera, cam, partialTick));
-		} finally {
-			Arrays.fill(arr, 0, n, null);
-		}
+		// arr keeps last frame's particles alive until the next toArray overwrites them: cheaper than clearing it every frame
+		Throwable error = Workers.run(blocks, b -> extractRange(arr, b * BLOCK, Math.min(n, (b + 1) * BLOCK), LOCAL.get(b), frustum, camera, cam, partialTick));
 		if (error != null) {
 			throw new ReportedException(CrashReport.forThrowable(error, "Rendering Particle (zakoopt parallel)"));
 		}

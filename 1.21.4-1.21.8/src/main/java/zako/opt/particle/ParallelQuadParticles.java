@@ -99,7 +99,7 @@ public class ParallelQuadParticles {
 			}
 			return true;
 		} finally {
-			Arrays.fill(arr, 0, n, null);
+			// arr keeps last frame's particles alive until the next toArray overwrites them: cheaper than clearing it every frame
 			BUILDERS.clear();
 		}
 	}
