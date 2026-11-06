@@ -4,6 +4,9 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.ChestBlockEntityBakeMixin",
+		"block.ChestRendererInvoker",
+		"block.EnderChestBlockEntityBakeMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"entity.MaterialHashMixin",
 		"gl.BatchableBufferSourceMixin",

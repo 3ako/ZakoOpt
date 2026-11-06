@@ -26,7 +26,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	private static final List<String> NEOFORGE_OFF = List.of("block.BlockEntityRenderDispatcherCullWrapMixin", "block.BlockEntityRenderDispatcherMixin", "block.BlockEntityRenderStatePoolMixin",
 			"block.LevelRendererCrackTessMixin");
 	private static final List<String> NEOFORGE_ONLY = List.of("block.NeoBlockEntityRenderDispatcherMixin", "block.NeoLevelRendererCrackMixin");
-	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin",
+	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin", "block.SodiumChestMeshMixin",
 			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin", "gl.SodiumCubicSamplerMixin");
 	// Create's renderers, on NeoForge only: Create's Fabric port is not the code these were written against
 	public static final boolean CREATE = NEOFORGE && Platform.isModLoaded("create");
