@@ -25,6 +25,7 @@ public class PreparedTextCache {
 		}
 	};
 
+	private final HitRate RATE = new HitRate();
 	private final Map<Key, Font.PreparedText> CACHE = new LinkedHashMap<>(512, 0.75f, true) {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry<Key, Font.PreparedText> eldest) {
@@ -37,7 +38,7 @@ public class PreparedTextCache {
 	}
 
 	public boolean enabled() {
-		return Features.PREPARED_TEXT_CACHE.on;
+		return Features.PREPARED_TEXT_CACHE.on && !RATE.resting();
 	}
 
 	public Key key(FormattedCharSequence text, float x, float y, int color, boolean shadow, boolean includeEmpty, int background) {
@@ -47,6 +48,7 @@ public class PreparedTextCache {
 	public Font.PreparedText get(Key key) {
 		synchronized (CACHE) {
 			Font.PreparedText cached = CACHE.get(key);
+			RATE.count(cached != null);
 			return cached == UNCACHEABLE ? null : cached;
 		}
 	}

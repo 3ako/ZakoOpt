@@ -36,6 +36,7 @@ public class TextMeshCache {
 	private final ByteBufferBuilder SCRATCH = new ByteBufferBuilder(4096);
 	private final Mesh SEEN = new Mesh(List.of(), 0);
 	private final Mesh UNCACHEABLE = new Mesh(List.of(), 0);
+	private final HitRate RATE = new HitRate();
 	private final Map<Key, Mesh> CACHE = new LinkedHashMap<>(512, 0.75f, true) {
 		@Override
 		protected boolean removeEldestEntry(Map.Entry<Key, Mesh> eldest) {
@@ -71,7 +72,7 @@ public class TextMeshCache {
 	}
 
 	public boolean applies(FormattedCharSequence text) {
-		return !recording && Features.PREPARED_TEXT_CACHE.on && StableText.isStable(text) && RenderSystem.isOnRenderThread();
+		return !recording && Features.PREPARED_TEXT_CACHE.on && !RATE.resting() && StableText.isStable(text) && RenderSystem.isOnRenderThread();
 	}
 
 	public Matrix4f identity() {
@@ -81,6 +82,7 @@ public class TextMeshCache {
 	// null: draw the vanilla way; record draws the line into the given buffers with the identity matrix and light 0
 	public Integer draw(Key key, Matrix4f pose, MultiBufferSource buffers, int light, ToIntFunction<MultiBufferSource> record) {
 		Mesh mesh = CACHE.get(key);
+		RATE.count(mesh != null);
 		if (mesh == null) {
 			CACHE.put(key, SEEN);
 			return null;
