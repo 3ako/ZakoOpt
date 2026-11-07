@@ -15,6 +15,7 @@ public class FrameGraph {
 	// the test measures FPS, so the panel over it draws without making garbage per frame
 	private final long[] frames = new long[1024];
 	private final long[] sorted = new long[1024];
+	private final int[] RECTS = new int[1024 * 5];
 	private long lastLabel;
 	private Component fps = Component.empty();
 	private Component frame = Component.empty();
@@ -28,12 +29,14 @@ public class FrameGraph {
 		System.arraycopy(frames, 0, sorted, 0, n);
 		Arrays.sort(sorted, 0, n);
 		double median = Math.max(sorted[n / 2], 1);
+		int q = 0;
 		for (int i = 0; i < n; i++) {
 			double ratio = frames[i] / median;
 			int h = (int) Math.max(1, Math.min(height, ratio / 3 * height));
 			int column = x + width - n + i;
-			c.fill(column, bottom - h, column + 1, bottom, ratio >= 2.5 ? BIG_STUTTER : ratio >= 1.5 ? STUTTER : SMOOTH);
+			q = Canvas.rect(RECTS, q, column, bottom - h, column + 1, bottom, ratio >= 2.5 ? BIG_STUTTER : ratio >= 1.5 ? STUTTER : SMOOTH);
 		}
+		c.fills(RECTS, n);
 	}
 
 	public Component fps() {

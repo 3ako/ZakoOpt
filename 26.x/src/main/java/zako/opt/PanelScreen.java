@@ -1,6 +1,7 @@
 package zako.opt;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import zako.opt.gui.FillBatch;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -58,6 +59,11 @@ public abstract class PanelScreen extends Screen {
 			@Override
 			public void fill(int x0, int y0, int x1, int y1, int argb) {
 				graphics.fill(x0, y0, x1, y1, argb);
+			}
+
+			@Override
+			public void fills(int[] rects, int count) {
+				FillBatch.submit(graphics, rects, count);
 			}
 
 			@Override
