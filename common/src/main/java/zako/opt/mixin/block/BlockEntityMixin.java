@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import zako.opt.block.CachedLight;
 import zako.opt.block.CachedValidity;
+import zako.opt.block.OcclusionSlot;
 import zako.opt.block.ChestFunctions;
 import zako.opt.block.MovingSlots;
 import zako.opt.block.TickCached;
@@ -16,7 +17,9 @@ import zako.opt.entity.PooledState;
 @Getter
 @Accessors(fluent = true, chain = false)
 @Mixin(BlockEntity.class)
-public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity, PooledState, ChestFunctions, MovingSlots {
+public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity, PooledState, ChestFunctions, MovingSlots, OcclusionSlot {
+	@Unique
+	private Object zakoopt$occlusion;
 	@Unique
 	private Object zakoopt$moving0;
 	@Unique
@@ -128,5 +131,10 @@ public class BlockEntityMixin implements TickCached, CachedLight, CachedValidity
 	public void zakoopt$setInDistance(boolean inDistance, long tick) {
 		zakoopt$inDistance = inDistance;
 		zakoopt$distanceTick = tick;
+	}
+
+	@Override
+	public void zakoopt$occlusion(Object state) {
+		zakoopt$occlusion = state;
 	}
 }

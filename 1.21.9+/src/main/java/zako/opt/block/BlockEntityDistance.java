@@ -32,6 +32,7 @@ public class BlockEntityDistance {
 
 	@SuppressWarnings("rawtypes")
 	public boolean culled(BlockEntityRenderer renderer, BlockEntity blockEntity, Vec3 camera) {
-		return Features.BLOCK_ENTITY_EARLY_CULL.on && renderer != null && camera != null && !inDistance(renderer, blockEntity, camera);
+		return Features.BLOCK_ENTITY_EARLY_CULL.on && renderer != null && camera != null
+				&& (!inDistance(renderer, blockEntity, camera) || BlockEntityOcclusion.hidden(blockEntity, camera));
 	}
 }
