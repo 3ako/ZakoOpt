@@ -19,6 +19,7 @@ public class MemoryGraph {
 	private final long LABEL_NS = 500_000_000L;
 	private final long GARBAGE_NS = 1_000_000_000L;
 	private final int HISTORY = 512;
+	private final int NONE = Integer.MIN_VALUE;
 	public final int HEAP = Panel.LINK, NATIVE = Panel.PIP, GC = 0xFFA89880;
 	private final float[] used = new float[HISTORY];
 	private final float[] committed = new float[HISTORY];
@@ -116,15 +117,26 @@ public class MemoryGraph {
 			int i = k & HISTORY - 1;
 			scale = Math.max(scale, Math.max(committed[i], process[i] - committed[i]));
 		}
-		for (int k = samples - n; k < samples; k++) {
-			int i = k & HISTORY - 1, cx = x + width - (samples - k);
-			if (gc[i]) {
-				c.fill(cx, bottom - height, cx + 1, bottom, GC);
+		int[] gcTop = new int[n], heapTop = new int[n], nativeTop = new int[n];
+		for (int j = 0; j < n; j++) {
+			int i = samples - n + j & HISTORY - 1;
+			gcTop[j] = gc[i] ? bottom - height : NONE;
+			heapTop[j] = y(bottom, height, used[i], scale);
+			nativeTop[j] = OS != null ? y(bottom, height, process[i] - committed[i], scale) : NONE;
+		}
+		int left = x + width - n;
+		runs(c, left, gcTop, bottom, GC, false);
+		runs(c, left, heapTop, bottom, HEAP, false);
+		runs(c, left, nativeTop, bottom, NATIVE, true);
+	}
+
+	// every GUI fill is checked against all the others already added, so a fill per pixel column made the graph quadratic
+	private void runs(Canvas c, int left, int[] top, int bottom, int color, boolean line) {
+		for (int s = 0, e; s < top.length; s = e) {
+			for (e = s + 1; e < top.length && top[e] == top[s]; e++) {
 			}
-			c.fill(cx, y(bottom, height, used[i], scale), cx + 1, bottom, HEAP);
-			if (OS != null) {
-				int ny = y(bottom, height, process[i] - committed[i], scale);
-				c.fill(cx, ny, cx + 1, ny + 1, NATIVE);
+			if (top[s] != NONE) {
+				c.fill(left + s, top[s], left + e, line ? top[s] + 1 : bottom, color);
 			}
 		}
 	}
