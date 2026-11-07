@@ -17,6 +17,7 @@
 		"entity.SubmitNodeStorageMixin",
 		"entity.CustomSubmitPosePoolMixin",
 		"entity.ItemQuadListMixin",
+		"entity.ItemTransformRotationMixin",
 		"entity.NameTagSortMixin",
 		"particle.QuadParticleRenderStateMixin",
 		"particle.QuadParticleStorageInvoker",
