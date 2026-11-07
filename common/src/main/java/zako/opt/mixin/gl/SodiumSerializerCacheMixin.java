@@ -9,16 +9,13 @@ import net.caffeinemc.mods.sodium.client.render.vertex.serializers.VertexSeriali
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import zako.opt.gl.LastSerializer;
 
 // every buffer copy between two formats looked its serializer up under a lock; nearly all of them are the same pair
 @Mixin(value = VertexSerializerRegistryImpl.class, remap = false)
 public class SodiumSerializerCacheMixin {
 	@Unique
-	private record Last(long key, VertexSerializer serializer) {
-	}
-
-	@Unique
-	private volatile Last zakoopt$last;
+	private volatile LastSerializer zakoopt$last;
 
 	@WrapOperation(method = "get", require = 0,
 			at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/vertex/serializers/VertexSerializerRegistryImpl;find(J)Lnet/caffeinemc/mods/sodium/api/vertex/serializer/VertexSerializer;"))
@@ -26,13 +23,13 @@ public class SodiumSerializerCacheMixin {
 		if (!Features.LOOKUP_CACHES.on) {
 			return original.call(registry, key);
 		}
-		Last last = zakoopt$last;
+		LastSerializer last = zakoopt$last;
 		if (last != null && last.key() == key) {
 			return last.serializer();
 		}
 		VertexSerializer serializer = original.call(registry, key);
 		if (serializer != null) {
-			zakoopt$last = new Last(key, serializer);
+			zakoopt$last = new LastSerializer(key, serializer);
 		}
 		return serializer;
 	}
