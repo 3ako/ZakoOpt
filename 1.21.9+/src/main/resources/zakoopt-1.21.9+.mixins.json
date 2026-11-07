@@ -9,6 +9,8 @@
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.BlockEntityRenderStatePoolMixin",
 		"block.ChestRendererMixin",
+		"block.SignTextWidthMixin",
+		"block.SignTextWidthsMixin",
 		"entity.AvatarLodMixin",
 		"entity.EntityRenderStatePoolMixin",
 		"entity.CrossbowChargeMixin",
