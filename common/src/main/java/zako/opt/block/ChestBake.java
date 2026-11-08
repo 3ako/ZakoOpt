@@ -9,13 +9,18 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
+import org.slf4j.LoggerFactory;
 import zako.opt.feature.Features;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // how the last chunk mesh drew this chest; written by the mesher threads, read on ticks
 public interface ChestBake {
 	byte NONE = 0;
 	byte BAKED = 1;
 	byte LIVE = 2;
+	// a failure inside baking (seen only with some modpacks, #18) turns it off for the session instead of crashing the mesher
+	AtomicBoolean FAILED = new AtomicBoolean();
 
 	byte zakoopt$mesh();
 
@@ -36,7 +41,7 @@ public interface ChestBake {
 			return false;
 		}
 		ChestBake bake = (ChestBake) blockEntity;
-		if (!Features.BLOCK_ENTITY_CACHE.chestMesh || renderer.getClass() != ChestRenderer.class) {
+		if (!Features.BLOCK_ENTITY_CACHE.chestMesh || FAILED.get() || renderer.getClass() != ChestRenderer.class) {
 			bake.zakoopt$mesh(NONE);
 			return false;
 		}
@@ -44,7 +49,15 @@ public interface ChestBake {
 			bake.zakoopt$mesh(LIVE);
 			return false;
 		}
-		boolean baked = ChestMesh.bake(blockEntity, renderer, buffers, slice);
+		boolean baked;
+		try {
+			baked = ChestMesh.bake(blockEntity, renderer, buffers, slice);
+		} catch (RuntimeException e) {
+			if (!FAILED.getAndSet(true)) {
+				LoggerFactory.getLogger("zakoopt").error("Baking chests into the chunk mesh failed, drawing them the vanilla way from now on", e);
+			}
+			baked = false;
+		}
 		bake.zakoopt$mesh(baked ? BAKED : NONE);
 		return baked;
 	}
