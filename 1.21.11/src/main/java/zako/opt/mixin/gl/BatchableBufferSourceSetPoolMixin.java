@@ -23,7 +23,7 @@ public class BatchableBufferSourceSetPoolMixin {
 	@Unique
 	private Set<?> zakoopt$drawn;
 
-	@WrapOperation(method = "drawDirect", at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;"))
+	@WrapOperation(method = "drawDirect", require = 0, at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;"))
 	private Object zakoopt$keepSet(Map<?, ?> map, Object key, Operation<Object> original) {
 		zakoopt$recycle();
 		Object set = original.call(map, key);
@@ -33,7 +33,7 @@ public class BatchableBufferSourceSetPoolMixin {
 		return set;
 	}
 
-	@WrapOperation(method = {"getBuffer", "method_73477"}, at = @At(value = "INVOKE", target = "Ljava/util/Map;computeIfAbsent(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;"))
+	@WrapOperation(method = {"getBuffer", "method_73477"}, require = 0, at = @At(value = "INVOKE", target = "Ljava/util/Map;computeIfAbsent(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;"))
 	private Object zakoopt$reuseSet(Map<Object, Object> map, Object key, Function<Object, Object> make, Operation<Object> original) {
 		zakoopt$recycle();
 		if (zakoopt$free.isEmpty()) {
