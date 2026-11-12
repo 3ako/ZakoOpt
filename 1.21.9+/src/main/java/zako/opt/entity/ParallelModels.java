@@ -19,8 +19,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import zako.opt.gl.RawVertices;
 import zako.opt.mixin.entity.ModelPartAccessor;
 import zako.opt.particle.Workers;
@@ -39,7 +37,6 @@ public class ParallelModels {
 	private final int FIELDS = 9;
 	private final int PAGE = 1 << 20;
 
-	private final Map<ModelPart, Flat> FLATS = new WeakHashMap<>();
 	private final List<Job> BUILT = new ArrayList<>();
 	// jobs outlive the frame and are handed out again by index: a job is only read until the hook's emit, before the next begin
 	private final List<Job> POOL = new ArrayList<>();
@@ -77,7 +74,11 @@ public class ParallelModels {
 	public Job add(Model model, Object state, PoseStack.Pose pose, int light, int overlay, int color, TextureAtlasSprite sprite, VertexFormat format) {
 		model.setupAnim(state);
 		ModelPart root = model.root();
-		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
+		FlatSlot slot = (FlatSlot) (Object) root;
+		Flat flat = (Flat) slot.zakoopt$flat();
+		if (flat == null) {
+			slot.zakoopt$flat(flat = new Flat(root));
+		}
 		int n = flat.parts.length;
 		if (SkinLayers.ACTIVE) {
 			for (int i = 0; i < n; i++) {

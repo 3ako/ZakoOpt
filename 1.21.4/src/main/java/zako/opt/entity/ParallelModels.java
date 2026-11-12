@@ -22,7 +22,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 // 1.21.4 renders every model straight into its buffer. During the entity pass the render thread only snapshots the posed
 // parts (setupAnim writes them into a model instance shared by every entity of that kind) and reserves the model's
@@ -36,7 +35,6 @@ public class ParallelModels {
 	// helpers are woken only once this many models are queued in a pass; fewer are built by the render thread, as on 1.21.9+
 	private final int MIN_JOBS = 24;
 
-	private final Map<ModelPart, Flat> FLATS = new WeakHashMap<>();
 	private final List<Job> JOBS = new ArrayList<>();
 	private final Set<ReserveBuffer> PENDING = Collections.newSetFromMap(new IdentityHashMap<>());
 	// jobs outlive the pass and are handed out again by index: workers are done with them by end()
@@ -133,7 +131,11 @@ public class ParallelModels {
 			return false;
 		}
 		ModelPart root = model.root();
-		Flat flat = FLATS.computeIfAbsent(root, Flat::new);
+		FlatSlot slot = (FlatSlot) (Object) root;
+		Flat flat = (Flat) slot.zakoopt$flat();
+		if (flat == null) {
+			slot.zakoopt$flat(flat = new Flat(root));
+		}
 		if (SkinLayers.ACTIVE) {
 			for (int i = 0; i < flat.parts.length; i++) {
 				if (SkinLayers.meshed(i == 0 ? root : flat.parts[i])) {
