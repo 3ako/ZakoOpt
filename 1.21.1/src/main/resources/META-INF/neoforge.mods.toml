@@ -16,6 +16,9 @@ logoFile = "assets/zakoopt/icon.png"
 
 ${neo_mixins}
 
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
 [[dependencies.zakoopt]]
 modId = "minecraft"
 type = "required"
