@@ -98,6 +98,10 @@ public class PreparedTextCache {
 		}
 	}
 
+	public int generation() {
+		return generation;
+	}
+
 	public void clear() {
 		synchronized (CACHE) {
 			CACHE.clear();

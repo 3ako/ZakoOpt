@@ -45,6 +45,7 @@ public class TextMeshCache {
 		}
 	};
 	private boolean recording;
+	public int generation;
 
 	// recorded under a shader pack, the vertices are in Iris's extended format: never replayed into a vanilla buffer
 	private record Segment(RenderType type, VertexFormat format, ByteBuffer vertices, int count) {
@@ -105,6 +106,11 @@ public class TextMeshCache {
 
 	public void clear() {
 		CACHE.clear();
+		generation++;
+	}
+
+	public void bypass(boolean on) {
+		recording = on;
 	}
 
 	private Mesh record(Consumer<MultiBufferSource> draw) {

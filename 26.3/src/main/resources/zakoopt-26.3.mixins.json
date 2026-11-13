@@ -4,6 +4,8 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.SignTextChangeMixin",
+		"block.SignTextDrawMixin",
 		"entity.ItemFeatureRendererMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"gl.GameRendererScaleAccessor",

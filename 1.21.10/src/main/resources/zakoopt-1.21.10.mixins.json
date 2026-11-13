@@ -4,6 +4,15 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.AbstractSignRendererInvoker",
+		"block.SignBreakMixin",
+		"block.SignClientTickerMixin",
+		"block.SignTextArmMixin",
+		"block.SignTextBakeMixin",
+		"block.SignTextChangeMixin",
+		"block.SodiumSignMeshMixin",
+		"block.SignTextDrawMixin",
+		"block.SignTextRemoveMixin",
 		"DebugScreenEntryListMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"gl.RenderSystemMixin"
