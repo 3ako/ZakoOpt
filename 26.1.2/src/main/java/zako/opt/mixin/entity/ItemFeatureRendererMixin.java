@@ -18,7 +18,7 @@ public class ItemFeatureRendererMixin {
 	private List<BakedQuad> zakoopt$lod(SubmitNodeStorage.ItemSubmit submit, Operation<List<BakedQuad>> original) {
 		List<BakedQuad> quads = original.call(submit);
 		ItemDisplayContext context = submit.displayContext();
-		if (context.firstPerson() || context == ItemDisplayContext.GUI || !ItemLod.enabled()) {
+		if (!ItemLod.applies(context)) {
 			return quads;
 		}
 		Matrix4f m = submit.pose().pose();

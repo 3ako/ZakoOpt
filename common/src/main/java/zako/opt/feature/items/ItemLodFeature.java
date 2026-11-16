@@ -16,4 +16,7 @@ public class ItemLodFeature extends Feature {
 	@Setting(key = "item_lod_distance")
 	@Range(min = 4, max = 48)
 	public int distance = 8;
+
+	@Setting(key = "item_lod_held")
+	public boolean held;
 }

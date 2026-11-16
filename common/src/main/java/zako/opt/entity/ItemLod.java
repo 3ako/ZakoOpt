@@ -6,6 +6,7 @@ import com.google.common.collect.MapMaker;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemDisplayContext;
 
 import java.util.List;
 import java.util.Map;
@@ -16,8 +17,9 @@ public class ItemLod {
 	// keyed by the model's first quad: the quad list passed to renderItem is a reused per-render-state buffer
 	private final Map<BakedQuad, Flat> FLAT = new MapMaker().weakKeys().makeMap();
 
-	public boolean enabled() {
-		return Features.ITEM_LOD.on;
+	public boolean applies(ItemDisplayContext context) {
+		return Features.ITEM_LOD.on && !context.firstPerson() && context != ItemDisplayContext.GUI
+				&& (Features.ITEM_LOD.held || context != ItemDisplayContext.THIRD_PERSON_LEFT_HAND && context != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
 	}
 
 	public float distanceSq() {

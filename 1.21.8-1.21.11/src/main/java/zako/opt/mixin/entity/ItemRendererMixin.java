@@ -16,7 +16,7 @@ import zako.opt.entity.ItemLod;
 public class ItemRendererMixin {
 	@ModifyVariable(method = "renderItem", at = @At("HEAD"), argsOnly = true)
 	private static List<BakedQuad> zakoopt$lod(List<BakedQuad> quads, ItemDisplayContext context, PoseStack poseStack) {
-		if (context.firstPerson() || context == ItemDisplayContext.GUI || !ItemLod.enabled()) {
+		if (!ItemLod.applies(context)) {
 			return quads;
 		}
 		Matrix4f m = poseStack.last().pose();

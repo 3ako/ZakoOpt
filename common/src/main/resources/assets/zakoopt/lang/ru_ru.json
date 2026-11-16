@@ -20,6 +20,8 @@
   "zakoopt.visual.item_lod": "Меняет картинку: у дальних плоских предметов не видно боковых граней.",
   "zakoopt.option.item_lod_distance": "Дистанция LOD предметов",
   "zakoopt.option.item_lod_distance.tooltip": "С какого расстояния упрощать предметы.",
+  "zakoopt.option.item_lod_held": "Предметы в руках",
+  "zakoopt.option.item_lod_held.tooltip": "Упрощать и предметы в руках игроков и мобов. Выключено: в руках всегда как в ванилле.",
   "zakoopt.option.no_item_sort": "Без сортировки предметов",
   "zakoopt.option.no_item_sort.tooltip": "Не сортирует грани выброшенных предметов каждый кадр. Изредка путает порядок у полупрозрачных: стекла, слизи.",
   "zakoopt.visual.no_item_sort": "Меняет картинку: у полупрозрачных предметов (стекло, слизь) изредка путается порядок граней.",

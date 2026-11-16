@@ -23,7 +23,7 @@ public class ItemRendererMixin {
 
 	@ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true)
 	private BakedModel zakoopt$lod(BakedModel model, ItemStack stack, ItemDisplayContext context, boolean leftHand, PoseStack poseStack) {
-		if (context.firstPerson() || context == ItemDisplayContext.GUI || !ItemLod.enabled()) {
+		if (!ItemLod.applies(context)) {
 			zakoopt$flat = false;
 			return model;
 		}

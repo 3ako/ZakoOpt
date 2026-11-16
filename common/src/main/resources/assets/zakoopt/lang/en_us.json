@@ -20,6 +20,8 @@
   "zakoopt.visual.item_lod": "Changes visuals: distant flat items have no side faces.",
   "zakoopt.option.item_lod_distance": "Item LOD distance",
   "zakoopt.option.item_lod_distance.tooltip": "Distance from which items are simplified.",
+  "zakoopt.option.item_lod_held": "Items in hands",
+  "zakoopt.option.item_lod_held.tooltip": "Also simplify items held by players and mobs. Off: held items always look vanilla.",
   "zakoopt.option.no_item_sort": "No dropped item sorting",
   "zakoopt.option.no_item_sort.tooltip": "Doesn't sort dropped items' faces every frame. Rarely mixes up the order of see-through ones: glass, slime.",
   "zakoopt.visual.no_item_sort": "Changes visuals: translucent items (glass, slime) sometimes show faces in the wrong order.",
