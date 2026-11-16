@@ -15,10 +15,8 @@
 		"gl.MinecraftFrameMixin",
 		"gl.MinecraftTimerMixin",
 		"gl.RenderTypesMixin",
-		"hud.GuiItemAtlasAccessor",
 		"hud.GuiItemAtlasMixin",
 		"hud.GuiRendererAnimatedMixin",
-		"hud.ImmediatelyFastAnimatedAtlasMixin",
 		"particle.ParticleMixin",
 		"particle.QuadParticleStorageInvoker"
 	],

@@ -8,9 +8,10 @@ import zako.opt.hud.GuiItemRefresh;
 
 @Mixin(GuiItemAtlas.class)
 public class GuiItemAtlasMixin {
-	// an animated item's slot is freed after every frame and redrawn; reported static in between, it is redrawn once per monitor refresh
+	// an animated item's slot is freed after every frame and redrawn; reported static in between, it is redrawn once per monitor refresh.
+	// ImmediatelyFast's animated atlas (a subclass, used from 3 animated models up) wipes itself every frame: left alone
 	@ModifyExpressionValue(method = "getOrUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/TrackingItemStackRenderState;isAnimated()Z"))
 	private boolean zakoopt$throttleAnimated(boolean animated) {
-		return animated && GuiItemRefresh.refresh();
+		return animated && (GuiItemRefresh.refresh() || (Object) this.getClass() != GuiItemAtlas.class);
 	}
 }
