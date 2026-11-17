@@ -4,6 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"entity.GuiRendererEntityMixin",
 		"gl.GlStateManagerMixin",
 		"gl.LevelRendererScaleAccessor",
 		"gl.RenderTargetAccessor",

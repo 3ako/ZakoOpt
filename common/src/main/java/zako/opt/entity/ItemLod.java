@@ -24,6 +24,9 @@ public class ItemLod {
 	}
 
 	public boolean far(Matrix4f m) {
+		if (GuiEntities.depth > 0) {
+			return false;
+		}
 		float d = Features.ITEM_LOD.distance;
 		return m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32() > d * d;
 	}

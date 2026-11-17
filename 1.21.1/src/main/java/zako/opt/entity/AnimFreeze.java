@@ -27,8 +27,6 @@ import java.util.function.Consumer;
 @UtilityClass
 public class AnimFreeze {
 	public long frame;
-	// an entity drawn in a GUI (inventory preview) has GUI coordinates: it would read as far and replay a capture from another pass
-	public int gui;
 	private final ByteBufferBuilder SCRATCH = new ByteBufferBuilder(16384);
 	private ByteBuffer emitBuffer = MemoryUtil.memAlloc(16384);
 
@@ -52,7 +50,7 @@ public class AnimFreeze {
 
 	// a far entity's parts all replay their once-per-tick capture here; any part built every frame elsewhere drifts off the frozen rest
 	public boolean freezes(Object state, Matrix4f pose) {
-		if (!Features.ENTITY_ANIM_FREEZE.on || gui > 0 || !(state instanceof Entity)) {
+		if (!Features.ENTITY_ANIM_FREEZE.on || GuiEntities.depth > 0 || !(state instanceof Entity)) {
 			return false;
 		}
 		float d = Features.ENTITY_ANIM_FREEZE.distance;
@@ -64,7 +62,7 @@ public class AnimFreeze {
 								 VertexConsumer target, Consumer<VertexConsumer> draw) {
 		float x = pose.m30(), y = pose.m31(), z = pose.m32();
 		float d = Features.ENTITY_ANIM_FREEZE.distance;
-		if (gui > 0 || x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
+		if (GuiEntities.depth > 0 || x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
 			return false;
 		}
 		AnimHolder owner = (AnimHolder) entity;

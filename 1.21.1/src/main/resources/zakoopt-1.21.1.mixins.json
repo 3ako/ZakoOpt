@@ -4,7 +4,7 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"entity.InventoryScreenAnimFreezeMixin",
+		"entity.InventoryScreenEntityMixin",
 		"DebugScreenOverlayMixin",
 		"block.BlockEntityRenderDispatcherMixin",
 		"block.ChestRendererMixin",

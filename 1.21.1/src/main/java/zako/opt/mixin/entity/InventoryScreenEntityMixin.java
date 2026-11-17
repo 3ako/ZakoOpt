@@ -5,17 +5,17 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import zako.opt.entity.AnimFreeze;
+import zako.opt.entity.GuiEntities;
 
 @Mixin(InventoryScreen.class)
-public class InventoryScreenAnimFreezeMixin {
+public class InventoryScreenEntityMixin {
 	@Inject(method = "renderEntityInInventory", at = @At("HEAD"))
 	private static void zakoopt$guiStart(CallbackInfo ci) {
-		AnimFreeze.gui++;
+		GuiEntities.depth++;
 	}
 
 	@Inject(method = "renderEntityInInventory", at = @At("RETURN"))
 	private static void zakoopt$guiEnd(CallbackInfo ci) {
-		AnimFreeze.gui--;
+		GuiEntities.depth--;
 	}
 }

@@ -51,7 +51,7 @@ public class AnimFreeze {
 
 	// a far entity's parts all replay their once-per-tick capture here; any part built every frame elsewhere drifts off the frozen rest
 	public boolean freezes(Object state, Matrix4f pose) {
-		if (!Features.ENTITY_ANIM_FREEZE.on || !(state instanceof EntityRenderState s) || ((StateEntity) s).zakoopt$entity() == null) {
+		if (!Features.ENTITY_ANIM_FREEZE.on || GuiEntities.depth > 0 || !(state instanceof EntityRenderState s) || ((StateEntity) s).zakoopt$entity() == null) {
 			return false;
 		}
 		float d = Features.ENTITY_ANIM_FREEZE.distance;
@@ -63,7 +63,7 @@ public class AnimFreeze {
 								 VertexConsumer target, Consumer<VertexConsumer> draw) {
 		float x = pose.m30(), y = pose.m31(), z = pose.m32();
 		float d = Features.ENTITY_ANIM_FREEZE.distance;
-		if (x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
+		if (GuiEntities.depth > 0 || x * x + y * y + z * z <= d * d || !RawVertices.accepts(target, type.format())) {
 			return false;
 		}
 		AnimHolder owner = (AnimHolder) entity;
