@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import zako.opt.entity.ItemLod;
@@ -21,8 +20,6 @@ public class ItemFeatureRendererMixin {
 		if (!ItemLod.applies(context)) {
 			return quads;
 		}
-		Matrix4f m = submit.pose().pose();
-		float dSq = m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32();
-		return dSq > ItemLod.distanceSq() ? ItemLod.flat(quads) : quads;
+		return ItemLod.far(submit.pose().pose()) ? ItemLod.flat(quads) : quads;
 	}
 }

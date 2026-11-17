@@ -4,12 +4,8 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"block.AbstractSignRendererInvoker",
 		"block.SignTextArmMixin",
-		"block.SignTextBakeMixin",
-		"block.SignTextChangeMixin",
 		"block.SodiumSignMeshMixin",
-		"block.SignTextDrawMixin",
 		"entity.LivingEntityRendererSkinMixin",
 		"entity.MaterialHashMixin",
 		"gl.BatchableBufferSourceMixin",

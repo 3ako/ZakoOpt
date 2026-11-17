@@ -21,9 +21,9 @@ public class MicroOptsFeature extends Feature {
 	public boolean texBufferOnce;
 	// one culling box shared by identical items
 	public boolean sharedItemBounds;
-	// 1.21.4: model cubes built the fast way
+	// 1.21.1 and 1.21.4: model cubes built the fast way
 	public boolean fastCubes;
-	// 1.21.4: a spawner's mob drawn once, then replayed
+	// 1.21.1 and 1.21.4: a spawner's mob drawn once, then replayed
 	public boolean spawnerMobMesh;
 
 	@Override

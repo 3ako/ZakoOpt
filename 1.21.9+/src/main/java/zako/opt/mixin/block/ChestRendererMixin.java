@@ -32,7 +32,7 @@ public class ChestRendererMixin {
 	@Unique
 	private static final String EXTRACT = "extractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/ChestRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V";
 
-	@WrapOperation(method = "extractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/ChestRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V",
+	@WrapOperation(method = EXTRACT,
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/ChestBlock;combine(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Z)Lnet/minecraft/world/level/block/DoubleBlockCombiner$NeighborCombineResult;"))
 	private DoubleBlockCombiner.NeighborCombineResult<?> zakoopt$cachedCombine(ChestBlock block, BlockState state, Level level, BlockPos pos, boolean ignoreBlocked,
 																			Operation<DoubleBlockCombiner.NeighborCombineResult<?>> original,
@@ -51,7 +51,7 @@ public class ChestRendererMixin {
 	}
 
 	// double chest light: two light lookups per chest per frame, but light only changes on ticks
-	@WrapOperation(method = "extractRenderState(Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/client/renderer/blockentity/state/ChestRenderState;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V",
+	@WrapOperation(method = EXTRACT,
 			at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2IntFunction;applyAsInt(I)I"))
 	private int zakoopt$cachedPairLight(Int2IntFunction combiner, int light, Operation<Integer> original,
 										BlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 camera,

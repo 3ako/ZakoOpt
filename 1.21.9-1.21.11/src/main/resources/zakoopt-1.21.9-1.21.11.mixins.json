@@ -4,6 +4,10 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.AbstractSignRendererInvoker",
+		"block.SignTextDrawMixin",
+		"block.SignTextChangeMixin",
+		"block.SignTextBakeMixin",
 		"gl.RenderSystemMixin",
 		"block.SignTextStableMixin",
 		"gl.MinecraftTimerMixin",

@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import java.util.List;
+import org.joml.Matrix4f;
 import java.util.Map;
 
 @UtilityClass
@@ -22,9 +23,9 @@ public class ItemLod {
 				&& (Features.ITEM_LOD.held || context != ItemDisplayContext.THIRD_PERSON_LEFT_HAND && context != ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
 	}
 
-	public float distanceSq() {
+	public boolean far(Matrix4f m) {
 		float d = Features.ITEM_LOD.distance;
-		return d * d;
+		return m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32() > d * d;
 	}
 
 	// generated (flat) item = two big N/S faces + edge strips only 1/16 deep in z; anything else is returned unchanged

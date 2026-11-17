@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -19,8 +18,6 @@ public class ItemRendererMixin {
 		if (!ItemLod.applies(context)) {
 			return quads;
 		}
-		Matrix4f m = poseStack.last().pose();
-		float dSq = m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32();
-		return dSq > ItemLod.distanceSq() ? ItemLod.flat(quads) : quads;
+		return ItemLod.far(poseStack.last().pose()) ? ItemLod.flat(quads) : quads;
 	}
 }
