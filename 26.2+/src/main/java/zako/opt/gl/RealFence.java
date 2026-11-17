@@ -6,15 +6,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class RealFence {
-	// set while asking the encoder for a real fence, so the createFence mixin lets that one through
-	public boolean creating;
-
 	public GpuFence create() {
-		creating = true;
-		try {
-			return RenderSystem.getDevice().createCommandEncoder().createFence();
-		} finally {
-			creating = false;
-		}
+		return RenderSystem.getDevice().createCommandEncoder().createFence();
 	}
 }

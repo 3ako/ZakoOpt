@@ -11,8 +11,7 @@
 		"block.SodiumSignMeshMixin",
 		"block.SignTextDrawMixin",
 		"DebugScreenEntryListMixin",
-		"entity.LivingEntityRendererSkinMixin",
-		"gl.RenderSystemMixin"
+		"entity.LivingEntityRendererSkinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

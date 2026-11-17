@@ -93,10 +93,6 @@ public class OcclusionCull {
 		zako.opt.DebugInfo.EXTRA.add(() -> zako.opt.feature.Features.OCCLUSION_CULL.on ? java.util.List.of(line) : java.util.List.of());
 	}
 
-	public String line() {
-		return line;
-	}
-
 	// prototype: -Dzakoopt.occlusion_cull.cpu=true takes the depth from CpuOcclusion instead of the GPU copy
 	private boolean cpu;
 

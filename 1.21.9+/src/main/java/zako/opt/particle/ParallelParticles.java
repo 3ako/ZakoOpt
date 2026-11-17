@@ -26,14 +26,10 @@ public class ParallelParticles {
 	private final List<QuadParticleRenderState> LOCAL = new ArrayList<>();
 	private SingleQuadParticle[] scratch = new SingleQuadParticle[0];
 
-	private boolean enabled() {
-		return Features.PARALLEL_PARTICLES.on;
-	}
-
 	// false = let the vanilla single-threaded loop run
 	public boolean extract(Queue<SingleQuadParticle> particles, QuadParticleRenderState dest, Frustum frustum, Camera camera, float partialTick) {
 		int n = particles.size();
-		if (n < MIN_PARTICLES || !enabled()) {
+		if (n < MIN_PARTICLES || !Features.PARALLEL_PARTICLES.on) {
 			return false;
 		}
 		SingleQuadParticle[] arr = particles.toArray(scratch);

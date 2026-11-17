@@ -1,6 +1,5 @@
 package zako.opt.gl;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.experimental.UtilityClass;
 

@@ -17,7 +17,6 @@ import zako.opt.ZakoOptions;
 import zako.opt.feature.Features;
 import zako.opt.update.UpdateUi;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -36,7 +35,6 @@ public class Bench {
 	private final int SETTLE_MS = 500;
 	private final int SEGMENT_MS = 1500;
 	private final double MIN_GAIN = 0.03;
-	// switches whose worth depends on the device and that leave the picture as it is; LODs and the like stay the player's call
 	private final long[] FRAME_NS = new long[1 << 16];
 	// render thread only: recentFps runs in the panels' paint
 	private final long[] RECENT = new long[1 << 16];
@@ -89,34 +87,26 @@ public class Bench {
 	}
 
 	public void confirm(Screen parent) {
-		UpdateUi.setScreen(new ConfirmPanel(yes -> {
-			if (yes) {
-				start(parent);
-			} else {
-				UpdateUi.setScreen(parent);
-			}
-		}, Component.translatable("zakoopt.bench.title"), Component.translatable("zakoopt.bench.intro"),
-				Component.translatable("zakoopt.bench.start"), Component.translatable("gui.cancel")));
+		ask(parent, "zakoopt.bench.title", "zakoopt.bench.intro", "zakoopt.bench.start", "gui.cancel");
 	}
 
 	public void welcome(Screen parent) {
-		UpdateUi.setScreen(new ConfirmPanel(yes -> {
-			if (yes) {
-				start(parent);
+		ask(parent, "zakoopt.welcome.title", "zakoopt.welcome", "zakoopt.welcome.start", "zakoopt.welcome.later");
+	}
+
+	private void ask(Screen parent, String title, String body, String yes, String no) {
+		UpdateUi.setScreen(new ConfirmPanel(ok -> {
+			if (ok) {
+				start(parent, false);
 			} else {
 				UpdateUi.setScreen(parent);
 			}
-		}, Component.translatable("zakoopt.welcome.title"), Component.translatable("zakoopt.welcome"),
-				Component.translatable("zakoopt.welcome.start"), Component.translatable("zakoopt.welcome.later")));
+		}, Component.translatable(title), Component.translatable(body), Component.translatable(yes), Component.translatable(no)));
 	}
 
 	// straight to the end scene with the player's own settings: the load is still sized to the device, nothing is measured or applied
 	public void compare(Screen parent) {
 		start(parent, true);
-	}
-
-	private void start(Screen parent) {
-		start(parent, false);
 	}
 
 	private void start(Screen parent, boolean compareOnly) {
@@ -211,7 +201,7 @@ public class Bench {
 		double fps = base;
 		while (true) {
 			step++;
-			progress(mc, Component.translatable("zakoopt.bench.ramp", step), Component.translatable("zakoopt.bench.target", Math.round(target)), step * 10 / (step + 1));
+			progress(Component.translatable("zakoopt.bench.ramp", step), Component.translatable("zakoopt.bench.target", Math.round(target)), step * 10 / (step + 1));
 			List<String> add = new ArrayList<>();
 			for (int lv = level; lv < next; lv++) {
 				add.addAll(Scene.level(lv));
@@ -228,7 +218,7 @@ public class Bench {
 			double k = Math.max((t - t0) / level, 1e-6);
 			next = Math.min(Scene.LEVELS, Math.min(2 * level, Math.max(level + 1, (int) Math.round(0.8 * (targetMs - t0) / k))));
 		}
-		progress(mc, status.stage(), status.percent());
+		progress(status.stage(), status.percent());
 		if (compareOnly) {
 			server(mc, tp(o));
 			compare(mc);
@@ -329,7 +319,7 @@ public class Bench {
 		server(mc, tp(o));
 		sleep(2000);
 		server(mc, tp(o));
-		progress(mc, Component.translatable("zakoopt.bench.final"), 97);
+		progress(Component.translatable("zakoopt.bench.final"), 97);
 		Map<String, Boolean> chosen = new LinkedHashMap<>();
 		tests.forEach(t -> chosen.put(t.key(), toggle(t.key()).get().get()));
 		// the whole mod as picked against no mod at all
@@ -365,8 +355,6 @@ public class Bench {
 		}
 		if (at == Scene.SPAWNERS) {
 			server(mc, Scene.spawnerLabels(Component.translatable("zakoopt.blocks", "%d").getString()));
-		}
-		if (at == Scene.SPAWNERS) {
 			growSpawners(mc, (ZakoOptions.Toggle) options.getFirst());
 		}
 		if (at == Scene.ITEMS_CLOSE) {
@@ -462,7 +450,7 @@ public class Bench {
 			toggle.set().accept(on);
 			return null;
 		});
-		progress(mc, Component.translatable("zakoopt.bench.test", name, i + 1, n), percent);
+		progress(Component.translatable("zakoopt.bench.test", name, i + 1, n), percent);
 		sleep(SETTLE_MS);
 		return fps(mc, SEGMENT_MS);
 	}
@@ -514,11 +502,11 @@ public class Bench {
 		return c;
 	}
 
-	private void progress(Minecraft mc, Component what, int percent) {
-		progress(mc, what, Component.empty(), percent);
+	private void progress(Component what, int percent) {
+		progress(what, Component.empty(), percent);
 	}
 
-	private void progress(Minecraft mc, Component what, Component note, int percent) {
+	private void progress(Component what, Component note, int percent) {
 		status = new Status(what, note, percent);
 	}
 
@@ -576,9 +564,7 @@ public class Bench {
 			return fps(mc, ms, tries - 1);
 		}
 		long[] times = new long[n];
-		for (int i = 0; i < n; i++) {
-			times[i] = FRAME_NS[frames - n + i & FRAME_NS.length - 1];
-		}
+		lastFrames(times, n);
 		java.util.Arrays.sort(times);
 		return n == 0 ? 0 : 1e9 / times[n / 2];
 	}
