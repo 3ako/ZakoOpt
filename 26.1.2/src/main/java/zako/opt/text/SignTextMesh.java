@@ -35,7 +35,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import zako.opt.MixinPlugin;
 import zako.opt.feature.Features;
-import zako.opt.mixin.gl.RenderTypeStateAccessor;
+import zako.opt.mixin.gl.RenderTypeAccessor;
 
 import org.lwjgl.system.MemoryUtil;
 
@@ -491,7 +491,7 @@ public class SignTextMesh {
 			}
 			RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(type.mode());
 			GpuBuffer indices = sequential.getBuffer(maxIndices);
-			Map<String, RenderSetup.TextureAndSampler> textures = ((RenderTypeStateAccessor) type).zakoopt$state().getTextures();
+			Map<String, RenderSetup.TextureAndSampler> textures = ((RenderTypeAccessor) type).zakoopt$state().getTextures();
 			try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "ZakoOpt sign text",
 					target.getColorTextureView(), OptionalInt.empty(), target.useDepth ? target.getDepthTextureView() : null, OptionalDouble.empty())) {
 				pass.setPipeline(type.pipeline());

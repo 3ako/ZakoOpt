@@ -12,7 +12,6 @@
 		"block.SignTextDrawMixin",
 		"block.SignTextRemoveMixin",
 		"block.SodiumSignMeshMixin",
-		"gl.RenderTypeStateAccessor",
 		"block.AbstractSignRendererMixin",
 		"block.BlockEntityRenderStateMixin",
 		"block.SignModelCacheMixin",

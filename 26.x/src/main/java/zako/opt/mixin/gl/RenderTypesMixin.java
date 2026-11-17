@@ -21,7 +21,6 @@ public class RenderTypesMixin {
 	private static final Map<Identifier, RenderType> zakoopt$translucent = new ConcurrentHashMap<>();
 
 	// Util.memoize keys on Pair(id, flag) and hashes it through Objects.hash on every call, per entity per frame
-
 	@WrapOperation(method = "entityTranslucent(Lnet/minecraft/resources/Identifier;Z)Lnet/minecraft/client/renderer/rendertype/RenderType;",
 			at = @At(value = "INVOKE", target = "Ljava/util/function/BiFunction;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
 	private static Object zakoopt$translucent(BiFunction<Object, Object, Object> memo, Object id, Object flag, Operation<Object> original) {
