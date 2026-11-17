@@ -36,7 +36,6 @@ public class ImmediateRing {
 	private final Map<VertexFormat, Ring> RINGS = new IdentityHashMap<>();
 	private final GpuFence[] FENCES = new GpuFence[SEGMENTS];
 	private long frame;
-	private boolean usedThisFrame;
 	private boolean coherentChecked;
 	private DirectStateAccess dsa;
 	private int liveBuilders;
@@ -62,7 +61,6 @@ public class ImmediateRing {
 			long address = MemoryUtil.memAddress(data);
 			if (address >= base && address + length <= base + ring.coherent.capacity()) {
 				// written in place by a ring-backed builder: nothing to copy
-				usedThisFrame = true;
 				return (int) ((address - base) / stride);
 			}
 		}
@@ -79,7 +77,6 @@ public class ImmediateRing {
 				MemoryUtil.memCopy(MemoryUtil.memAddress(data), MemoryUtil.memAddress(view.data()), length);
 			}
 		}
-		usedThisFrame = true;
 		return offset / stride;
 	}
 
@@ -96,7 +93,6 @@ public class ImmediateRing {
 		if (offset < 0) {
 			return 0;
 		}
-		usedThisFrame = true;
 		liveBuilders++;
 		return MemoryUtil.memAddress0(ring.coherent) + offset;
 	}
@@ -131,7 +127,7 @@ public class ImmediateRing {
 	// called once per frame right before the swap; fences live for 3 frames, so no try-with-resources
 	@SuppressWarnings("resource")
 	public void endFrame() {
-		if (!usedThisFrame && RINGS.isEmpty()) {
+		if (RINGS.isEmpty()) {
 			return;
 		}
 		int segment = (int) (frame % SEGMENTS);
@@ -139,8 +135,7 @@ public class ImmediateRing {
 			FENCES[segment].close();
 		}
 		// shares the frame's single fence; must run before FrameFence.endFrame
-		FENCES[segment] = FrameFence.enabled() ? FrameFence.create() : new GlFence();
-		usedThisFrame = false;
+		FENCES[segment] = Features.FRAME_FENCE.on ? FrameFence.create() : new GlFence();
 		frame++;
 		int next = (int) (frame % SEGMENTS);
 		if (FENCES[next] != null) {

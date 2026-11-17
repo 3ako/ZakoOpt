@@ -1,5 +1,6 @@
 package zako.opt.mixin.gl;
 
+import zako.opt.feature.Features;
 import com.mojang.blaze3d.buffers.GpuFence;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,7 +13,7 @@ import zako.opt.gl.FrameFence;
 public class GlCommandEncoderMixin {
 	@Inject(method = "createFence", at = @At("HEAD"), cancellable = true)
 	private void zakoopt$frameFence(CallbackInfoReturnable<GpuFence> cir) {
-		if (FrameFence.enabled()) {
+		if (Features.FRAME_FENCE.on) {
 			cir.setReturnValue(FrameFence.create());
 		}
 	}

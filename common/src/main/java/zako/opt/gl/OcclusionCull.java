@@ -14,7 +14,6 @@ import net.caffeinemc.mods.sodium.client.render.chunk.terrain.DefaultTerrainRend
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.render.viewport.CameraTransform;
 import net.caffeinemc.mods.sodium.client.util.iterator.ByteIterator;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.SectionPos;
 import zako.opt.DebugToggle;
 import org.joml.Matrix4f;
@@ -179,6 +178,13 @@ public class OcclusionCull {
 		filter.region = region;
 		filter.advance();
 		return filter;
+	}
+
+	private boolean hidden(RenderRegion region, int local) {
+		int cx = region.getChunkX() + LocalSectionIndex.unpackX(local);
+		int cy = region.getChunkY() + LocalSectionIndex.unpackY(local);
+		int cz = region.getChunkZ() + LocalSectionIndex.unpackZ(local);
+		return hidden(SectionPos.asLong(cx, cy, cz), cx, cy, cz);
 	}
 
 	private boolean hidden(long key, int cx, int cy, int cz) {
@@ -454,13 +460,10 @@ public class OcclusionCull {
 			}
 			while (iterator.hasNext()) {
 				int local = iterator.nextByteAsInt();
-				int cx = region.getChunkX() + LocalSectionIndex.unpackX(local);
-				int cy = region.getChunkY() + LocalSectionIndex.unpackY(local);
-				int cz = region.getChunkZ() + LocalSectionIndex.unpackZ(local);
 				long weight = weight(local);
 				sections++;
 				weightAll += weight;
-				if (hidden(SectionPos.asLong(cx, cy, cz), cx, cy, cz)) {
+				if (hidden(region, local)) {
 					culled++;
 					weightCulled += weight;
 				}
@@ -606,10 +609,7 @@ public class OcclusionCull {
 			next = -1;
 			while (in.hasNext()) {
 				int local = in.nextByteAsInt();
-				int cx = region.getChunkX() + LocalSectionIndex.unpackX(local);
-				int cy = region.getChunkY() + LocalSectionIndex.unpackY(local);
-				int cz = region.getChunkZ() + LocalSectionIndex.unpackZ(local);
-				if (!hidden(SectionPos.asLong(cx, cy, cz), cx, cy, cz)) {
+				if (!hidden(region, local)) {
 					next = local;
 					return;
 				}

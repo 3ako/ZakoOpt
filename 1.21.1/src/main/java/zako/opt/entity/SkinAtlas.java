@@ -33,7 +33,7 @@ public class SkinAtlas {
 	// access order: the eldest entry is the least recently drawn skin
 	private final Map<ResourceLocation, Slot> SLOTS = new LinkedHashMap<>(64, 0.75f, true);
 	private final ArrayDeque<Integer> FREE = new ArrayDeque<>();
-	// 1.21.4 textures do not know their size; asked from GL once per texture object
+	// 1.21.1 textures do not know their size; asked from GL once per texture object
 	private final Map<AbstractTexture, Boolean> SKIN_SIZED = new WeakHashMap<>();
 	private Texture texture;
 	private NativeImage placeholder;

@@ -75,7 +75,7 @@ public class SpawnerRendererMixin {
 		}
 		// most frames replay: the capturing lambda is only made for the frame that records
 		if (!SpawnerReplay.replay(entity, mc.level.getGameTime(), camera.pos, collector)) {
-			SpawnerReplay.submit(entity, mc.level.getGameTime(), camera.pos, collector,
+			SpawnerReplay.submit(entity, camera.pos, collector,
 					c -> original.call(pose, c, entity, dispatcher, spin, scale, camera));
 		}
 	}
