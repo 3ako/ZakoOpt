@@ -172,6 +172,19 @@ public class SignTextMesh {
 		for (Object[] item; (item = QUEUE.poll()) != null; ) {
 			own((SignBlockEntity) item[0], (AbstractSignRenderer) item[1]);
 		}
+		// a new glyph uploads to the font texture, which renderpearl refuses inside draw()'s render pass
+		Font font = Minecraft.getInstance().font;
+		int budget = REBUILD_BUDGET;
+		for (Section section : SECTIONS.values()) {
+			if (section.dirty && budget > 0) {
+				budget -= section.entries.size();
+				for (Entry entry : section.entries.values()) {
+					for (Line line : entry.lines) {
+						font.prepareText(line.text, 0, 0, 0, false, false, 0);
+					}
+				}
+			}
+		}
 	}
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
