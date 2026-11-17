@@ -107,7 +107,6 @@ public class SignTextMesh {
 	}
 
 	private static final class Section {
-		final long key;
 		final int x, y, z;
 		final Long2ObjectOpenHashMap<Entry> entries = new Long2ObjectOpenHashMap<>();
 		List<Mesh> meshes = List.of(), outlineMeshes = List.of();
@@ -116,7 +115,6 @@ public class SignTextMesh {
 		long seenFrame = -1, drawFrame = -1;
 
 		Section(long key) {
-			this.key = key;
 			x = SectionPos.sectionToBlockCoord(SectionPos.x(key));
 			y = SectionPos.sectionToBlockCoord(SectionPos.y(key));
 			z = SectionPos.sectionToBlockCoord(SectionPos.z(key));
@@ -451,12 +449,8 @@ public class SignTextMesh {
 		section.outlineMeshes = meshes;
 	}
 
-	private Matrix4f toCamera(Section section, Vec3 camera) {
-		return new Matrix4f().translation((float) (section.x - camera.x), (float) (section.y - camera.y), (float) (section.z - camera.z));
-	}
-
 	private GpuBufferSlice transform(Section section, Vec3 camera) {
-		return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy().mul(toCamera(section, camera)));
+		return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy().translate((float) (section.x - camera.x), (float) (section.y - camera.y), (float) (section.z - camera.z)));
 	}
 
 	private void render(List<Section> sections, Vec3 camera, Minecraft mc, RenderPass pass) {

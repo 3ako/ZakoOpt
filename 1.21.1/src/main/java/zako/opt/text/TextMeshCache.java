@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
-// 1.21.4 lays text out glyph by glyph on every draw. A line seen again is drawn once in its own space into a recorder,
+// 1.21.1 lays text out glyph by glyph on every draw. A line seen again is drawn once in its own space into a recorder,
 // keeping the vanilla order of buffer switches, and from then on replayed: positions through the caller's matrix, light
 // swapped in. A line is recorded on its second sighting, so text that changes every frame stays on the vanilla path.
 @UtilityClass

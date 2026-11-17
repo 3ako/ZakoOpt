@@ -1,15 +1,11 @@
 package zako.opt.text;
 
-import zako.opt.feature.Features;
-
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.FormattedCharSequence;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 @UtilityClass
 public class PreparedTextCache {
@@ -19,7 +15,7 @@ public class PreparedTextCache {
 		}
 
 		@Override
-		public net.minecraft.client.gui.navigation.ScreenRectangle bounds() {
+		public ScreenRectangle bounds() {
 			return null;
 		}
 	};
@@ -34,10 +30,6 @@ public class PreparedTextCache {
 		boolean matches(Key k) {
 			return generation == PreparedTextCache.generation && key.equals(k);
 		}
-	}
-
-	public boolean enabled() {
-		return Features.PREPARED_TEXT_CACHE.on;
 	}
 
 	public Font.PreparedText get(Key key) {
