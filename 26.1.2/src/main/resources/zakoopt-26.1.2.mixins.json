@@ -6,7 +6,6 @@
 	"client": [
 		"block.AbstractSignRendererInvoker",
 		"block.SignBreakMixin",
-		"block.SignClientTickerMixin",
 		"block.SignTextArmMixin",
 		"block.SignTextBakeMixin",
 		"block.SignTextChangeMixin",

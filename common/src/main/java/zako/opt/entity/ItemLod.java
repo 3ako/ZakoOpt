@@ -52,7 +52,7 @@ public class ItemLod {
 				return null;
 			}
 		}
-		List<BakedQuad> faces = List.copyOf(quads.stream().filter(q -> Quads.direction(q).getAxis() == Direction.Axis.Z).toList());
+		List<BakedQuad> faces = quads.stream().filter(q -> Quads.direction(q).getAxis() == Direction.Axis.Z).toList();
 		return faces.isEmpty() ? null : faces;
 	}
 
