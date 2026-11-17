@@ -105,7 +105,6 @@ public class SignTextMesh {
 	}
 
 	private static final class Section {
-		final long key;
 		final int x, y, z;
 		final Long2ObjectOpenHashMap<Entry> entries = new Long2ObjectOpenHashMap<>();
 		List<Mesh> meshes = List.of();
@@ -114,7 +113,6 @@ public class SignTextMesh {
 		long seenFrame = -1, drawFrame = -1;
 
 		Section(long key) {
-			this.key = key;
 			x = SectionPos.sectionToBlockCoord(SectionPos.x(key));
 			y = SectionPos.sectionToBlockCoord(SectionPos.y(key));
 			z = SectionPos.sectionToBlockCoord(SectionPos.z(key));

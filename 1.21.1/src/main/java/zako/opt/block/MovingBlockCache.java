@@ -1,6 +1,7 @@
 package zako.opt.block;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import zako.opt.text.LruMap;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,7 +29,6 @@ import org.lwjgl.system.MemoryUtil;
 import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 // a block pushed by a piston is tesselated once (through tesselateBlock, so Fabric models work) and replayed every frame:
@@ -37,12 +37,7 @@ import java.util.Map;
 @UtilityClass
 public class MovingBlockCache {
 	private final ByteBufferBuilder SCRATCH = new ByteBufferBuilder(4096);
-	private final Map<Key, Mesh> CACHE = new LinkedHashMap<>(64, 0.75f, true) {
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<Key, Mesh> eldest) {
-			return size() > 1024;
-		}
-	};
+	private final Map<Key, Mesh> CACHE = new LruMap<>(1024);
 
 	// tint: grass, leaves, vines... take their colour from the biome where they are tesselated, so a mesh is only good
 	// for blocks of the same colour

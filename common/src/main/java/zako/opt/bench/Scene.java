@@ -11,6 +11,9 @@ import java.util.Random;
 // so the whole scene stays within entity render distance
 @UtilityClass
 public class Scene {
+	private final String ARMOUR = BenchWorld.LEGACY_SNBT
+			? "ArmorItems:[{id:\"diamond_boots\",count:1},{id:\"diamond_leggings\",count:1},{id:\"diamond_chestplate\",count:1},{id:\"diamond_helmet\",count:1}],HandItems:[{id:\"diamond_sword\",count:1},{}]"
+			: "equipment:{head:{id:\"diamond_helmet\",count:1},chest:{id:\"diamond_chestplate\",count:1},legs:{id:\"diamond_leggings\",count:1},feet:{id:\"diamond_boots\",count:1},mainhand:{id:\"diamond_sword\",count:1}}";
 	// over the mountains of the generated terrain under the scene
 	public final int Y = 250;
 	public final int LEVELS = 60;
@@ -88,11 +91,8 @@ public class Scene {
 		c.add(f("fill -11 %d -2 -5 %d 60 minecraft:smooth_stone", Y - 1, Y - 1));
 		for (int d = 8; d <= 64; d += 4) {
 			int z = LOD.z() + d;
-			String armour = BenchWorld.LEGACY_SNBT
-					? "ArmorItems:[{id:\"diamond_boots\",count:1},{id:\"diamond_leggings\",count:1},{id:\"diamond_chestplate\",count:1},{id:\"diamond_helmet\",count:1}],HandItems:[{id:\"diamond_sword\",count:1},{}]"
-					: "equipment:{head:{id:\"diamond_helmet\",count:1},chest:{id:\"diamond_chestplate\",count:1},legs:{id:\"diamond_leggings\",count:1},feet:{id:\"diamond_boots\",count:1},mainhand:{id:\"diamond_sword\",count:1}}";
-			c.add(f("summon minecraft:zombie -7 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", Y, z, RULER, armour));
-			c.add(f("summon minecraft:%s -9 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", MANNEQUIN ? "mannequin" : "skeleton", Y, z, RULER, armour));
+			c.add(f("summon minecraft:zombie -7 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", Y, z, RULER, ARMOUR));
+			c.add(f("summon minecraft:%s -9 %d %d {NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:[\"%s\"],Rotation:[180f,0f],%s}", MANNEQUIN ? "mannequin" : "skeleton", Y, z, RULER, ARMOUR));
 			if (d % 8 == 0) {
 				c.add(f("summon minecraft:text_display -8 %d.6 %d {billboard:\"center\",alignment:\"center\",Tags:[\"%s\"],text:%s}", Y + 2, z, RULER, nbtText(blocksLabel.formatted(d))));
 			}
@@ -175,9 +175,7 @@ public class Scene {
 			int n = lv * 28 + i;
 			String name = n % 3 == 0 ? f(",CustomName:%s,CustomNameVisible:1b", nbtText("Mob_" + n)) : "";
 			c.add(f("summon minecraft:%s %.1f %d %.1f {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[%df,0f]%s,%s}", MANNEQUIN && i % 4 == 3 ? "mannequin" : KINDS[(i % 14 + lv) % 6],
-					i % 14 * 2.2 + i / 14 * 1.1, y, z + 0.7 + i / 14 * 1.5, random.nextInt(360), name, BenchWorld.LEGACY_SNBT
-							? "ArmorItems:[{id:\"diamond_boots\",count:1},{id:\"diamond_leggings\",count:1},{id:\"diamond_chestplate\",count:1},{id:\"diamond_helmet\",count:1}],HandItems:[{id:\"diamond_sword\",count:1},{}]"
-							: "equipment:{head:{id:\"diamond_helmet\",count:1},chest:{id:\"diamond_chestplate\",count:1},legs:{id:\"diamond_leggings\",count:1},feet:{id:\"diamond_boots\",count:1},mainhand:{id:\"diamond_sword\",count:1}}"));
+					i % 14 * 2.2 + i / 14 * 1.1, y, z + 0.7 + i / 14 * 1.5, random.nextInt(360), name, ARMOUR));
 		}
 		// B: dropped items that never despawn or get picked up
 		for (int i = 0; i < 60; i++) {

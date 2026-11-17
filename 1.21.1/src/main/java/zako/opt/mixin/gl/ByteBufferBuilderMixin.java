@@ -67,14 +67,11 @@ public class ByteBufferBuilderMixin implements RingBuilders.Backed {
 		RingBuilders.remember(zakoopt$type, capacity);
 		if (zakoopt$state == 1) {
 			ImmediateRing.builderReleased();
-			pointer = 0;
-			generation = -1;
-			ci.cancel();
 		} else {
 			MemoryUtil.nmemFree(pointer);
-			pointer = 0;
-			generation = -1;
-			ci.cancel();
 		}
+		pointer = 0;
+		generation = -1;
+		ci.cancel();
 	}
 }

@@ -59,8 +59,12 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	}
 
 	public static boolean applies(String mixin) {
-		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && (CREATE || !CREATE_MIXINS.contains(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && !(VULKAN && openGl(mixin))
-				&& (LUNAR || !LUNAR_MIXINS.contains(mixin)) && !(LUNAR && NO_LUNAR_MIXINS.contains(mixin)) && !(NEOFORGE && NEOFORGE_OFF.contains(mixin)) && (NEOFORGE || !NEOFORGE_ONLY.contains(mixin)) && !(POLYDIUM && mixin.equals("entity.ModelResetPoseMixin"))
+		return built(mixin) && (SODIUM || !SODIUM_MIXINS.contains(mixin)) && (CREATE || !CREATE_MIXINS.contains(mixin)) && allowed(mixin);
+	}
+
+	private static boolean allowed(String mixin) {
+		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && (LUNAR || !LUNAR_MIXINS.contains(mixin))
+				&& !(LUNAR && NO_LUNAR_MIXINS.contains(mixin)) && !(NEOFORGE && NEOFORGE_OFF.contains(mixin)) && (NEOFORGE || !NEOFORGE_ONLY.contains(mixin)) && !(POLYDIUM && mixin.equals("entity.ModelResetPoseMixin"))
 				&& !(ASYNC_PARTICLES && PARTICLE_MIXINS.contains(mixin));
 	}
 
@@ -75,10 +79,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		String mixin = mixinClassName.substring("zako.opt.mixin.".length());
-		return !(VULKAN && openGl(mixin)) && !(SODIUM && NO_SODIUM_MIXINS.contains(mixin)) && (LUNAR || !LUNAR_MIXINS.contains(mixin))
-				&& !(LUNAR && NO_LUNAR_MIXINS.contains(mixin)) && !(NEOFORGE && NEOFORGE_OFF.contains(mixin)) && (NEOFORGE || !NEOFORGE_ONLY.contains(mixin)) && !(POLYDIUM && mixin.equals("entity.ModelResetPoseMixin"))
-				&& !(ASYNC_PARTICLES && PARTICLE_MIXINS.contains(mixin));
+		return allowed(mixinClassName.substring("zako.opt.mixin.".length()));
 	}
 
 	@Override

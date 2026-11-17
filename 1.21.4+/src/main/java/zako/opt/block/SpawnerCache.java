@@ -1,17 +1,11 @@
 package zako.opt.block;
 
-import zako.opt.feature.Features;
-
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.level.BaseSpawner;
 
 @UtilityClass
 public class SpawnerCache {
-
-	public boolean enabled() {
-		return Features.SPAWNER_TICK_CACHE.on;
-	}
 
 	public EntityRenderState get(BaseSpawner spawner, long tick) {
 		TickCached c = (TickCached) spawner;

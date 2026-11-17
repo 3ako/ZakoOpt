@@ -1,16 +1,11 @@
 package zako.opt.text;
 
-import zako.opt.feature.Features;
-
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.FormattedCharSequence;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 @UtilityClass
 public class PreparedTextCache {
@@ -20,18 +15,13 @@ public class PreparedTextCache {
 		}
 
 		@Override
-		public net.minecraft.client.gui.navigation.ScreenRectangle bounds() {
+		public ScreenRectangle bounds() {
 			return null;
 		}
 	};
 
 	private final HitRate RATE = new HitRate();
-	private final Map<Key, Font.PreparedText> CACHE = new LinkedHashMap<>(512, 0.75f, true) {
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<Key, Font.PreparedText> eldest) {
-			return size() > 2048;
-		}
-	};
+	private final Map<Key, Font.PreparedText> CACHE = new LruMap<>(2048);
 
 	// bumped by clear(): a font reload must not leave old glyphs pinned to lines that live on
 	private volatile int generation;
@@ -40,18 +30,6 @@ public class PreparedTextCache {
 		boolean matches(Key k) {
 			return generation == PreparedTextCache.generation && key.equals(k);
 		}
-	}
-
-	public boolean isStable(FormattedCharSequence text) {
-		return StableText.isStable(text);
-	}
-
-	public boolean enabled() {
-		return Features.PREPARED_TEXT_CACHE.on;
-	}
-
-	public Key key(FormattedCharSequence text, float x, float y, int color, boolean shadow, boolean includeEmpty, int background) {
-		return new Key(text, x, y, color, shadow, includeEmpty, background);
 	}
 
 	public Font.PreparedText get(Key key) {

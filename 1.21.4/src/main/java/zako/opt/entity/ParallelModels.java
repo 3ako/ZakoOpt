@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 // 1.21.4 renders every model straight into its buffer. During the entity pass the render thread only snapshots the posed

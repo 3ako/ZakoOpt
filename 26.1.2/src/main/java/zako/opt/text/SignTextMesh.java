@@ -35,7 +35,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import zako.opt.MixinPlugin;
 import zako.opt.feature.Features;
-import zako.opt.mixin.gl.RenderTypeStateAccessor;
+import zako.opt.mixin.gl.RenderTypeAccessor;
 
 import org.lwjgl.system.MemoryUtil;
 
@@ -111,7 +111,6 @@ public class SignTextMesh {
 	}
 
 	private static final class Section {
-		final long key;
 		final int x, y, z;
 		final Long2ObjectOpenHashMap<Entry> entries = new Long2ObjectOpenHashMap<>();
 		List<Mesh> meshes = List.of(), outlineMeshes = List.of();
@@ -120,7 +119,6 @@ public class SignTextMesh {
 		long seenFrame = -1, drawFrame = -1;
 
 		Section(long key) {
-			this.key = key;
 			x = SectionPos.sectionToBlockCoord(SectionPos.x(key));
 			y = SectionPos.sectionToBlockCoord(SectionPos.y(key));
 			z = SectionPos.sectionToBlockCoord(SectionPos.z(key));
@@ -446,12 +444,8 @@ public class SignTextMesh {
 		section.outlineMeshes = meshes;
 	}
 
-	private Matrix4f toCamera(Section section, Vec3 camera) {
-		return new Matrix4f().translation((float) (section.x - camera.x), (float) (section.y - camera.y), (float) (section.z - camera.z));
-	}
-
 	private GpuBufferSlice transform(Section section, Vec3 camera) {
-		return RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(RenderSystem.getModelViewMatrix()).mul(toCamera(section, camera)), WHITE, new Vector3f(), new Matrix4f());
+		return RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(RenderSystem.getModelViewMatrix()).translate((float) (section.x - camera.x), (float) (section.y - camera.y), (float) (section.z - camera.z)), WHITE, new Vector3f(), new Matrix4f());
 	}
 
 	private void render(List<Section> sections, Vec3 camera, Minecraft mc) {
@@ -497,7 +491,7 @@ public class SignTextMesh {
 			}
 			RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(type.mode());
 			GpuBuffer indices = sequential.getBuffer(maxIndices);
-			Map<String, RenderSetup.TextureAndSampler> textures = ((RenderTypeStateAccessor) type).zakoopt$state().getTextures();
+			Map<String, RenderSetup.TextureAndSampler> textures = ((RenderTypeAccessor) type).zakoopt$state().getTextures();
 			try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "ZakoOpt sign text",
 					target.getColorTextureView(), OptionalInt.empty(), target.useDepth ? target.getDepthTextureView() : null, OptionalDouble.empty())) {
 				pass.setPipeline(type.pipeline());

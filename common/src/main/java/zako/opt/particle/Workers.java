@@ -90,20 +90,24 @@ public class Workers {
 			while (completed.get() < count) {
 				int n = next.get();
 				if (n < count && next.compareAndSet(n, n + 1)) {
-					try {
-						if (error.get() == null) {
-							task.accept(n);
-						}
-					} catch (Throwable t) {
-						error.compareAndSet(null, t);
-					} finally {
-						completed.incrementAndGet();
-					}
+					runItem(n);
 				} else {
 					Thread.onSpinWait();
 				}
 			}
 			return error.get();
+		}
+
+		private void runItem(int n) {
+			try {
+				if (error.get() == null) {
+					task.accept(n);
+				}
+			} catch (Throwable t) {
+				error.compareAndSet(null, t);
+			} finally {
+				completed.incrementAndGet();
+			}
 		}
 
 		void work() {
@@ -112,15 +116,7 @@ public class Workers {
 				int n = next.get();
 				if (n < ready) {
 					if (next.compareAndSet(n, n + 1)) {
-						try {
-							if (error.get() == null) {
-								task.accept(n);
-							}
-						} catch (Throwable t) {
-							error.compareAndSet(null, t);
-						} finally {
-							completed.incrementAndGet();
-						}
+						runItem(n);
 					}
 					continue;
 				}

@@ -1,5 +1,6 @@
 package zako.opt.mixin.gl;
 
+import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -8,4 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface RenderTypeAccessor {
 	@Accessor("name")
 	String zakoopt$name();
+
+	@Accessor("state")
+	RenderSetup zakoopt$state();
 }

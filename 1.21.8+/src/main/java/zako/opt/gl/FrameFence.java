@@ -1,6 +1,5 @@
 package zako.opt.gl;
 
-import zako.opt.feature.Features;
 
 import org.lwjgl.opengl.GL11C;
 import com.mojang.blaze3d.buffers.GpuFence;
@@ -17,10 +16,6 @@ public final class FrameFence implements GpuFence {
 	Shared shared;
 	@NonFinal
 	boolean closed;
-
-	public static boolean enabled() {
-		return Features.FRAME_FENCE.on;
-	}
 
 	public static GpuFence create() {
 		if (pending == null) {

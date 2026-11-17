@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-// 1.21.4 renders every model straight into its buffer. During the entity pass the render thread only snapshots the posed
+// 1.21.1 renders every model straight into its buffer. During the entity pass the render thread only snapshots the posed
 // parts (setupAnim writes them into a model instance shared by every entity of that kind) and reserves the model's
 // vertices in the buffer, so vanilla's order holds; workers write the vertices straight into the reserved range. The
 // buffer is waited on before it is built, grown (its memory moves) or closed, and at the end of the pass. FastCubes and

@@ -22,12 +22,11 @@ import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
-// 1.21.4 lays text out glyph by glyph on every draw. A line seen again is drawn once in its own space into a recorder,
+// 1.21.1 lays text out glyph by glyph on every draw. A line seen again is drawn once in its own space into a recorder,
 // keeping the vanilla order of buffer switches, and from then on replayed: positions through the caller's matrix, light
 // swapped in. A line is recorded on its second sighting, so text that changes every frame stays on the vanilla path.
 @UtilityClass
@@ -37,12 +36,7 @@ public class TextMeshCache {
 	private final Mesh SEEN = new Mesh(List.of(), 0);
 	private final Mesh UNCACHEABLE = new Mesh(List.of(), 0);
 	private final HitRate RATE = new HitRate();
-	private final Map<Key, Mesh> CACHE = new LinkedHashMap<>(512, 0.75f, true) {
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<Key, Mesh> eldest) {
-			return size() > 4096;
-		}
-	};
+	private final Map<Key, Mesh> CACHE = new LruMap<>(4096);
 	private boolean recording;
 	public int generation;
 

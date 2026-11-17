@@ -59,9 +59,6 @@ public class ParallelModels {
 		stream = Workers.stream(i -> build(BUILT.get(i)));
 	}
 
-	// render thread: poses the model and queues its vertices; the caller checks the vertex format and that nothing
-	// else (outline, block cracks) has to see the same model. null: another mod draws some part itself, the caller
-	// renders this model the vanilla way (which poses it again)
 	public boolean supports(VertexFormat format) {
 		return format == FORMAT || format == GLINT_FORMAT;
 	}
@@ -70,6 +67,9 @@ public class ParallelModels {
 		return add(model, state, pose, light, overlay, color, sprite, FORMAT);
 	}
 
+	// render thread: poses the model and queues its vertices; the caller checks the vertex format and that nothing
+	// else (outline, block cracks) has to see the same model. null: another mod draws some part itself, the caller
+	// renders this model the vanilla way (which poses it again)
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public Job add(Model model, Object state, PoseStack.Pose pose, int light, int overlay, int color, TextureAtlasSprite sprite, VertexFormat format) {
 		model.setupAnim(state);

@@ -21,7 +21,6 @@ import zako.opt.gl.RawVertices;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -38,12 +37,7 @@ public class TextMeshCache {
 	private final Mesh SEEN = new Mesh(List.of());
 	private final Mesh UNCACHEABLE = new Mesh(List.of());
 	private final HitRate RATE = new HitRate();
-	private final Map<Key, Mesh> CACHE = new LinkedHashMap<>(512, 0.75f, true) {
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<Key, Mesh> eldest) {
-			return size() > 4096;
-		}
-	};
+	private final Map<Key, Mesh> CACHE = new LruMap<>(4096);
 	private boolean recording;
 	public int generation;
 

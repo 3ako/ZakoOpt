@@ -58,15 +58,10 @@ public class SpawnerMeshCache {
 		Object renderer = dispatcher.getRenderer(entity);
 		Mesh mesh = CACHE.get(entity);
 		if (mesh == null || mesh.renderer != renderer) {
-			mesh = new Mesh(renderer, record(recorder -> record.accept(recorder, LIGHT_MARK)));
+			mesh = new Mesh(renderer, record(recorder -> record.accept(recorder, LIGHT_MARK), false));
 			CACHE.put(entity, mesh);
 		}
 		return emit(mesh.segments, poseStack.last(), buffers, light);
-	}
-
-	// the draw goes into buffers that keep its vertices, one segment per run of the same render type
-	public List<Segment> record(Consumer<MultiBufferSource> draw) {
-		return record(draw, false);
 	}
 
 	// owned: the vertices live in memAlloc'd memory the caller hands back to free(); the spawner's meshes go with their entity instead
@@ -218,13 +213,13 @@ public class SpawnerMeshCache {
 		return (byte) (int) (Mth.clamp(c, -1.0F, 1.0F) * 127.0F);
 	}
 
-	// one segment per run of draws into the same render type, as the vanilla buffer source would see them
 	public void free(List<Segment> segments) {
 		for (Segment segment : segments) {
 			MemoryUtil.memFree(segment.vertices);
 		}
 	}
 
+	// one segment per run of draws into the same render type, as the vanilla buffer source would see them
 	@RequiredArgsConstructor
 	private static final class Recorder implements MultiBufferSource {
 		final List<Segment> segments = new ArrayList<>();

@@ -4,6 +4,9 @@
 	"plugin": "zako.opt.MixinPlugin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"block.SignTextRemoveMixin",
+		"block.SignBreakMixin",
+		"block.SignClientTickerMixin",
 		"gl.BufferSourceMixin",
 		"gl.GameRendererTimerMixin",
 		"gl.LevelTimerMixin",

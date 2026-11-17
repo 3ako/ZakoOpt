@@ -37,7 +37,7 @@ public class SpawnerRendererMixin {
 				return;
 			}
 		}
-		if (entity == null || !SpawnerCache.enabled()) {
+		if (entity == null || !Features.SPAWNER_TICK_CACHE.on) {
 			original.call(state, partialTick, entity, dispatcher, oSpin, spin);
 		} else {
 			long tick = entity.level().getGameTime();
@@ -68,14 +68,14 @@ public class SpawnerRendererMixin {
 	private void zakoopt$replayFar(PoseStack pose, SubmitNodeCollector collector, EntityRenderState entity, EntityRenderDispatcher dispatcher, float spin, float scale,
 								   CameraRenderState camera, Operation<Void> original, SpawnerRenderState state) {
 		Minecraft mc = Minecraft.getInstance();
-		if (!Features.SPAWNER_REPLAY.on || !SpawnerCache.enabled() || mc.level == null
+		if (!Features.SPAWNER_REPLAY.on || !Features.SPAWNER_TICK_CACHE.on || mc.level == null
 				|| SpawnerReplay.distanceSq(state.blockPos, camera.pos) <= SpawnerReplay.DISTANCE * SpawnerReplay.DISTANCE) {
 			original.call(pose, collector, entity, dispatcher, spin, scale, camera);
 			return;
 		}
 		// most frames replay: the capturing lambda is only made for the frame that records
 		if (!SpawnerReplay.replay(entity, mc.level.getGameTime(), camera.pos, collector)) {
-			SpawnerReplay.submit(entity, mc.level.getGameTime(), camera.pos, collector,
+			SpawnerReplay.submit(entity, camera.pos, collector,
 					c -> original.call(pose, c, entity, dispatcher, spin, scale, camera));
 		}
 	}

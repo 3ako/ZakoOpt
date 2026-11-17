@@ -6,8 +6,6 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class RealFence {
-	public boolean creating;
-
 	public GpuFence create() {
 		return new GlFence();
 	}

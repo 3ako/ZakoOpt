@@ -53,7 +53,7 @@ public class MemoryGraph {
 		garbage = Component.empty();
 	}
 
-	// every thread of the process since the JVM started, ended ones included: -1 where the JVM cannot tell
+	// the calling (render) thread's allocations so far; -1 where the JVM cannot tell
 	private long allocatedBytes() {
 		try {
 			return THREADS == null ? -1 : THREADS.getCurrentThreadAllocatedBytes();

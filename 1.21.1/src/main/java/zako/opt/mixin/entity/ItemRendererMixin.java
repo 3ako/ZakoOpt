@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,8 +26,7 @@ public class ItemRendererMixin {
 			zakoopt$flat = false;
 			return model;
 		}
-		Matrix4f m = poseStack.last().pose();
-		zakoopt$flat = m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32() > ItemLod.distanceSq();
+		zakoopt$flat = ItemLod.far(poseStack.last().pose());
 		return model;
 	}
 

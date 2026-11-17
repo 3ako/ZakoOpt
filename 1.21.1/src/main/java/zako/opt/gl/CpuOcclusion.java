@@ -161,7 +161,7 @@ public class CpuOcclusion {
 			clip[i * 4 + 2] = m.m02() * px + m.m12() * y + m.m22() * pz + m.m32();
 			clip[i * 4 + 3] = m.m03() * px + m.m13() * y + m.m23() * pz + m.m33();
 		}
-		// clipped against w > NEAR_W: the ground under the camera is the occluder that matters most and always crosses it
+		// clipped against w > near: the ground under the camera is the occluder that matters most and always crosses it
 		int n = clipNear(4);
 		if (n < 3) {
 			return;

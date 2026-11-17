@@ -60,21 +60,15 @@ public class SpawnerReplay {
 		return dx * dx + dy * dy + dz * dz;
 	}
 
-	public void submit(Object key, long tick, Vec3 camera, SubmitNodeCollector collector, Consumer<SubmitNodeCollector> body) {
-		if (tick != cachedTick) {
-			CACHE.clear();
-			cachedTick = tick;
-		}
-		Recording recording = CACHE.get(key);
-		if (recording == null) {
-			recording = new Recording(camera);
-			CACHE.put(key, recording);
-			body.accept((SubmitNodeCollector) recorder(SubmitNodeCollector.class, collector, recording, null, -1));
-		} else if (!recording.replayable) {
+	// only after replay() returned false for the same key and tick: the cache is already this tick's
+	public void submit(Object key, Vec3 camera, SubmitNodeCollector collector, Consumer<SubmitNodeCollector> body) {
+		if (CACHE.get(key) != null) {
 			body.accept(collector);
-		} else {
-			replay(recording, camera, collector);
+			return;
 		}
+		Recording recording = new Recording(camera);
+		CACHE.put(key, recording);
+		body.accept((SubmitNodeCollector) recorder(SubmitNodeCollector.class, collector, recording, null, -1));
 	}
 
 	private Object recorder(Class<?> type, Object target, Recording recording, Method order, int orderIndex) {
