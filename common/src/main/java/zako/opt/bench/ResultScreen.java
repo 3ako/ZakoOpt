@@ -87,8 +87,7 @@ public class ResultScreen extends Panel {
 	}
 
 	private String unit(String key) {
-		return ZakoOptions.GROUPS.stream().flatMap(g -> g.available().stream()).filter(o -> o.key().equals(key) && o instanceof ZakoOptions.Distance)
-				.map(o -> ((ZakoOptions.Distance) o).unit()).findFirst().orElse("zakoopt.blocks");
+		return Bench.option(key) instanceof ZakoOptions.Distance d ? d.unit() : "zakoopt.blocks";
 	}
 
 	private int header(Canvas c, Component text, int x0, int x1, int y) {

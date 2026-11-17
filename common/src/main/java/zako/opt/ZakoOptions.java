@@ -38,10 +38,6 @@ public class ZakoOptions {
 	}
 
 	public record Group(FeatureGroup type, List<Option> options) {
-		public String key() {
-			return type.key();
-		}
-
 		public List<Option> available() {
 			return options.stream().filter(Option::available).toList();
 		}

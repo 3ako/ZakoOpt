@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 // the benchmark runs as a script on its own thread: it builds a temporary flat world, grows the scene until FPS drops to
@@ -355,10 +356,10 @@ public class Bench {
 		}
 		if (at == Scene.SPAWNERS) {
 			server(mc, Scene.spawnerLabels(Component.translatable("zakoopt.blocks", "%d").getString()));
-			growSpawners(mc, (ZakoOptions.Toggle) options.getFirst());
+			grow(mc, (ZakoOptions.Toggle) options.getFirst(), Scene.SPAWNER_STRIPS, Scene::spawnerStrip, "spawner field %d spawners", 100);
 		}
 		if (at == Scene.ITEMS_CLOSE) {
-			growPile(mc, (ZakoOptions.Toggle) options.getFirst());
+			grow(mc, (ZakoOptions.Toggle) options.getFirst(), 10, Scene::pile, "item pile %d stacks", 200);
 		}
 		CompletableFuture<Void> done = new CompletableFuture<>();
 		main(mc, () -> {
@@ -381,40 +382,20 @@ public class Bench {
 		return true;
 	}
 
-	// the scene's own items barely show the copies; full stacks are added under the camera, drawn with copies, until the frame
+	// the scene's own load barely shows these switches; batches are added under the camera with the switch off until the frame
 	// rate is down by about a third, so switching shows on this device without sinking a weak one
-	private void growPile(Minecraft mc, ZakoOptions.Toggle singleCopy) {
+	private void grow(Minecraft mc, ZakoOptions.Toggle toggle, int batches, IntFunction<List<String>> batch, String what, int perBatch) {
 		main(mc, () -> {
-			singleCopy.set().accept(false);
+			toggle.set().accept(false);
 			return null;
 		});
 		sleep(1000);
 		double start = fps(mc, 1000);
-		for (int batch = 0; batch < 10; batch++) {
-			server(mc, Scene.pile(batch));
+		for (int i = 0; i < batches; i++) {
+			server(mc, batch.apply(i));
 			sleep(SETTLE_MS);
 			double now = fps(mc, 1000);
-			log.info("Benchmark: item pile {} stacks {} fps", (batch + 1) * 200, Math.round(now));
-			if (now < start * 0.7) {
-				break;
-			}
-		}
-	}
-
-	// the scene's spawners are too few to show; strips are added under the camera, every mob drawn, until the frame rate is
-	// down by about a third
-	private void growSpawners(Minecraft mc, ZakoOptions.Toggle cull) {
-		main(mc, () -> {
-			cull.set().accept(false);
-			return null;
-		});
-		sleep(1000);
-		double start = fps(mc, 1000);
-		for (int strip = 0; strip < Scene.SPAWNER_STRIPS; strip++) {
-			server(mc, Scene.spawnerStrip(strip));
-			sleep(SETTLE_MS);
-			double now = fps(mc, 1000);
-			log.info("Benchmark: spawner field {} spawners {} fps", (strip + 1) * 100, Math.round(now));
+			log.info("Benchmark: {} {} fps", what.formatted((i + 1) * perBatch), Math.round(now));
 			if (now < start * 0.7) {
 				break;
 			}
@@ -483,7 +464,7 @@ public class Bench {
 		return option(key) instanceof ZakoOptions.Toggle t && Blocked.reason(key) == null ? t : null;
 	}
 
-	private ZakoOptions.Option option(String key) {
+	ZakoOptions.Option option(String key) {
 		for (ZakoOptions.Group group : ZakoOptions.GROUPS) {
 			for (ZakoOptions.Option option : group.available()) {
 				if (option.key().equals(key)) {

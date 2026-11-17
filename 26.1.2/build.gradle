@@ -13,19 +13,3 @@ dependencies {
 	localRuntime "maven.modrinth:modmenu:${modmenu_version}"
 }
 
-loom {
-	runs {
-		client {
-			// -Pworld=<save> joins a singleplayer world, -Pbench=<dir> enables zakobench's command loop
-			if (project.hasProperty('world')) {
-				programArgs "--quickPlaySingleplayer", project.world
-			}
-			if (project.hasProperty('jvm')) {
-				vmArgs project.jvm.split(' ')
-			}
-			if (project.hasProperty('bench')) {
-				vmArgs "-Dzakobench.dir=${project.bench}", "-Dzakobench.hidechat=true"
-			}
-		}
-	}
-}
