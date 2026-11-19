@@ -32,6 +32,14 @@ public class Workers {
 		return job.error.get();
 	}
 
+	// one task on a helper, for work that has no order and no caller to wait for it
+	public void async(Runnable task) {
+		POOL.execute(() -> {
+			CorePin.check();
+			task.run();
+		});
+	}
+
 	// helpers start right away and take items as the caller publishes them, so work overlaps with preparing the rest
 	public Stream stream(IntConsumer task) {
 		Stream stream = new Stream(task);

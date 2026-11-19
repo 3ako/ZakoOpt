@@ -43,12 +43,19 @@ public class Features {
 	public final FastBlitFeature FAST_BLIT = add(new FastBlitFeature());
 	public final RenderScaleFeature RENDER_SCALE = add(new RenderScaleFeature());
 	public final OcclusionCullFeature OCCLUSION_CULL = add(new OcclusionCullFeature());
+	public final PickThrottleFeature PICK_THROTTLE = add(new PickThrottleFeature());
+	public final ParallelWeatherFeature PARALLEL_WEATHER = add(new ParallelWeatherFeature());
+	public final DriverCallsFeature DRIVER_CALLS = add(new DriverCallsFeature());
+	public final ParallelEntitiesFeature PARALLEL_ENTITIES = add(new ParallelEntitiesFeature());
+	public final UniformWriteFeature UNIFORM_WRITE = add(new UniformWriteFeature());
+	public final RingBuffersFeature RING_BUFFERS = add(new RingBuffersFeature());
 
 	public final ItemLodFeature ITEM_LOD = add(new ItemLodFeature());
 	public final ItemSingleCopyFeature ITEM_SINGLE_COPY = add(new ItemSingleCopyFeature());
 	public final RestingItemsFeature RESTING_ITEMS = add(new RestingItemsFeature());
 	public final ParallelModelsFeature PARALLEL_MODELS = add(new ParallelModelsFeature());
 	public final StatePoolFeature STATE_POOL = add(new StatePoolFeature());
+	public final HeldItemCacheFeature HELD_ITEM_CACHE = add(new HeldItemCacheFeature());
 	public final EntityLodFeature ENTITY_LOD = add(new EntityLodFeature());
 	public final PlayerLodFeature PLAYER_LOD = add(new PlayerLodFeature());
 	public final EntityAnimFreezeFeature ENTITY_ANIM_FREEZE = add(new EntityAnimFreezeFeature());
@@ -67,6 +74,7 @@ public class Features {
 	public final CrackCacheFeature CRACK_CACHE = add(new CrackCacheFeature());
 	public final LookupCachesFeature LOOKUP_CACHES = add(new LookupCachesFeature());
 	public final MicroOptsFeature MICRO_OPTS = add(new MicroOptsFeature());
+	public final FastLightFeature FAST_LIGHT = add(new FastLightFeature());
 
 	public final CreatePathsFeature CREATE_PATHS = add(new CreatePathsFeature());
 	public final CreateItemsFeature CREATE_ITEMS = add(new CreateItemsFeature());
@@ -80,6 +88,7 @@ public class Features {
 	public final ParticlePhysicsFeature PARTICLE_PHYSICS = add(new ParticlePhysicsFeature());
 	public final ParticleLodFeature PARTICLE_LOD = add(new ParticleLodFeature());
 	public final ParallelParticlesFeature PARALLEL_PARTICLES = add(new ParallelParticlesFeature());
+	public final ParallelParticleTickFeature PARALLEL_PARTICLE_TICK = add(new ParallelParticleTickFeature());
 
 	public final HudCacheFeature HUD_CACHE = add(new HudCacheFeature());
 	public final GuiAnimatedItemsFeature GUI_ANIMATED_ITEMS = add(new GuiAnimatedItemsFeature());

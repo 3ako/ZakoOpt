@@ -16,7 +16,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	public static final boolean POLYDIUM = Platform.isModLoaded("polydium");
 	// AsyncParticles renders the particle queues itself, off the render thread
 	public static final boolean ASYNC_PARTICLES = Platform.isModLoaded("asyncparticles");
-	private static final List<String> PARTICLE_MIXINS = List.of("particle.ParticleEngineParallelMixin", "particle.QuadParticleGroupMixin");
+	private static final List<String> PARTICLE_MIXINS = List.of("particle.ParticleEngineParallelMixin", "particle.QuadParticleGroupMixin", "particle.ParticleGroupTickMixin", "particle.ParticleEngineSpawnMixin");
 	// Lunar is no Fabric mod: its launcher class is the tell
 	public static final boolean LUNAR = MixinPlugin.class.getClassLoader().getResource("com/moonsworth/lunar/genesis/Genesis.class") != null;
 	private static final List<String> LUNAR_MIXINS = List.of("gl.LunarMultiDrawMixin", "gl.LunarSodiumMultiDrawMixin", "block.BlockEntityRenderDispatcherCullMixin");
@@ -27,7 +27,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 			"block.LevelRendererCrackTessMixin");
 	private static final List<String> NEOFORGE_ONLY = List.of("block.NeoBlockEntityRenderDispatcherMixin", "block.NeoLevelRendererCrackMixin");
 	public static final List<String> SODIUM_MIXINS = List.of("entity.SodiumEntityRendererMixin", "entity.SodiumBakedModelEncoderMixin", "gl.VertexConsumerUtilsMixin", "block.NonTerrainBlockRenderContextMixin", "block.SodiumChestMeshMixin", "block.SodiumSignMeshMixin",
-			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin", "gl.SodiumCubicSamplerMixin", "gl.SodiumSerializerCacheMixin");
+			"gl.LunarSodiumMultiDrawMixin", "gl.SodiumOcclusionCullMixin", "gl.SodiumTerrainTimerMixin", "block.SodiumLeafCullMixin", "block.SodiumLeafCullOldMixin", "block.SodiumFarLeavesMixin", "gl.SodiumCubicSamplerMixin", "gl.SodiumSerializerCacheMixin", "gl.SodiumDeviceCacheMixin", "gl.SodiumShaderSamplerMixin");
 	// Create's renderers, on NeoForge only: Create's Fabric port is not the code these were written against
 	public static final boolean CREATE = NEOFORGE && Platform.isModLoaded("create");
 	private static final List<String> CREATE_MIXINS = List.of("block.CreateFactoryPanelMixin", "block.CreateValueBoxMixin", "block.CreateBeltMixin", "block.CreatePackageAddressMixin", "block.CreateFarTickMixin", "block.CreateLevelTickersMixin", "block.CreateCouplingMixin", "block.CreateDoorMixin",
@@ -72,7 +72,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 	// GPU timers and the window blit call GL directly, and VulkanMod has no GL context to call; the render scale's swapped
 	// main textures come out as stripes under VulkanMod even through the game's own API
 	private static boolean openGl(String mixin) {
-		return mixin.startsWith("gl.Gl") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin")
+		return mixin.startsWith("gl.Gl") || mixin.startsWith("gl.BufferStorage") || RING_MIXINS.contains(mixin) || mixin.startsWith("hud.") && !mixin.equals("hud.ChatComponentBatchMixin")
 				|| mixin.endsWith("TimerMixin") || mixin.equals("gl.RenderTargetBlitMixin")
 				|| mixin.equals("gl.GameRendererScaleMixin");
 	}
