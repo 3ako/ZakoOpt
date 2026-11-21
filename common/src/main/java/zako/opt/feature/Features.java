@@ -81,6 +81,7 @@ public class Features {
 	public final ParticleLodFeature PARTICLE_LOD = add(new ParticleLodFeature());
 	public final ParallelParticlesFeature PARALLEL_PARTICLES = add(new ParallelParticlesFeature());
 
+	public final ZakoCosmeticFeature ZAKO_COSMETIC = add(new ZakoCosmeticFeature());
 	public final HudCacheFeature HUD_CACHE = add(new HudCacheFeature());
 	public final GuiAnimatedItemsFeature GUI_ANIMATED_ITEMS = add(new GuiAnimatedItemsFeature());
 	public final BidiCacheFeature BIDI_CACHE = add(new BidiCacheFeature());

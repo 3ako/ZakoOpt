@@ -11,7 +11,9 @@
 		"entity.LivingEntityRendererSkinMixin",
 		"gl.GameRendererScaleMixin",
 		"gl.GlCommandEncoderTexBufferMixin",
-		"hud.GameRendererHudMixin"
+		"hud.GameRendererHudMixin",
+		"entity.ZakoAvatarMixin",
+		"entity.ZakoLivingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

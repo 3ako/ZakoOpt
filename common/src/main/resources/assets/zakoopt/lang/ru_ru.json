@@ -243,5 +243,11 @@
   "zakoopt.welcome.later": "Позже",
   "zakoopt.welcome.start": "Подобрать",
   "zakoopt.guard.chat": "ZakoOpt выключила %s из-за ошибки. Пожалуйста, отправьте автору файл logs/latest.log.",
-  "zakoopt.guard.chat.other": "В ZakoOpt произошла ошибка. Пожалуйста, отправьте автору файл logs/latest.log."
+  "zakoopt.guard.chat.other": "В ZakoOpt произошла ошибка. Пожалуйста, отправьте автору файл logs/latest.log.",
+  "zakoopt.option.zako_cosmetic": "Модель Zako",
+  "zakoopt.option.zako_cosmetic.tooltip": "Заменяет модель вашего персонажа на Zako.",
+  "zakoopt.visual.zako_cosmetic": "Меняет внешний вид вашего персонажа.",
+  "zakoopt.option.zako_logo": "Логотип (0 Burger King, 1 KFC, 2 McDonald’s, 3 HolyWorld)",
+  "zakoopt.zako_logo_value": "%s",
+  "zakoopt.option.zako_white_shirt": "Белая футболка"
 }
