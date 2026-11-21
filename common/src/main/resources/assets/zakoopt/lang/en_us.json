@@ -243,5 +243,11 @@
   "zakoopt.welcome.later": "Later",
   "zakoopt.welcome.start": "Tune",
   "zakoopt.guard.chat": "ZakoOpt turned off %s after an error. Please send logs/latest.log to the author.",
-  "zakoopt.guard.chat.other": "ZakoOpt hit an error. Please send logs/latest.log to the author."
+  "zakoopt.guard.chat.other": "ZakoOpt hit an error. Please send logs/latest.log to the author.",
+  "zakoopt.option.zako_cosmetic": "Zako model",
+  "zakoopt.option.zako_cosmetic.tooltip": "Replaces your player model with Zako.",
+  "zakoopt.visual.zako_cosmetic": "Changes your player appearance.",
+  "zakoopt.option.zako_logo": "Logo (0 Burger King, 1 KFC, 2 McDonald’s, 3 HolyWorld, 4 Horizon, 5 Vkusno i Tochka, 6 Rostic’s)",
+  "zakoopt.zako_logo_value": "%s",
+  "zakoopt.option.zako_white_shirt": "White shirt"
 }
