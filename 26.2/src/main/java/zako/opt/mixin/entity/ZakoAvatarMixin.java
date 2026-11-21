@@ -20,6 +20,7 @@ public class ZakoAvatarMixin {
  @Unique private static boolean zakoopt$enabled() { return Features.ZAKO_COSMETIC.on && BlenderCharacterMesh.available(); }
  @Unique private static Identifier zakoopt$texture() {
   var f = Features.ZAKO_COSMETIC;
+  if (f.logo >= 4 && f.logo <= 6) return zako.opt.cosmetic.ZakoLogoTextures.get(f.logo, f.white);
   String logo = switch (f.logo) { case 1 -> "_kfc"; case 2 -> "_mcdonalds"; case 3 -> "_holyworld"; default -> ""; };
   return Identifier.fromNamespaceAndPath("zakoopt", "textures/cosmetic/zako" + logo + (f.white ? "_white" : "") + ".png");
  }

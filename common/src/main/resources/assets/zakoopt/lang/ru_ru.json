@@ -247,7 +247,7 @@
   "zakoopt.option.zako_cosmetic": "Модель Zako",
   "zakoopt.option.zako_cosmetic.tooltip": "Заменяет модель вашего персонажа на Zako.",
   "zakoopt.visual.zako_cosmetic": "Меняет внешний вид вашего персонажа.",
-  "zakoopt.option.zako_logo": "Логотип (0 Burger King, 1 KFC, 2 McDonald’s, 3 HolyWorld)",
+  "zakoopt.option.zako_logo": "Логотип (0 Burger King, 1 KFC, 2 McDonald’s, 3 HolyWorld, 4 Horizon, 5 Вкусно — и точка, 6 Rostic’s)",
   "zakoopt.zako_logo_value": "%s",
   "zakoopt.option.zako_white_shirt": "Белая футболка"
 }
